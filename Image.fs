@@ -35,11 +35,11 @@ module Location =
                 use stream = new MemoryStream()
                 image.SaveAsPng(stream)
                 stream.Position <- 0
-                let task =
+                let! bitmap =
                     Dispatcher.UIThread.InvokeAsync(fun () ->
                         new Bitmap(stream))
                         .GetTask()
-                let! bitmap = Async.AwaitTask task
+                        |> Async.AwaitTask
                 return Some bitmap
             with exn ->
                 Trace.WriteLine($"{path}: {exn.Message}")
