@@ -13,21 +13,29 @@ open Avalonia.Threading
 
 open SixLabors.ImageSharp
 open SixLabors.ImageSharp.Formats.Png
-    
+
 type State =
     {
-        BitmapOpt : Option<Bitmap>
+        Directory : DirectoryInfo
+        FileOpt : Option<FileInfo>
+        ImageOpt : Option<Bitmap>
     }
 
 type Message =
-    | LoadImage of FileInfo
+    | LoadImage
     | ImageLoaded of Option<Bitmap>
+    | NextImage
+    | PreviousImage
 
 module Image =
 
-    let init path =
-        { BitmapOpt = None },
-        Cmd.ofMsg (LoadImage path)
+    let init (file : FileInfo) =
+        {
+            Directory = file.Directory
+            FileOpt = Some file
+            ImageOpt = None
+        },
+        Cmd.ofMsg LoadImage
 
     let private pngEncoder =
         PngEncoder(
@@ -37,7 +45,7 @@ module Image =
     let tryLoadBitmap path =
         async {
             try
-                    // convert image to PNG format
+                    // load image to PNG format
                 use stream = new MemoryStream()
                 do
                     use image = Image.Load(path : string)
@@ -56,18 +64,69 @@ module Image =
                 return None
         }
 
+    let private supportedExtensions =
+        set [
+            ".bmp"
+            ".gif"
+            ".jpeg"
+            ".jpg"
+            ".pbm"
+            ".png"
+            ".tif"
+            ".tiff"
+            ".tga"
+            ".qoi"
+            ".webp"
+        ]
+
+    let private tryIncrImage incr state =
+        let files =
+            state.Directory.GetFiles()
+                |> Array.where (fun file ->
+                    supportedExtensions.Contains(
+                        file.Extension.ToLower()))
+        option {
+            let! curFile = state.FileOpt
+            let! curIdx =
+                files
+                    |> Array.tryFindIndex (fun file ->
+                        file.FullName = curFile.FullName)
+            let nextIdx = curIdx + incr
+            if nextIdx >= 0 && nextIdx < files.Length then
+                return files[nextIdx]
+        }
+
     let update msg state =
         match msg with
-            | LoadImage fileInfo ->
-                let cmd =
-                    Cmd.OfAsync.perform
-                        tryLoadBitmap
-                        fileInfo.FullName
-                        ImageLoaded
-                state, cmd
+
+            | LoadImage ->
+                match state.FileOpt with
+                    | Some file ->
+                        let cmd =
+                            Cmd.OfAsync.perform
+                                tryLoadBitmap
+                                file.FullName
+                                ImageLoaded
+                        state, cmd
+                    | None -> failwith "No file to load"
+
             | ImageLoaded bitmapOpt ->
-                { state with BitmapOpt = bitmapOpt },
+                { state with ImageOpt = bitmapOpt },
                 Cmd.none
+
+            | NextImage  ->
+                let fileOpt = tryIncrImage 1 state
+                { state with
+                    FileOpt = fileOpt
+                    ImageOpt = None },
+                Cmd.ofMsg LoadImage
+
+            | PreviousImage  ->
+                let fileOpt = tryIncrImage -1 state
+                { state with
+                    FileOpt = fileOpt
+                    ImageOpt = None },
+                Cmd.ofMsg LoadImage
 
     let view state dispatch =
         DockPanel.create [
@@ -75,12 +134,14 @@ module Image =
                 Button.create [
                     Button.content "Prev"
                     Button.dock Dock.Left
+                    Button.onClick (fun _ -> dispatch PreviousImage)
                 ]
                 Button.create [
                     Button.content "Next"
                     Button.dock Dock.Right
+                    Button.onClick (fun _ -> dispatch NextImage)
                 ]
-                for bitmap in Option.toArray state.BitmapOpt do
+                for bitmap in Option.toArray state.ImageOpt do
                     Image.create [
                         Image.source bitmap
                     ]
