@@ -12,6 +12,7 @@ open Avalonia.Media.Imaging
 open Avalonia.Threading
 
 open SixLabors.ImageSharp
+open SixLabors.ImageSharp.Formats.Png
     
 type State =
     {
@@ -33,7 +34,11 @@ module Location =
             try
                 use image = Image.Load(path : string)
                 use stream = new MemoryStream()
-                image.SaveAsPng(stream)
+                let pngEncoder =
+                    PngEncoder(
+                        CompressionLevel =
+                            PngCompressionLevel.NoCompression)
+                image.SaveAsPng(stream, pngEncoder)
                 stream.Position <- 0
                 let! bitmap =
                     Dispatcher.UIThread.InvokeAsync(fun () ->
@@ -62,7 +67,7 @@ module Location =
     let view state dispatch =
         DockPanel.create [
             DockPanel.children [
-                for bitmap in state.BitmapOpt |> Option.toArray do
+                for bitmap in Option.toArray state.BitmapOpt do
                     Image.create [
                         Image.source bitmap
                     ]
