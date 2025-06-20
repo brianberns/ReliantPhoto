@@ -6,9 +6,10 @@ open System.IO
 open Elmish
 
 open Avalonia.Controls
+open Avalonia.FuncUI.DSL
 open Avalonia.Layout
 open Avalonia.Media.Imaging
-open Avalonia.FuncUI.DSL
+open Avalonia.Threading
 
 open SixLabors.ImageSharp
     
@@ -19,7 +20,7 @@ type State =
 
 type Message =
     | LoadImage of FileInfo
-    // | ImageLoaded of Bitmap
+    | ImageLoaded of Option<Bitmap>
 
 module Location =
 
@@ -28,27 +29,37 @@ module Location =
         Cmd.ofMsg (LoadImage path)
 
     let tryLoadBitmap path =
-        try
-            use image = Image.Load(path : string)
-            use stream = new MemoryStream()
-            image.SaveAsPng(stream)
-            stream.Position <- 0
-            new Bitmap(stream) |> Some
-        with exn ->
-            Trace.WriteLine($"{path}: {exn.Message}")
-            None
+        async {
+            try
+                use image = Image.Load(path : string)
+                use stream = new MemoryStream()
+                image.SaveAsPng(stream)
+                stream.Position <- 0
+                let task =
+                    Dispatcher.UIThread.InvokeAsync(fun () ->
+                        new Bitmap(stream))
+                        .GetTask()
+                let! bitmap = Async.AwaitTask task
+                return Some bitmap
+            with exn ->
+                Trace.WriteLine($"{path}: {exn.Message}")
+                return None
+        }
 
     let update msg state =
         match msg with
             | LoadImage fileInfo ->
-                {
-                    BitmapOpt =
-                        tryLoadBitmap fileInfo.FullName
-                },
+                let cmd =
+                    Cmd.OfAsync.perform
+                        tryLoadBitmap
+                        fileInfo.FullName
+                        ImageLoaded
+                state, cmd
+            | ImageLoaded bitmapOpt ->
+                { state with BitmapOpt = bitmapOpt },
                 Cmd.none
 
     let view state dispatch =
-                    
         DockPanel.create [
             DockPanel.children [
                 for bitmap in state.BitmapOpt |> Option.toArray do
