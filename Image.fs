@@ -23,23 +23,28 @@ type Message =
     | LoadImage of FileInfo
     | ImageLoaded of Option<Bitmap>
 
-module Location =
+module Image =
 
     let init path =
         { BitmapOpt = None },
         Cmd.ofMsg (LoadImage path)
 
+    let private pngEncoder =
+        PngEncoder(
+            CompressionLevel =
+                PngCompressionLevel.NoCompression)
+
     let tryLoadBitmap path =
         async {
             try
-                use image = Image.Load(path : string)
+                    // convert image to PNG format
                 use stream = new MemoryStream()
-                let pngEncoder =
-                    PngEncoder(
-                        CompressionLevel =
-                            PngCompressionLevel.NoCompression)
-                image.SaveAsPng(stream, pngEncoder)
-                stream.Position <- 0
+                do
+                    use image = Image.Load(path : string)
+                    image.SaveAsPng(stream, pngEncoder)
+                    stream.Position <- 0
+
+                    // create bitmap on UI thread
                 let! bitmap =
                     Dispatcher.UIThread.InvokeAsync(fun () ->
                         new Bitmap(stream))

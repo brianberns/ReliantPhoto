@@ -28,9 +28,9 @@ type MainWindow(args : _[]) as this =
                 dirInfo.GetFiles()[0]
 
         Elmish.Program.mkProgram
-            Location.init
-            Location.update
-            Location.view
+            Image.init
+            Image.update
+            Image.view
             |> Program.withHost this
             |> Program.runWith path
 
