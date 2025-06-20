@@ -8,6 +8,8 @@ open Avalonia.Controls
 open Avalonia.Layout
 open Avalonia.Media.Imaging
 open Avalonia.FuncUI.DSL
+
+open SixLabors.ImageSharp
     
 type LocationState =
     {
@@ -34,7 +36,11 @@ module Location =
     let tryLoadBitmap (fileInfo : FileInfo) =
         let path = fileInfo.FullName
         try
-            new Bitmap(path) |> Some
+            use image = Image.Load(path)
+            use stream = new MemoryStream()
+            image.SaveAsPng(stream)
+            stream.Position <- 0
+            new Bitmap(stream) |> Some
         with exn ->
             Trace.WriteLine($"{path}: {exn.Message}")
             None
