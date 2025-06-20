@@ -14,8 +14,8 @@ open Avalonia.Themes.Fluent
 type MainWindow(args : _[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo",
-        Width = 400.0,
-        Height = 400.0)
+        Width = 600.0,
+        Height = 600.0)
     do
         let path =
             if args.Length > 0 then

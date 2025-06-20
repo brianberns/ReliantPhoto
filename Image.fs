@@ -132,12 +132,12 @@ module Image =
         DockPanel.create [
             DockPanel.children [
                 Button.create [
-                    Button.content "Prev"
+                    Button.content "◀"
                     Button.dock Dock.Left
                     Button.onClick (fun _ -> dispatch PreviousImage)
                 ]
                 Button.create [
-                    Button.content "Next"
+                    Button.content "▶"
                     Button.dock Dock.Right
                     Button.onClick (fun _ -> dispatch NextImage)
                 ]
