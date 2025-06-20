@@ -7,7 +7,6 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
-open Avalonia.Layout
 open Avalonia.Media.Imaging
 open Avalonia.Threading
 
@@ -16,16 +15,30 @@ open SixLabors.ImageSharp.Formats.Png
 
 type State =
     {
+        /// Directory containing images to browse.
         Directory : DirectoryInfo
+
+        /// Current image file, if any. This is set before
+        /// the image itself is loaded.
         FileOpt : Option<FileInfo>
+
+        /// Current loaded image, if any.
         ImageOpt : Option<Bitmap>
     }
 
 type Message =
+
+    /// Load the current image file, if possible.
     | LoadImage
+
+    /// The current image file was (maybe) loaded.
     | ImageLoaded of Option<Bitmap>
-    | NextImage
+
+    /// Browse to previous image in directory, if possible.
     | PreviousImage
+
+    /// Browse to next image in directory, if possible.
+    | NextImage
 
 module Image =
 
@@ -93,7 +106,9 @@ module Image =
                         file.FullName = curFile.FullName)
             let nextIdx = curIdx + incr
             if nextIdx >= 0 && nextIdx < files.Length then
-                return files[nextIdx]
+                let hasPrev = nextIdx > 0
+                let hasNext = nextIdx < files.Length - 1
+                return files[nextIdx] //, hasPrev, hasNext
         }
 
     let update msg state =
@@ -114,15 +129,15 @@ module Image =
                 { state with ImageOpt = bitmapOpt },
                 Cmd.none
 
-            | NextImage  ->
-                let fileOpt = tryIncrImage 1 state
+            | PreviousImage  ->
+                let fileOpt = tryIncrImage -1 state
                 { state with
                     FileOpt = fileOpt
                     ImageOpt = None },
                 Cmd.ofMsg LoadImage
 
-            | PreviousImage  ->
-                let fileOpt = tryIncrImage -1 state
+            | NextImage  ->
+                let fileOpt = tryIncrImage 1 state
                 { state with
                     FileOpt = fileOpt
                     ImageOpt = None },
