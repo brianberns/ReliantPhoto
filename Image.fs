@@ -72,6 +72,14 @@ module Image =
     let view state dispatch =
         DockPanel.create [
             DockPanel.children [
+                Button.create [
+                    Button.content "Prev"
+                    Button.dock Dock.Left
+                ]
+                Button.create [
+                    Button.content "Next"
+                    Button.dock Dock.Right
+                ]
                 for bitmap in Option.toArray state.BitmapOpt do
                     Image.create [
                         Image.source bitmap
