@@ -24,6 +24,9 @@ type State =
 
         /// Current loaded image, if any.
         ImageOpt : Option<Bitmap>
+
+        HasPreviousImage : bool
+        HasNextImage : bool
     }
 
 type Message =
@@ -42,11 +45,59 @@ type Message =
 
 module Image =
 
+    let supportedExtensions =
+        set [
+            ".bmp"
+            ".gif"
+            ".jpeg"
+            ".jpg"
+            ".pbm"
+            ".png"
+            ".tif"
+            ".tiff"
+            ".tga"
+            ".qoi"
+            ".webp"
+        ]
+
+    let private findImage incr state =
+        let files =
+            state.Directory.GetFiles()
+                |> Array.where (fun file ->
+                    supportedExtensions.Contains(
+                        file.Extension.ToLower()))
+        let incrIdxOpt =
+            option {
+                let! curFile = state.FileOpt
+                let! curIdx =
+                    files
+                        |> Array.tryFindIndex (fun file ->
+                            file.FullName = curFile.FullName)
+                let nextIdx = curIdx + incr
+                if nextIdx >= 0 && nextIdx < files.Length then
+                    return nextIdx
+            }
+        match incrIdxOpt with
+            | Some incrIdx ->
+                { state with
+                    FileOpt = Some files[incrIdx]
+                    ImageOpt = None
+                    HasPreviousImage = incrIdx > 0
+                    HasNextImage = incrIdx < files.Length - 1 }
+            | None ->
+                { state with
+                    FileOpt = None
+                    ImageOpt = None
+                    HasPreviousImage = false
+                    HasNextImage = false }
+
     let init (file : FileInfo) =
-        {
+        findImage 0 {
             Directory = file.Directory
             FileOpt = Some file
             ImageOpt = None
+            HasPreviousImage = false
+            HasNextImage = false
         },
         Cmd.ofMsg LoadImage
 
@@ -77,40 +128,6 @@ module Image =
                 return None
         }
 
-    let private supportedExtensions =
-        set [
-            ".bmp"
-            ".gif"
-            ".jpeg"
-            ".jpg"
-            ".pbm"
-            ".png"
-            ".tif"
-            ".tiff"
-            ".tga"
-            ".qoi"
-            ".webp"
-        ]
-
-    let private tryIncrImage incr state =
-        let files =
-            state.Directory.GetFiles()
-                |> Array.where (fun file ->
-                    supportedExtensions.Contains(
-                        file.Extension.ToLower()))
-        option {
-            let! curFile = state.FileOpt
-            let! curIdx =
-                files
-                    |> Array.tryFindIndex (fun file ->
-                        file.FullName = curFile.FullName)
-            let nextIdx = curIdx + incr
-            if nextIdx >= 0 && nextIdx < files.Length then
-                let hasPrev = nextIdx > 0
-                let hasNext = nextIdx < files.Length - 1
-                return files[nextIdx] //, hasPrev, hasNext
-        }
-
     let update msg state =
         match msg with
 
@@ -130,32 +147,31 @@ module Image =
                 Cmd.none
 
             | PreviousImage  ->
-                let fileOpt = tryIncrImage -1 state
-                { state with
-                    FileOpt = fileOpt
-                    ImageOpt = None },
+                findImage -1 state,
                 Cmd.ofMsg LoadImage
 
             | NextImage  ->
-                let fileOpt = tryIncrImage 1 state
-                { state with
-                    FileOpt = fileOpt
-                    ImageOpt = None },
+                findImage 1 state,
                 Cmd.ofMsg LoadImage
 
     let view state dispatch =
         DockPanel.create [
             DockPanel.children [
-                Button.create [
-                    Button.content "◀"
-                    Button.dock Dock.Left
-                    Button.onClick (fun _ -> dispatch PreviousImage)
-                ]
-                Button.create [
-                    Button.content "▶"
-                    Button.dock Dock.Right
-                    Button.onClick (fun _ -> dispatch NextImage)
-                ]
+
+                if state.HasPreviousImage then
+                    Button.create [
+                        Button.content "◀"
+                        Button.dock Dock.Left
+                        Button.onClick (fun _ -> dispatch PreviousImage)
+                    ]
+
+                if state.HasNextImage then
+                    Button.create [
+                        Button.content "▶"
+                        Button.dock Dock.Right
+                        Button.onClick (fun _ -> dispatch NextImage)
+                    ]
+
                 match state.ImageOpt with
                     | Some image ->
                         Image.create [
