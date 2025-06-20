@@ -141,9 +141,12 @@ module Image =
                     Button.dock Dock.Right
                     Button.onClick (fun _ -> dispatch NextImage)
                 ]
-                for bitmap in Option.toArray state.ImageOpt do
-                    Image.create [
-                        Image.source bitmap
-                    ]
+                match state.ImageOpt with
+                    | Some image ->
+                        Image.create [
+                            Image.source image
+                        ]
+                    | None ->
+                        TextBlock.create []
             ]
         ]
