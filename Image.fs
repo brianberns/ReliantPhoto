@@ -1,8 +1,9 @@
 ﻿namespace Reliant.Photo
 
-open System
 open System.Diagnostics
 open System.IO
+
+open Elmish
 
 open Avalonia.Controls
 open Avalonia.Layout
@@ -11,32 +12,24 @@ open Avalonia.FuncUI.DSL
 
 open SixLabors.ImageSharp
     
-type LocationState =
+type State =
     {
-        DirectoryInfo : DirectoryInfo
+        BitmapOpt : Option<Bitmap>
     }
 
-type LocationMessage =
-    | NoOp
+type Message =
+    | LoadImage of FileInfo
+    // | ImageLoaded of Bitmap
 
 module Location =
 
     let init path =
-        {
-            DirectoryInfo =
-                Environment.SpecialFolder.MyPictures
-                    |> Environment.GetFolderPath
-                    |> DirectoryInfo
-        }
+        { BitmapOpt = None },
+        Cmd.ofMsg (LoadImage path)
 
-    let update msg state =
-        match msg with
-            | NoOp -> state
-
-    let tryLoadBitmap (fileInfo : FileInfo) =
-        let path = fileInfo.FullName
+    let tryLoadBitmap path =
         try
-            use image = Image.Load(path)
+            use image = Image.Load(path : string)
             use stream = new MemoryStream()
             image.SaveAsPng(stream)
             stream.Position <- 0
@@ -45,16 +38,20 @@ module Location =
             Trace.WriteLine($"{path}: {exn.Message}")
             None
 
-    let view state dispatch =
+    let update msg state =
+        match msg with
+            | LoadImage fileInfo ->
+                {
+                    BitmapOpt =
+                        tryLoadBitmap fileInfo.FullName
+                },
+                Cmd.none
 
-        let bitmaps =
-            state.DirectoryInfo
-                .GetFiles()
-                |> Array.choose tryLoadBitmap
+    let view state dispatch =
                     
         DockPanel.create [
             DockPanel.children [
-                for bitmap in bitmaps do
+                for bitmap in state.BitmapOpt |> Option.toArray do
                     Image.create [
                         Image.source bitmap
                     ]
