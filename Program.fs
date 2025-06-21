@@ -12,27 +12,26 @@ open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
 open Avalonia.Themes.Fluent
 
-type MainWindow(args : _[]) as this =
-    inherit HostWindow(Title = "Reliant Photo")
+module Window =
 
-    let loadSettings _ =
+    let loadSettings (window : Window) =
         Settings.tryLoad ()
             |> Option.iter (fun settings ->
             if settings.Maximized then
-                this.WindowState <- WindowState.Maximized
+                window.WindowState <- WindowState.Maximized
                 // other settings are garbage when window is maximized: https://github.com/AvaloniaUI/Avalonia/issues/5285
             else
-                this.Position <- PixelPoint(settings.Left, settings.Top)
-                this.Width <- settings.Width
-                this.Height <- settings.Height)
+                window.Position <- PixelPoint(settings.Left, settings.Top)
+                window.Width <- settings.Width
+                window.Height <- settings.Height)
 
-    let saveSettings _ =
+    let saveSettings (window : Window) =
         Settings.save {
-            Left = this.Position.X
-            Top = this.Position.Y
-            Width = this.Width
-            Height = this.Height
-            Maximized = this.WindowState = WindowState.Maximized
+            Left = window.Position.X
+            Top = window.Position.Y
+            Width = window.Width
+            Height = window.Height
+            Maximized = window.WindowState = WindowState.Maximized
         }
 
     let getInitialPath (args : _[]) =
@@ -45,18 +44,22 @@ type MainWindow(args : _[]) as this =
                     |> DirectoryInfo
             dirInfo.GetFiles()[0]
 
-    let run path =
+    let run window path =
         Elmish.Program.mkProgram
             Image.init
             Image.update
             Image.view
-            |> Program.withHost this
+            |> Program.withHost window
             |> Program.runWith path
 
+type MainWindow(args : _[]) as this =
+    inherit HostWindow(Title = "Reliant Photo")
     do
-        loadSettings ()
-        this.Closing.Add(saveSettings)
-        getInitialPath args |> run
+        Window.loadSettings this
+        this.Closing.Add(fun _ ->
+            Window.saveSettings this)
+        Window.getInitialPath args
+            |> Window.run this
 
 type App() =
     inherit Application()
