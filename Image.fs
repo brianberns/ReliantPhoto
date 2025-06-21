@@ -18,11 +18,12 @@ type State =
         /// Directory containing images to browse.
         Directory : DirectoryInfo
 
-        /// Current image file, if any. This is set before
-        /// the image itself is loaded.
+        /// Current or upcoming image file, if any. This is set
+        /// before the image itself is loaded.
         FileOpt : Option<FileInfo>
 
-        /// Current loaded image, if any.
+        /// Current loaded image, if any. This will be the old
+        /// image when starting to browse to a new one.
         ImageOpt : Option<Bitmap>
 
         HasPreviousImage : bool
@@ -81,13 +82,11 @@ module Image =
             | Some incrIdx ->
                 { state with
                     FileOpt = Some files[incrIdx]
-                    ImageOpt = None
                     HasPreviousImage = incrIdx > 0
                     HasNextImage = incrIdx < files.Length - 1 }
             | None ->
                 { state with
                     FileOpt = None
-                    ImageOpt = None
                     HasPreviousImage = false
                     HasNextImage = false }
 
