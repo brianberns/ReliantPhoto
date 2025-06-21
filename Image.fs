@@ -15,7 +15,8 @@ open Avalonia.Threading
 open SixLabors.ImageSharp
 open SixLabors.ImageSharp.Formats.Png
 
-type State =
+/// Underlying state.
+type Model =
     {
         /// Directory containing images to browse.
         Directory : DirectoryInfo
@@ -28,10 +29,14 @@ type State =
         /// image when starting to browse to a new one.
         ImageOpt : Option<Bitmap>
 
+        /// User can browse to previous image?
         HasPreviousImage : bool
+
+        /// User can browse to next image?
         HasNextImage : bool
     }
 
+/// Messages that can change the underlying state.
 type Message =
 
     /// Load the current image file, if possible.
@@ -48,6 +53,7 @@ type Message =
 
 module Image =
 
+    /// Supported image file extentions.
     let supportedExtensions =
         set [
             ".bmp"
@@ -63,37 +69,46 @@ module Image =
             ".webp"
         ]
 
-    let private findImage incr state =
+    /// Browses from the current image to another image
+    /// to another image within the current directory.
+    let private browseImage incr state =
+
+            // get all candidate files for browsing
         let files =
             state.Directory.GetFiles()
                 |> Array.where (fun file ->
                     supportedExtensions.Contains(
                         file.Extension.ToLower()))
-        let incrIdxOpt =
+
+            // find index of file we're browsing to, if possible
+        let browseIdxOpt =
             option {
                 let! curFile = state.FileOpt
                 let! curIdx =
                     files
                         |> Array.tryFindIndex (fun file ->
                             file.FullName = curFile.FullName)
-                let nextIdx = curIdx + incr
-                if nextIdx >= 0 && nextIdx < files.Length then
-                    return nextIdx
+                let browseIdx = curIdx + incr
+                if browseIdx >= 0 && browseIdx < files.Length then
+                    return browseIdx
             }
-        match incrIdxOpt with
-            | Some incrIdx ->
+
+            // update state accordingly
+        match browseIdxOpt with
+            | Some browseIdx ->
                 { state with
-                    FileOpt = Some files[incrIdx]
-                    HasPreviousImage = incrIdx > 0
-                    HasNextImage = incrIdx < files.Length - 1 }
+                    FileOpt = Some files[browseIdx]
+                    HasPreviousImage = browseIdx > 0
+                    HasNextImage = browseIdx < files.Length - 1 }
             | None ->
                 { state with
                     FileOpt = None
                     HasPreviousImage = false
                     HasNextImage = false }
 
+    /// Browses to the given image file.
     let init (file : FileInfo) =
-        findImage 0 {
+        browseImage 0 {
             Directory = file.Directory
             FileOpt = Some file
             ImageOpt = None
@@ -102,11 +117,13 @@ module Image =
         },
         Cmd.ofMsg LoadImage
 
+    /// PNG encoder.
     let private pngEncoder =
         PngEncoder(
             CompressionLevel =
                 PngCompressionLevel.NoCompression)
 
+    /// Tries to load a bitmap from the given image file.
     let tryLoadBitmap path =
         async {
             try
@@ -124,14 +141,17 @@ module Image =
                         .GetTask()
                         |> Async.AwaitTask
                 return Some bitmap
+
             with exn ->
                 Trace.WriteLine($"{path}: {exn.Message}")
                 return None
         }
 
-    let update msg state =
-        match msg with
+    /// Updates the given state based on the given message.
+    let update message state =
+        match message with
 
+                // start browsing to an image
             | LoadImage ->
                 match state.FileOpt with
                     | Some file ->
@@ -143,20 +163,25 @@ module Image =
                         state, cmd
                     | None -> failwith "No file to load"
 
+                // finish browsing to an image
             | ImageLoaded bitmapOpt ->
                 { state with ImageOpt = bitmapOpt },
                 Cmd.none
 
+                // browse to previous image
             | PreviousImage  ->
-                findImage -1 state,
+                browseImage -1 state,
                 Cmd.ofMsg LoadImage
 
+                // browse to next image
             | NextImage  ->
-                findImage 1 state,
+                browseImage 1 state,
                 Cmd.ofMsg LoadImage
 
+    /// Button height and width.
     let private browseButtonSize = 50
 
+    /// Creates a browse button.
     let private createBrowseButton text callback =
         Button.create [
             Button.content (
@@ -181,6 +206,7 @@ module Image =
             Button.onClick callback
         ]
 
+    /// Creates a browse panel, with or without a button.
     let private createBrowsePanel dock text hasButton callback =
         DockPanel.create [
             DockPanel.width browseButtonSize
@@ -191,6 +217,7 @@ module Image =
             ]
         ]
 
+    /// Creates a view of the given state.
     let view state dispatch =
         DockPanel.create [
             DockPanel.children [
