@@ -15,17 +15,19 @@ open Avalonia.Themes.Fluent
 type MainWindow(args : _[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo",
-        Width = 600.0,
+        Width = 800.0,
         Height = 600.0)
 
     let onOpened _ =
         Settings.tryLoad ()
             |> Option.iter (fun settings ->
-            this.Position <- PixelPoint(settings.Left, settings.Top)
-            this.Width <- settings.Width
-            this.Height <- settings.Height
             if settings.Maximized then
-                this.WindowState <- WindowState.Maximized)
+                this.WindowState <- WindowState.Maximized
+                // other settings are garbage when window is maximized: https://github.com/AvaloniaUI/Avalonia/issues/5285
+            else
+                this.Position <- PixelPoint(settings.Left, settings.Top)
+                this.Width <- settings.Width
+                this.Height <- settings.Height)
 
     let onClosing _ =
         Settings.save {
