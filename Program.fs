@@ -6,6 +6,7 @@ open System.IO
 open Elmish
 
 open Avalonia
+open Avalonia.Controls
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
@@ -16,6 +17,25 @@ type MainWindow(args : _[]) as this =
         Title = "Reliant Photo",
         Width = 600.0,
         Height = 600.0)
+
+    let onOpened _ =
+        Settings.tryLoad ()
+            |> Option.iter (fun settings ->
+            this.Position <- PixelPoint(settings.Left, settings.Top)
+            this.Width <- settings.Width
+            this.Height <- settings.Height
+            if settings.Maximized then
+                this.WindowState <- WindowState.Maximized)
+
+    let onClosing _ =
+        Settings.save {
+            Left = this.Position.X
+            Top = this.Position.Y
+            Width = this.Width
+            Height = this.Height
+            Maximized = this.WindowState = WindowState.Maximized
+        }
+
     do
         let path =
             if args.Length > 0 then
@@ -26,6 +46,9 @@ type MainWindow(args : _[]) as this =
                         |> Environment.GetFolderPath
                         |> DirectoryInfo
                 dirInfo.GetFiles()[0]
+
+        this.Opened.Add(onOpened)
+        this.Closing.Add(onClosing)
 
         Elmish.Program.mkProgram
             Image.init
