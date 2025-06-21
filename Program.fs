@@ -13,21 +13,7 @@ open Avalonia.FuncUI.Hosts
 open Avalonia.Themes.Fluent
 
 type MainWindow(args : _[]) as this =
-    inherit HostWindow(
-        Title = "Reliant Photo",
-        Width = 800.0,
-        Height = 600.0)
-
-    let onOpened _ =
-        Settings.tryLoad ()
-            |> Option.iter (fun settings ->
-            if settings.Maximized then
-                this.WindowState <- WindowState.Maximized
-                // other settings are garbage when window is maximized: https://github.com/AvaloniaUI/Avalonia/issues/5285
-            else
-                this.Position <- PixelPoint(settings.Left, settings.Top)
-                this.Width <- settings.Width
-                this.Height <- settings.Height)
+    inherit HostWindow(Title = "Reliant Photo")
 
     let onClosing _ =
         Settings.save {
@@ -39,6 +25,16 @@ type MainWindow(args : _[]) as this =
         }
 
     do
+        Settings.tryLoad ()
+            |> Option.iter (fun settings ->
+            if settings.Maximized then
+                this.WindowState <- WindowState.Maximized
+                // other settings are garbage when window is maximized: https://github.com/AvaloniaUI/Avalonia/issues/5285
+            else
+                this.Position <- PixelPoint(settings.Left, settings.Top)
+                this.Width <- settings.Width
+                this.Height <- settings.Height)
+
         let path =
             if args.Length > 0 then
                 FileInfo(args[0])
@@ -49,7 +45,6 @@ type MainWindow(args : _[]) as this =
                         |> DirectoryInfo
                 dirInfo.GetFiles()[0]
 
-        this.Opened.Add(onOpened)
         this.Closing.Add(onClosing)
 
         Elmish.Program.mkProgram
