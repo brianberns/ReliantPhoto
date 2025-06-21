@@ -7,6 +7,7 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
+open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Media.Imaging
@@ -217,8 +218,7 @@ module Image =
             ]
         ]
 
-    /// Creates a view of the given state.
-    let view state dispatch =
+    let private createImagePanel state dispatch =
         DockPanel.create [
             DockPanel.children [
 
@@ -240,4 +240,25 @@ module Image =
                     | None ->
                         TextBlock.create []
             ]
+        ]
+
+    /// Creates a view of the given state.
+    let view state dispatch =
+        Border.create [
+            Border.focusable true
+            Border.background "Transparent"
+            Border.onKeyDown (fun e ->
+                match e.Key with
+                    | Key.Left -> dispatch PreviousImage
+                    | Key.Right -> dispatch NextImage
+                    | _ -> ()
+                e.Handled <- true)
+            Border.onLoaded (fun e ->
+                // Auto-focus the border
+                let border = e.Source :?> Border
+                border.Focus() |> ignore
+            )
+            Border.child (
+                createImagePanel state dispatch
+            )
         ]
