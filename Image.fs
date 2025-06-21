@@ -7,6 +7,7 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
+open Avalonia.FuncUI.Types
 open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
@@ -218,6 +219,7 @@ module Image =
             ]
         ]
 
+    /// Creates a panel that can display images.
     let private createImagePanel state dispatch =
         DockPanel.create [
             DockPanel.children [
@@ -242,23 +244,29 @@ module Image =
             ]
         ]
 
-    /// Creates a view of the given state.
-    let view state dispatch =
+    /// Creates an invisible border that handles keyboard
+    /// shortcuts.
+    let private createInvisibleBorder state dispatch child =
         Border.create [
+
             Border.focusable true
             Border.background "Transparent"
+
             Border.onKeyDown (fun e ->
                 match e.Key with
                     | Key.Left -> dispatch PreviousImage
                     | Key.Right -> dispatch NextImage
                     | _ -> ()
                 e.Handled <- true)
+
             Border.onLoaded (fun e ->
-                // Auto-focus the border
-                let border = e.Source :?> Border
-                border.Focus() |> ignore
-            )
-            Border.child (
-                createImagePanel state dispatch
-            )
+                let border = e.Source :?> Border   // grab focus
+                border.Focus() |> ignore)
+
+            Border.child (child : IView)
         ]
+
+    /// Creates a view of the given state.
+    let view state dispatch =
+        createImagePanel state dispatch
+            |> createInvisibleBorder state dispatch
