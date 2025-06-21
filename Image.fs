@@ -7,6 +7,8 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
+open Avalonia.Layout
+open Avalonia.Media
 open Avalonia.Media.Imaging
 open Avalonia.Threading
 
@@ -153,23 +155,55 @@ module Image =
                 findImage 1 state,
                 Cmd.ofMsg LoadImage
 
+    let private browseButtonSize = 50
+
+    let private createBrowseButton text callback =
+        Button.create [
+            Button.content (
+                Viewbox.create [
+                    Viewbox.stretch Stretch.Uniform
+                    Viewbox.stretchDirection StretchDirection.Both
+                    Viewbox.child (
+                        TextBlock.create [
+                            TextBlock.text text
+                            TextBlock.horizontalAlignment HorizontalAlignment.Center
+                            TextBlock.verticalAlignment VerticalAlignment.Center
+                            TextBlock.textWrapping TextWrapping.NoWrap
+                        ]
+                    )
+                ]
+            )
+            Button.height browseButtonSize
+            Button.horizontalAlignment HorizontalAlignment.Stretch
+            Button.verticalAlignment VerticalAlignment.Stretch
+            Button.horizontalContentAlignment HorizontalAlignment.Center
+            Button.verticalContentAlignment VerticalAlignment.Center
+            Button.onClick callback
+        ]
+
+    let private createBrowsePanel dock text hasButton callback =
+        DockPanel.create [
+            DockPanel.width browseButtonSize
+            DockPanel.dock dock
+            DockPanel.children [
+                if hasButton then
+                    createBrowseButton text callback
+            ]
+        ]
+
     let view state dispatch =
         DockPanel.create [
             DockPanel.children [
 
-                if state.HasPreviousImage then
-                    Button.create [
-                        Button.content "◀"
-                        Button.dock Dock.Left
-                        Button.onClick (fun _ -> dispatch PreviousImage)
-                    ]
+                createBrowsePanel
+                    Dock.Left "◀"
+                    state.HasPreviousImage
+                    (fun _ -> dispatch PreviousImage)
 
-                if state.HasNextImage then
-                    Button.create [
-                        Button.content "▶"
-                        Button.dock Dock.Right
-                        Button.onClick (fun _ -> dispatch NextImage)
-                    ]
+                createBrowsePanel
+                    Dock.Right "▶"
+                    state.HasNextImage
+                    (fun _ -> dispatch NextImage)
 
                 match state.ImageOpt with
                     | Some image ->
