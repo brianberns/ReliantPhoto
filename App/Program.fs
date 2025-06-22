@@ -2,14 +2,15 @@
 
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
+open Avalonia.Styling
 open Avalonia.Themes.Fluent
 
 type App() =
-    inherit Application()
+    inherit Application(
+        RequestedThemeVariant = ThemeVariant.Dark)
 
     override this.Initialize() =
         this.Styles.Add(FluentTheme())
-        this.RequestedThemeVariant <- Styling.ThemeVariant.Dark
 
     override this.OnFrameworkInitializationCompleted() =
         match this.ApplicationLifetime with
