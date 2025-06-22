@@ -44,9 +44,9 @@ module Window =
 
     let run window path =
         Elmish.Program.mkProgram
-            Image.init
-            Image.update
-            Image.view
+            Message.init
+            Message.update
+            View.view
             |> Program.withHost window
             |> Program.runWith path
 

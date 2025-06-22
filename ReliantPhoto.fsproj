@@ -7,11 +7,13 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
-    <Compile Include="KeyBinding.fs" />
-    <Compile Include="Image.fs" />
-    <Compile Include="Settings.fs" />
-    <Compile Include="MainWindow.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Model\State.fs" />
+    <Compile Include="Update\Message.fs" />
+    <Compile Include="View\KeyBinding.fs" />
+    <Compile Include="View\View.fs" />
+    <Compile Include="App\Settings.fs" />
+    <Compile Include="App\MainWindow.fs" />
+    <Compile Include="App\Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

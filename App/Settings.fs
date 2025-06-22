@@ -5,9 +5,6 @@ open System.Diagnostics
 open System.IO
 open System.Text.Json
 
-open Avalonia
-open Avalonia.Controls
-
 type Settings =
     {
         Left : int
