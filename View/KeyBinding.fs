@@ -18,7 +18,7 @@ module KeyBinding =
         {
             new ICommand with
                 member _.CanExecute(_) = true
-                member _.Execute(parameter) = action(parameter)
+                member _.Execute(parameter) = action parameter
                 [<CLIEvent>]
                 member _.CanExecuteChanged =
                     Event<EventHandler, EventArgs>().Publish
