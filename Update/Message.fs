@@ -22,8 +22,12 @@ module Message =
 
     /// Browses to the given file.
     let init file =
-        State.init file,
-        Cmd.ofMsg LoadImage
+        let state = State.init file
+        let cmd =
+            if state.FileOpt.IsSome then
+                Cmd.ofMsg LoadImage
+            else Cmd.none
+        state, cmd
 
     /// Updates the given state based on the given message.
     let update setTitle message state =
