@@ -42,10 +42,13 @@ module Window =
                     |> DirectoryInfo
             dirInfo.GetFiles()[0]
 
-    let setTitle (window : HostWindow) state =
-        state.FileOpt
-            |> Option.iter (fun file ->
-                window.Title <- file.Name)
+    let defaultTitle = "Reliant Photo"
+
+    let setTitle (window : Window) state =
+        window.Title <-
+            state.FileOpt
+                |> Option.map _.Name
+                |> Option.defaultValue defaultTitle
 
     let run window path =
         Elmish.Program.mkProgram
@@ -56,7 +59,7 @@ module Window =
             |> Program.runWith path
 
 type MainWindow(args : _[]) as this =
-    inherit HostWindow(Title = "Reliant Photo")
+    inherit HostWindow(Title = Window.defaultTitle)
     do
         Window.loadSettings this
         this.Closing.Add(fun _ ->
