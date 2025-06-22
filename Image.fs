@@ -247,7 +247,7 @@ module Image =
         ]
 
     /// Creates an invisible border that handles key bindings.
-    let private createInvisibleBorder state dispatch child =
+    let private createKeyBindingBorder state dispatch child =
         Border.create [
 
             Border.focusable true
@@ -276,4 +276,4 @@ module Image =
     /// Creates a view of the given state.
     let view state dispatch =
         createImagePanel state dispatch
-            |> createInvisibleBorder state dispatch
+            |> createKeyBindingBorder state dispatch
