@@ -42,10 +42,15 @@ module Window =
                     |> DirectoryInfo
             dirInfo.GetFiles()[0]
 
+    let setTitle (window : HostWindow) state =
+        state.FileOpt
+            |> Option.iter (fun file ->
+                window.Title <- file.Name)
+
     let run window path =
         Elmish.Program.mkProgram
             Message.init
-            Message.update
+            (Message.update (setTitle window))
             View.view
             |> Program.withHost window
             |> Program.runWith path

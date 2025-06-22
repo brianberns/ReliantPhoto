@@ -26,7 +26,7 @@ module Message =
         Cmd.ofMsg LoadImage
 
     /// Updates the given state based on the given message.
-    let update message state =
+    let update setTitle message state =
         match message with
 
                 // start browsing to an image
@@ -43,6 +43,7 @@ module Message =
 
                 // finish browsing to an image
             | ImageLoaded bitmapOpt ->
+                setTitle state   // side-effect
                 { state with ImageOpt = bitmapOpt },
                 Cmd.none
 
