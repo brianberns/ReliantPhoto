@@ -254,14 +254,16 @@ module Image =
             Border.background "Transparent"
 
             Border.keyBindings [
-                KeyBinding.create [
-                    KeyBinding.key Key.Left
-                    KeyBinding.execute (fun _ -> dispatch PreviousImage)
-                ]
-                KeyBinding.create [
-                    KeyBinding.key Key.Right
-                    KeyBinding.execute (fun _ -> dispatch NextImage)
-                ]
+                if state.HasPreviousImage then
+                    KeyBinding.create [
+                        KeyBinding.key Key.Left
+                        KeyBinding.execute (fun _ -> dispatch PreviousImage)
+                    ]
+                if state.HasNextImage then
+                    KeyBinding.create [
+                        KeyBinding.key Key.Right
+                        KeyBinding.execute (fun _ -> dispatch NextImage)
+                    ]
             ]
 
             Border.onLoaded (fun e ->
