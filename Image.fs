@@ -1,9 +1,7 @@
 ﻿namespace Reliant.Photo
 
-open System
 open System.Diagnostics
 open System.IO
-open System.Windows.Input
 
 open Elmish
 
