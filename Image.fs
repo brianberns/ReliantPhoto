@@ -246,16 +246,6 @@ module Image =
             ]
         ]
 
-    let private command execute =
-        {
-            new ICommand with
-                member _.CanExecute(_) = true
-                member _.Execute(parameter) = execute(parameter)
-                [<CLIEvent>]
-                member _.CanExecuteChanged =
-                    Event<EventHandler, EventArgs>().Publish
-        }
-
     /// Creates an invisible border that handles key bindings.
     let private createInvisibleBorder state dispatch child =
         Border.create [
@@ -265,12 +255,12 @@ module Image =
 
             Border.keyBindings [
                 KeyBinding.create [
-                    KeyBinding.gesture (KeyGesture(Key.Left))
-                    KeyBinding.command (command (fun _ -> dispatch PreviousImage))
+                    KeyBinding.key Key.Left
+                    KeyBinding.execute (fun _ -> dispatch PreviousImage)
                 ]
                 KeyBinding.create [
-                    KeyBinding.gesture (KeyGesture(Key.Right))
-                    KeyBinding.command (command (fun _ -> dispatch NextImage))
+                    KeyBinding.key Key.Right
+                    KeyBinding.execute (fun _ -> dispatch NextImage)
                 ]
             ]
 
