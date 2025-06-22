@@ -46,8 +46,8 @@ module State =
             ".webp"
         ]
 
-    /// Browses from the current image to another image within
-    /// the current directory.
+    /// Browses to an image in the current directory, if
+    /// possible.
     let browseImage incr state =
 
             // get all candidate files for browsing
