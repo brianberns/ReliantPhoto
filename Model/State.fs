@@ -1,5 +1,7 @@
 ﻿namespace Reliant.Photo
 
+open System
+open System.Collections.Generic
 open System.IO
 
 open Avalonia.Media.Imaging
@@ -27,6 +29,13 @@ type State =
 
 module State =
 
+    /// Compare files by name.
+    let private fileComparer (fileA : FileInfo) (fileB : FileInfo) =
+        String.Compare(
+            fileA.FullName,
+            fileB.FullName,
+            StringComparison.CurrentCultureIgnoreCase)
+
     /// Browses to an image in the current directory, if
     /// possible.
     let browseImage incr state =
@@ -37,7 +46,7 @@ module State =
                 |> Seq.where (fun file ->
                     file.Attributes.HasFlag(FileAttributes.Hidden)
                         |> not)
-                |> Seq.sortBy _.Name
+                |> Seq.sortWith fileComparer
                 |> Seq.toArray
 
             // find index of file we're browsing to, if possible
