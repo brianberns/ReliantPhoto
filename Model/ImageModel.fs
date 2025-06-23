@@ -9,8 +9,8 @@ open Avalonia.Media.Imaging
 open SixLabors.ImageSharp
 open SixLabors.ImageSharp.Formats.Png
 
-/// Model state.
-type State =
+/// Image model.
+type ImageModel =
     {
         /// Current or upcoming image file. This is set before
         /// the image itself is loaded.
@@ -18,7 +18,7 @@ type State =
 
         /// Current loaded image, if any. This will be the old
         /// image when starting to browse to a new one.
-        ImageResult : Result<Bitmap, string>
+        Result : Result<Bitmap, string>
 
         /// User can browse to previous image?
         HasPreviousImage : bool
@@ -27,7 +27,7 @@ type State =
         HasNextImage : bool
     }
 
-module State =
+module ImageModel =
 
     /// Compares files by name.
     let private compareFiles (fileA : FileInfo) (fileB : FileInfo) =
@@ -43,11 +43,11 @@ module State =
 
     /// Browses to an image in the current directory, if
     /// possible.
-    let browseImage incr state =
+    let browseImage incr model =
 
             // get all candidate files for browsing
         let files =
-            state.File.Directory.GetFiles()
+            model.File.Directory.GetFiles()
                 |> Seq.where (fun file ->
                     file.Attributes.HasFlag(FileAttributes.Hidden)
                         |> not)
@@ -60,7 +60,7 @@ module State =
                 let! fromIdx =
                     let idx =
                         Array.BinarySearch(
-                            files, state.File, fileComparer)
+                            files, model.File, fileComparer)
                     if idx >= 0 then Some idx
                     else None
                 let toIdx = fromIdx + incr
@@ -68,20 +68,20 @@ module State =
                     return toIdx
             }
 
-            // update state accordingly
+            // update model accordingly
         match toIdxOpt with
             | Some toIdx ->
-                { state with
+                { model with
                     File = files[toIdx]
                     HasPreviousImage = toIdx > 0
                     HasNextImage = toIdx < files.Length - 1 }
-            | None -> state
+            | None -> model
 
     /// Browses to the given file.
     let init (file : FileInfo) =
         browseImage 0 {
             File = file
-            ImageResult = Error ""
+            Result = Error ""
             HasPreviousImage = false
             HasNextImage = false
         }

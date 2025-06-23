@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
-    <Compile Include="Model\State.fs" />
+    <Compile Include="Model\ImageModel.fs" />
     <Compile Include="Update\Message.fs" />
     <Compile Include="View\KeyBinding.fs" />
     <Compile Include="View\View.fs" />

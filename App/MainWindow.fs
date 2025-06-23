@@ -40,8 +40,8 @@ module Window =
                     |> DirectoryInfo
             dirInfo.GetFiles()[0]
 
-    let setTitle (window : Window) state =
-        window.Title <- state.File.Name
+    let setTitle (window : Window) model =
+        window.Title <- model.File.Name
 
     let run window file =
         Elmish.Program.mkProgram

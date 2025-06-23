@@ -49,21 +49,21 @@ module View =
         ]
 
     /// Creates a panel that can display images.
-    let private createImagePanel state dispatch =
+    let private createImagePanel model dispatch =
         DockPanel.create [
             DockPanel.children [
 
                 createBrowsePanel
                     Dock.Left "◀"
-                    state.HasPreviousImage
+                    model.HasPreviousImage
                     (fun _ -> dispatch PreviousImage)
 
                 createBrowsePanel
                     Dock.Right "▶"
-                    state.HasNextImage
+                    model.HasNextImage
                     (fun _ -> dispatch NextImage)
 
-                match state.ImageResult with
+                match model.Result with
                     | Ok image ->
                         Image.create [
                             Image.source image
@@ -82,20 +82,20 @@ module View =
         ]
 
     /// Creates an invisible border that handles key bindings.
-    let private createKeyBindingBorder state dispatch child =
+    let private createKeyBindingBorder model dispatch child =
         Border.create [
 
             Border.focusable true
             Border.background "Transparent"
 
             Border.keyBindings [
-                if state.HasPreviousImage then
+                if model.HasPreviousImage then
                     KeyBinding.create [
                         KeyBinding.key Key.Left
                         KeyBinding.execute (fun _ ->
                             dispatch PreviousImage)
                     ]
-                if state.HasNextImage then
+                if model.HasNextImage then
                     KeyBinding.create [
                         KeyBinding.key Key.Right
                         KeyBinding.execute (fun _ ->
@@ -110,7 +110,7 @@ module View =
             Border.child (child : IView)
         ]
 
-    /// Creates a view of the given state.
-    let view state dispatch =
-        createImagePanel state dispatch
-            |> createKeyBindingBorder state dispatch
+    /// Creates a view of the given model.
+    let view model dispatch =
+        createImagePanel model dispatch
+            |> createKeyBindingBorder model dispatch

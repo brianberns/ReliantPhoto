@@ -3,7 +3,7 @@
 open Elmish
 open Avalonia.Media.Imaging
 
-/// Messages that can change the underlying state.
+/// Messages that can change the underlying model.
 type Message =
 
     /// Load the current image file, if possible.
@@ -22,34 +22,34 @@ module Message =
 
     /// Browses to the given file.
     let init file =
-        State.init file,
+        ImageModel.init file,
         Cmd.ofMsg LoadImage
 
-    /// Updates the given state based on the given message.
-    let update setTitle message state =
+    /// Updates the given model based on the given message.
+    let update setTitle message model =
         match message with
 
                 // start browsing to an image
             | LoadImage ->
                 let cmd =
                     Cmd.OfAsync.perform
-                        State.tryLoadBitmap
-                        state.File.FullName
+                        ImageModel.tryLoadBitmap
+                        model.File.FullName
                         ImageLoaded
-                state, cmd
+                model, cmd
 
                 // finish browsing to an image
             | ImageLoaded bitmapResult ->
-                setTitle state   // side-effect
-                { state with ImageResult = bitmapResult },
+                setTitle model   // side-effect
+                { model with Result = bitmapResult },
                 Cmd.none
 
                 // browse to previous image
             | PreviousImage  ->
-                State.browseImage -1 state,
+                ImageModel.browseImage -1 model,
                 Cmd.ofMsg LoadImage
 
                 // browse to next image
             | NextImage  ->
-                State.browseImage 1 state,
+                ImageModel.browseImage 1 model,
                 Cmd.ofMsg LoadImage
