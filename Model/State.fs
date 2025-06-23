@@ -31,9 +31,10 @@ module State =
 
     /// Compares files by name.
     let private compareFiles (fileA : FileInfo) (fileB : FileInfo) =
+        assert(fileA.DirectoryName = fileB.DirectoryName)
         String.Compare(
-            fileA.FullName,
-            fileB.FullName,
+            fileA.Name,
+            fileB.Name,
             StringComparison.CurrentCultureIgnoreCase)
 
     /// Compares files by name.
