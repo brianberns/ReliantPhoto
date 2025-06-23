@@ -27,20 +27,6 @@ type State =
 
 module State =
 
-    /// Supported image file extentions.
-    let supportedExtensions =
-        set [
-            ".bmp"
-            ".gif"
-            ".jpg"; ".jpeg"
-            ".pbm"
-            ".png"
-            ".tif"; ".tiff"
-            ".tga"
-            ".qoi"
-            ".webp"
-        ]
-
     /// Browses to an image in the current directory, if
     /// possible.
     let browseImage incr state =
@@ -49,8 +35,8 @@ module State =
         let files =
             state.File.Directory.GetFiles()
                 |> Array.where (fun file ->
-                    supportedExtensions.Contains(
-                        file.Extension.ToLower()))
+                    file.Attributes.HasFlag(FileAttributes.Hidden)
+                        |> not)
 
             // find index of file we're browsing to, if possible
         let toIdxOpt =
