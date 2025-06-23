@@ -32,7 +32,7 @@ module Window =
             Maximized = window.WindowState = WindowState.Maximized
         }
 
-    let getInitialPath (args : _[]) =
+    let getInitialFile (args : _[]) =
         if args.Length > 0 then
             FileInfo(args[0])
         else
@@ -45,13 +45,13 @@ module Window =
     let setTitle (window : Window) state =
         window.Title <- state.File.Name
 
-    let run window path =
+    let run window file =
         Elmish.Program.mkProgram
             Message.init
             (Message.update (setTitle window))
             View.view
             |> Program.withHost window
-            |> Program.runWith path
+            |> Program.runWith file
 
 type MainWindow(args : _[]) as this =
     inherit HostWindow(Title = "Reliant Photo")
@@ -59,5 +59,5 @@ type MainWindow(args : _[]) as this =
         Window.loadSettings this
         this.Closing.Add(fun _ ->
             Window.saveSettings this)
-        Window.getInitialPath args
+        Window.getInitialFile args
             |> Window.run this
