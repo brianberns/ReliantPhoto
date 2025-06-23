@@ -29,12 +29,16 @@ type State =
 
 module State =
 
-    /// Compare files by name.
-    let private fileComparer (fileA : FileInfo) (fileB : FileInfo) =
+    /// Compares files by name.
+    let private compareFiles (fileA : FileInfo) (fileB : FileInfo) =
         String.Compare(
             fileA.FullName,
             fileB.FullName,
             StringComparison.CurrentCultureIgnoreCase)
+
+    /// Compares files by name.
+    let private fileComparer =
+        Comparer.Create(compareFiles)
 
     /// Browses to an image in the current directory, if
     /// possible.
@@ -46,16 +50,17 @@ module State =
                 |> Seq.where (fun file ->
                     file.Attributes.HasFlag(FileAttributes.Hidden)
                         |> not)
-                |> Seq.sortWith fileComparer
+                |> Seq.sortWith compareFiles
                 |> Seq.toArray
 
             // find index of file we're browsing to, if possible
         let toIdxOpt =
             option {
                 let! fromIdx =
-                    files
-                        |> Array.tryFindIndex (fun file ->
-                            file.FullName = state.File.FullName)
+                    let idx =
+                        Array.BinarySearch(files, state.File, fileComparer)
+                    if idx >= 0 then Some idx
+                    else None
                 let toIdx = fromIdx + incr
                 if toIdx >= 0 && toIdx < files.Length then
                     return toIdx
