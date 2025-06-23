@@ -1,6 +1,5 @@
 ﻿namespace Reliant.Photo
 
-open System.Diagnostics
 open System.IO
 
 open Avalonia.Media.Imaging
