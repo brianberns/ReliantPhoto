@@ -57,25 +57,25 @@ module State =
                         file.Extension.ToLower()))
 
             // find index of file we're browsing to, if possible
-        let browseIdxOpt =
+        let toIdxOpt =
             option {
-                let! curFile = state.FileOpt
-                let! curIdx =
+                let! fromFile = state.FileOpt
+                let! fromIdx =
                     files
                         |> Array.tryFindIndex (fun file ->
-                            file.FullName = curFile.FullName)
-                let browseIdx = curIdx + incr
-                if browseIdx >= 0 && browseIdx < files.Length then
-                    return browseIdx
+                            file.FullName = fromFile.FullName)
+                let toIdx = fromIdx + incr
+                if toIdx >= 0 && toIdx < files.Length then
+                    return toIdx
             }
 
             // update state accordingly
-        match browseIdxOpt with
-            | Some browseIdx ->
+        match toIdxOpt with
+            | Some toIdx ->
                 { state with
-                    FileOpt = Some files[browseIdx]
-                    HasPreviousImage = browseIdx > 0
-                    HasNextImage = browseIdx < files.Length - 1 }
+                    FileOpt = Some files[toIdx]
+                    HasPreviousImage = toIdx > 0
+                    HasNextImage = toIdx < files.Length - 1 }
             | None ->
                 { state with
                     FileOpt = None
