@@ -22,12 +22,8 @@ module Message =
 
     /// Browses to the given file.
     let init file =
-        let state = State.init file
-        let cmd =
-            if state.FileOpt.IsSome then
-                Cmd.ofMsg LoadImage
-            else Cmd.none
-        state, cmd
+        State.init file,
+        Cmd.ofMsg LoadImage
 
     /// Updates the given state based on the given message.
     let update setTitle message state =
@@ -35,15 +31,12 @@ module Message =
 
                 // start browsing to an image
             | LoadImage ->
-                match state.FileOpt with
-                    | Some file ->
-                        let cmd =
-                            Cmd.OfAsync.perform
-                                State.tryLoadBitmap
-                                file.FullName
-                                ImageLoaded
-                        state, cmd
-                    | None -> failwith "No file to load"
+                let cmd =
+                    Cmd.OfFunc.perform
+                        State.tryLoadBitmap
+                        state.File.FullName
+                        ImageLoaded
+                state, cmd
 
                 // finish browsing to an image
             | ImageLoaded bitmapResult ->

@@ -3,7 +3,6 @@
 open System.IO
 
 open Avalonia.Media.Imaging
-open Avalonia.Threading
 
 open SixLabors.ImageSharp
 open SixLabors.ImageSharp.Formats.Png
@@ -11,12 +10,9 @@ open SixLabors.ImageSharp.Formats.Png
 /// Model state.
 type State =
     {
-        /// Directory containing images to browse.
-        Directory : DirectoryInfo
-
-        /// Current or upcoming image file, if any. This is set
-        /// before the image itself is loaded.
-        FileOpt : Option<FileInfo>
+        /// Current or upcoming image file. This is set before
+        /// the image itself is loaded.
+        File : FileInfo
 
         /// Current loaded image, if any. This will be the old
         /// image when starting to browse to a new one.
@@ -51,7 +47,7 @@ module State =
 
             // get all candidate files for browsing
         let files =
-            state.Directory.GetFiles()
+            state.File.Directory.GetFiles()
                 |> Array.where (fun file ->
                     supportedExtensions.Contains(
                         file.Extension.ToLower()))
@@ -59,11 +55,10 @@ module State =
             // find index of file we're browsing to, if possible
         let toIdxOpt =
             option {
-                let! fromFile = state.FileOpt
                 let! fromIdx =
                     files
                         |> Array.tryFindIndex (fun file ->
-                            file.FullName = fromFile.FullName)
+                            file.FullName = state.File.FullName)
                 let toIdx = fromIdx + incr
                 if toIdx >= 0 && toIdx < files.Length then
                     return toIdx
@@ -73,22 +68,16 @@ module State =
         match toIdxOpt with
             | Some toIdx ->
                 { state with
-                    FileOpt = Some files[toIdx]
+                    File = files[toIdx]
                     HasPreviousImage = toIdx > 0
                     HasNextImage = toIdx < files.Length - 1 }
-            | None ->
-                { state with
-                    FileOpt = None
-                    HasPreviousImage = false
-                    HasNextImage = false }
+            | None -> state
 
     /// Browses to the given file.
     let init (file : FileInfo) =
         browseImage 0 {
-            Directory = file.Directory
-            FileOpt = Some file
-            ImageResult =
-                Error $"Not an image file: {file.FullName}"  // in case browse fails
+            File = file
+            ImageResult = Error ""
             HasPreviousImage = false
             HasNextImage = false
         }
@@ -101,23 +90,16 @@ module State =
 
     /// Tries to load a bitmap from the given image file.
     let tryLoadBitmap path =
-        async {
-            try
-                    // load image to PNG format
-                use stream = new MemoryStream()
-                do
-                    use image = Image.Load(path : string)
-                    image.SaveAsPng(stream, pngEncoder)
-                    stream.Position <- 0
+        try
+                // load image to PNG format
+            use stream = new MemoryStream()
+            do
+                use image = Image.Load(path : string)
+                image.SaveAsPng(stream, pngEncoder)
+                stream.Position <- 0
 
-                    // create bitmap on UI thread
-                let! bitmap =
-                    Dispatcher.UIThread.InvokeAsync(fun () ->
-                        new Bitmap(stream))
-                        .GetTask()
-                        |> Async.AwaitTask
-                return Ok bitmap
+                // create Avalonia bitmap
+            Ok (new Bitmap(stream))
 
-            with exn ->
-                return Error $"{exn.Message}: {path}"
-        }
+        with exn ->
+            Error exn.Message
