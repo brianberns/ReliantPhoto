@@ -32,7 +32,7 @@ module Message =
                 // start browsing to an image
             | LoadImage ->
                 let cmd =
-                    Cmd.OfFunc.perform
+                    Cmd.OfAsync.perform
                         State.tryLoadBitmap
                         state.File.FullName
                         ImageLoaded

@@ -78,16 +78,18 @@ module State =
 
     /// Tries to load a bitmap from the given image file.
     let tryLoadBitmap path =
-        try
-                // load image to PNG format
-            use stream = new MemoryStream()
-            do
-                use image = Image.Load(path : string)
-                image.SaveAsPng(stream, pngEncoder)
-                stream.Position <- 0
+        async {
+            try
+                    // load image to PNG format
+                use stream = new MemoryStream()
+                do
+                    use image = Image.Load(path : string)
+                    image.SaveAsPng(stream, pngEncoder)
+                    stream.Position <- 0
 
-                // create Avalonia bitmap
-            Ok (new Bitmap(stream))
+                    // create Avalonia bitmap
+                return Ok (new Bitmap(stream))
 
-        with exn ->
-            Error exn.Message
+            with exn ->
+                return Error exn.Message
+        }

@@ -51,7 +51,7 @@ module Window =
             (Message.update (setTitle window))
             View.view
             |> Program.withHost window
-            |> Program.runWith file
+            |> Program.runWithAvaloniaSyncDispatch file
 
 type MainWindow(args : _[]) as this =
     inherit HostWindow(Title = "Reliant Photo")
