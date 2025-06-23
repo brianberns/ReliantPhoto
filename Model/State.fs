@@ -34,9 +34,11 @@ module State =
             // get all candidate files for browsing
         let files =
             state.File.Directory.GetFiles()
-                |> Array.where (fun file ->
+                |> Seq.where (fun file ->
                     file.Attributes.HasFlag(FileAttributes.Hidden)
                         |> not)
+                |> Seq.sortBy _.Name
+                |> Seq.toArray
 
             // find index of file we're browsing to, if possible
         let toIdxOpt =
