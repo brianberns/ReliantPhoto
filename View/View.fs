@@ -63,13 +63,21 @@ module View =
                     state.HasNextImage
                     (fun _ -> dispatch NextImage)
 
-                match state.ImageOpt with
-                    | Some image ->
+                match state.ImageResult with
+                    | Ok image ->
                         Image.create [
                             Image.source image
                         ]
-                    | None ->
-                        TextBlock.create []
+                    | Error str ->
+                        TextBlock.create [
+                            TextBlock.text str
+                            TextBlock.horizontalAlignment
+                                HorizontalAlignment.Center
+                            TextBlock.verticalAlignment
+                                VerticalAlignment.Center
+                            TextBlock.textAlignment
+                                TextAlignment.Center
+                        ]
             ]
         ]
 

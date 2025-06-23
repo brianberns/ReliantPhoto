@@ -10,7 +10,7 @@ type Message =
     | LoadImage
 
     /// The current image file was (maybe) loaded.
-    | ImageLoaded of Option<Bitmap>
+    | ImageLoaded of Result<Bitmap, string>
 
     /// Browse to previous image in directory, if possible.
     | PreviousImage
@@ -46,9 +46,9 @@ module Message =
                     | None -> failwith "No file to load"
 
                 // finish browsing to an image
-            | ImageLoaded bitmapOpt ->
+            | ImageLoaded bitmapResult ->
                 setTitle state   // side-effect
-                { state with ImageOpt = bitmapOpt },
+                { state with ImageResult = bitmapResult },
                 Cmd.none
 
                 // browse to previous image

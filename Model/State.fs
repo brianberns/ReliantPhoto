@@ -21,7 +21,7 @@ type State =
 
         /// Current loaded image, if any. This will be the old
         /// image when starting to browse to a new one.
-        ImageOpt : Option<Bitmap>
+        ImageResult : Result<Bitmap, string>
 
         /// User can browse to previous image?
         HasPreviousImage : bool
@@ -88,7 +88,8 @@ module State =
         browseImage 0 {
             Directory = file.Directory
             FileOpt = Some file
-            ImageOpt = None
+            ImageResult =
+                Error $"Not an image file: {file.FullName}"  // in case browse fails
             HasPreviousImage = false
             HasNextImage = false
         }
@@ -116,9 +117,8 @@ module State =
                         new Bitmap(stream))
                         .GetTask()
                         |> Async.AwaitTask
-                return Some bitmap
+                return Ok bitmap
 
             with exn ->
-                Trace.WriteLine($"{path}: {exn.Message}")
-                return None
+                return Error $"{exn.Message}: {path}"
         }
