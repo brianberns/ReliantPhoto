@@ -7,7 +7,11 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
+    <Compile Include="Model\DirectoryModel.fs" />
     <Compile Include="Model\ImageModel.fs" />
+    <Compile Include="Model\Model.fs" />
+    <Compile Include="Update\DirectoryMessage.fs" />
+    <Compile Include="Update\ImageMessage.fs" />
     <Compile Include="Update\Message.fs" />
     <Compile Include="View\KeyBinding.fs" />
     <Compile Include="View\View.fs" />

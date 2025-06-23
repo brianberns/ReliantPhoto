@@ -78,7 +78,7 @@ module ImageModel =
             | None -> model
 
     /// Browses to the given file.
-    let init (file : FileInfo) =
+    let init file =
         browseImage 0 {
             File = file
             Result = Error ""
