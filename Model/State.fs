@@ -59,7 +59,8 @@ module State =
             option {
                 let! fromIdx =
                     let idx =
-                        Array.BinarySearch(files, state.File, fileComparer)
+                        Array.BinarySearch(
+                            files, state.File, fileComparer)
                     if idx >= 0 then Some idx
                     else None
                 let toIdx = fromIdx + incr
