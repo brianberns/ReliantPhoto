@@ -14,6 +14,8 @@
     <Compile Include="Update\ImageMessage.fs" />
     <Compile Include="Update\Message.fs" />
     <Compile Include="View\KeyBinding.fs" />
+    <Compile Include="View\DirectoryView.fs" />
+    <Compile Include="View\ImageView.fs" />
     <Compile Include="View\View.fs" />
     <Compile Include="App\Settings.fs" />
     <Compile Include="App\MainWindow.fs" />
