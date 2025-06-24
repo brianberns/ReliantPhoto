@@ -35,11 +35,11 @@ module Window =
             Environment.SpecialFolder.MyPictures
                 |> Environment.GetFolderPath
                 |> DirectoryInfo
-                |> Choice1Of2
+                :> FileSystemInfo
         else
             args[0]
                 |> FileInfo
-                |> Choice2Of2
+                :> _
 
     let setTitle (window : Window) model =
         window.Title <- model.File.Name

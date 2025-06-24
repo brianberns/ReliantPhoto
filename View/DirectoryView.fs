@@ -13,7 +13,7 @@ module DirectoryView =
             DockPanel.children [
                 for file in model.Directory.GetFiles() do
                     let result =
-                        ImageModel.tryLoadBitmap file.FullName
+                        ImageModel.tryLoadImage file.FullName
                             |> Async.RunSynchronously
                     match result with
                         | Ok image ->

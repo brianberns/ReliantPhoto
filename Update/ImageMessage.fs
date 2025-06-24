@@ -33,15 +33,15 @@ module ImageMessage =
             | LoadImage ->
                 let cmd =
                     Cmd.OfAsync.perform
-                        ImageModel.tryLoadBitmap
+                        ImageModel.tryLoadImage
                         model.File.FullName
                         ImageLoaded
                 model, cmd
 
                 // finish browsing to an image
-            | ImageLoaded bitmapResult ->
+            | ImageLoaded result ->
                 setTitle model   // side-effect
-                { model with Result = bitmapResult },
+                { model with Result = result },
                 Cmd.none
 
                 // browse to previous image

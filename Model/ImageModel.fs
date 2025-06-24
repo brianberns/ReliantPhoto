@@ -92,8 +92,8 @@ module ImageModel =
             CompressionLevel =
                 PngCompressionLevel.NoCompression)
 
-    /// Tries to load a bitmap from the given image file.
-    let tryLoadBitmap path =
+    /// Tries to load an image from the given file.
+    let tryLoadImage path =
         async {
             try
                     // load image to PNG format

@@ -10,6 +10,7 @@ type DirectoryModel =
 
 module DirectoryModel =
 
+    /// Initializes model for the given directory.
     let init dir =
         {
             Directory = dir
