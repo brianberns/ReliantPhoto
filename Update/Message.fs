@@ -1,11 +1,13 @@
 ﻿namespace Reliant.Photo
 
+open System.IO
 open Elmish
 
 /// Messages that can change the model.
 type Message =
     | MkDirectoryMessage of DirectoryMessage
     | MkImageMessage of ImageMessage
+    | SwitchToImage of FileInfo
 
 module Message =
 
@@ -33,4 +35,7 @@ module Message =
                     ImageMessage.update setTitle imgMsg imgModel
                 MkImageModel imgModel,
                 Cmd.map MkImageMessage imgCmd
-            | _ -> failwith "Invalid message"
+            | SwitchToImage file, _ ->
+                MkImageModel (ImageModel.init file),
+                Cmd.ofMsg (MkImageMessage LoadImage)
+            | _ -> failwith $"Invalid message {message} for model {model}"

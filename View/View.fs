@@ -8,9 +8,7 @@ module View =
     let view model dispatch =
         match model with
             | MkDirectoryModel dirModel ->
-                DirectoryView.view
-                    dirModel
-                    (MkDirectoryMessage >> dispatch)
+                DirectoryView.view dirModel dispatch
                     :> IView
             | MkImageModel imgModel ->
                 ImageView.view

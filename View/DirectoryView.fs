@@ -9,12 +9,21 @@ module DirectoryView =
 
     /// Creates a view of the given model.
     let view model dispatch =
-        TextBlock.create [
-            TextBlock.text model.Directory.FullName
-            TextBlock.horizontalAlignment
-                HorizontalAlignment.Center
-            TextBlock.verticalAlignment
-                VerticalAlignment.Center
-            TextBlock.textAlignment
-                TextAlignment.Center
+        DockPanel.create [
+            DockPanel.children [
+                for file in model.Directory.GetFiles() do
+                    let result =
+                        ImageModel.tryLoadBitmap file.FullName
+                            |> Async.RunSynchronously
+                    match result with
+                        | Ok image ->
+                            Image.create [
+                                Image.source image
+                                Image.width 100.0
+                                Image.margin 10.0
+                                Image.onDoubleTapped (fun _ ->
+                                    dispatch (SwitchToImage file))
+                            ]
+                        | _ -> ()
+            ]
         ]
