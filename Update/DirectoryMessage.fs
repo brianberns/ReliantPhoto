@@ -24,6 +24,8 @@ module DirectoryMessage =
         match message with
 
             | LoadDirectory ->
+                let model =
+                    { model with IsLoading = true }
                 let cmd =
                     Cmd.OfAsync.perform
                         DirectoryModel.tryLoadDirectory
@@ -32,5 +34,7 @@ module DirectoryMessage =
                 model, cmd
 
             | DirectoryLoaded results ->
-                { model with ImageResults = results },
+                { model with
+                    IsLoading = false
+                    ImageResults = results },
                 Cmd.none

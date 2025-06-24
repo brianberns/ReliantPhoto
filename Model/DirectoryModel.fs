@@ -6,6 +6,7 @@ open System.IO
 type DirectoryModel =
     {
         Directory : DirectoryInfo
+        IsLoading : bool
         ImageResults : (FileInfo * ImageResult)[]
     }
 
@@ -15,6 +16,7 @@ module DirectoryModel =
     let init dir =
         {
             Directory = dir
+            IsLoading = false
             ImageResults = Array.empty
         }
 
