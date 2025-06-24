@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System.IO
 open Elmish
 
 /// Messages that can change the directory model.
@@ -7,6 +8,9 @@ type DirectoryMessage =
 
     /// Load the current directory, if possible.
     | LoadDirectory
+
+    /// The current directory was loaded.
+    | DirectoryLoaded of (FileInfo * ImageResult)[]
 
 module DirectoryMessage =
 
@@ -18,5 +22,15 @@ module DirectoryMessage =
     /// Updates the given model based on the given message.
     let update message (model : DirectoryModel) =
         match message with
+
             | LoadDirectory ->
-                model, (Cmd.none : Cmd<DirectoryMessage>)
+                let cmd =
+                    Cmd.OfAsync.perform
+                        DirectoryModel.tryLoadDirectory
+                        model.Directory
+                        DirectoryLoaded
+                model, cmd
+
+            | DirectoryLoaded results ->
+                { model with ImageResults = results },
+                Cmd.none

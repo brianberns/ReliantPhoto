@@ -6,6 +6,7 @@ open System.IO
 type DirectoryModel =
     {
         Directory : DirectoryInfo
+        ImageResults : (FileInfo * ImageResult)[]
     }
 
 module DirectoryModel =
@@ -14,4 +15,16 @@ module DirectoryModel =
     let init dir =
         {
             Directory = dir
+            ImageResults = Array.empty
         }
+
+    let tryLoadDirectory (dir : DirectoryInfo) =
+        let files = dir.GetFiles()
+        files
+            |> Array.map (fun file ->
+                async {
+                    let! result =
+                        ImageFile.tryLoadImage file
+                    return file, result
+                })
+            |> Async.Parallel

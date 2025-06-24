@@ -2,8 +2,6 @@
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
-open Avalonia.Layout
-open Avalonia.Media
 
 module DirectoryView =
 
@@ -11,10 +9,7 @@ module DirectoryView =
     let view model dispatch =
         DockPanel.create [
             DockPanel.children [
-                for file in model.Directory.GetFiles() do
-                    let result =
-                        ImageModel.tryLoadImage file.FullName
-                            |> Async.RunSynchronously
+                for file, result in model.ImageResults do
                     match result with
                         | Ok image ->
                             Image.create [
@@ -24,6 +19,6 @@ module DirectoryView =
                                 Image.onDoubleTapped (fun _ ->
                                     dispatch (SwitchToImage file))
                             ]
-                        | _ -> ()
+                        | Error _ -> ()
             ]
         ]

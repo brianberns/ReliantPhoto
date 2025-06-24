@@ -10,7 +10,7 @@ type ImageMessage =
     | LoadImage
 
     /// The current image file was (maybe) loaded.
-    | ImageLoaded of Result<Bitmap, string>
+    | ImageLoaded of ImageResult
 
     /// Browse to previous image in directory, if possible.
     | PreviousImage
@@ -33,8 +33,8 @@ module ImageMessage =
             | LoadImage ->
                 let cmd =
                     Cmd.OfAsync.perform
-                        ImageModel.tryLoadImage
-                        model.File.FullName
+                        ImageFile.tryLoadImage
+                        model.File
                         ImageLoaded
                 model, cmd
 
