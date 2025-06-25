@@ -13,6 +13,7 @@ type Model =
 
 module Model =
 
+    /// Initializes model for the given entity.
     let init (entity : FileSystemInfo) =
         match entity with
             | :? DirectoryInfo as dir ->
