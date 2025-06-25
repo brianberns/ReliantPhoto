@@ -37,5 +37,5 @@ module DirectoryMessage =
                 setTitle model.Directory.FullName   // side-effect
                 { model with
                     IsLoading = false
-                    ImageResults = results },
+                    ImageLoadPairs = results },
                 Cmd.none

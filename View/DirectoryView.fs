@@ -24,7 +24,7 @@ module DirectoryView =
 
                 let images =
                     [
-                        for file, result in model.ImageResults do
+                        for file, result in model.ImageLoadPairs do
                             match result with
                                 | Ok image ->
                                     Image.create [

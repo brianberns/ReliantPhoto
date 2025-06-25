@@ -12,7 +12,7 @@ type DirectoryModel =
         IsLoading : bool
 
         /// Loaded image results.
-        ImageResults : (FileInfo * ImageResult)[]
+        ImageLoadPairs : (FileInfo * ImageResult)[]
     }
 
 module DirectoryModel =
@@ -22,12 +22,12 @@ module DirectoryModel =
         {
             Directory = dir
             IsLoading = false
-            ImageResults = Array.empty
+            ImageLoadPairs = Array.empty
         }
 
+    /// Tries to load the contents of the given directory.
     let tryLoadDirectory targetHeight (dir : DirectoryInfo) =
-        let files = dir.GetFiles()
-        files
+        dir.GetFiles()
             |> Array.map (fun file ->
                 async {
                     let! result =
