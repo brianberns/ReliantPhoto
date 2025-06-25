@@ -20,7 +20,7 @@ module DirectoryMessage =
         Cmd.ofMsg LoadDirectory
 
     /// Updates the given model based on the given message.
-    let update message (model : DirectoryModel) =
+    let update setTitle message (model : DirectoryModel) =
         match message with
 
             | LoadDirectory ->
@@ -34,6 +34,7 @@ module DirectoryMessage =
                 model, cmd
 
             | DirectoryLoaded results ->
+                setTitle model.Directory.FullName   // side-effect
                 { model with
                     IsLoading = false
                     ImageResults = results },

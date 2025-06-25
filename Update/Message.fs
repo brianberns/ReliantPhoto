@@ -29,7 +29,7 @@ module Message =
 
             | MkDirectoryMessage dirMsg, MkDirectoryModel dirModel ->
                 let dirModel, dirCmd =
-                    DirectoryMessage.update dirMsg dirModel
+                    DirectoryMessage.update setTitle dirMsg dirModel
                 MkDirectoryModel dirModel,
                 Cmd.map MkDirectoryMessage dirCmd
 

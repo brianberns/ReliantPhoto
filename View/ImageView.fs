@@ -67,7 +67,7 @@ module ImageView =
 
             if model.IsLoading then
                 DockPanel.cursor Cursor.wait
-                DockPanel.background "Transparent"
+                DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
             DockPanel.children [
 

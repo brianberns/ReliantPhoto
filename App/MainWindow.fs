@@ -41,8 +41,8 @@ module Window =
                 |> FileInfo
                 :> _
 
-    let setTitle (window : Window) model =
-        window.Title <- model.File.Name
+    let setTitle (window : Window) title =
+        window.Title <- title
 
     let run window arg =
         Elmish.Program.mkProgram

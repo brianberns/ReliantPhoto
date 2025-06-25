@@ -42,7 +42,7 @@ module ImageMessage =
 
                 // finish browsing to an image
             | ImageLoaded result ->
-                setTitle model   // side-effect
+                setTitle model.File.Name   // side-effect
                 { model with
                     IsLoading = false
                     Result = result },
