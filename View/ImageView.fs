@@ -14,6 +14,7 @@ module ImageView =
     /// Button height and width.
     let private buttonSize = 50
 
+    /// Creates a button.
     let private createButton text callback =
         Button.create [
             Button.content (
@@ -38,6 +39,7 @@ module ImageView =
             Button.onClick callback
         ]
 
+    /// Creates a toolbar.
     let private createToolbar dock (file : FileInfo) dispatch =
         StackPanel.create [
             StackPanel.dock dock

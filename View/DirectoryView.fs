@@ -40,7 +40,7 @@ module DirectoryView =
                             | Ok source ->
                                 createImage file source dispatch
                                     :> IView
-                            | Error _ -> ()
+                            | _ -> ()
                 ]
 
             DockPanel.children [
