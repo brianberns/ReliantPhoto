@@ -20,6 +20,28 @@ module Cursor =
 
 module DirectoryView =
 
+    let animateScale (scaleTransform : IWritable<ScaleTransform>) target =
+        let scale = scaleTransform.Current
+        let startX = scale.ScaleX
+        let startY = scale.ScaleY
+        let endX = if target then 1.08 else 1.0
+        let endY = if target then 1.08 else 1.0
+        let duration = 0.18
+        let steps = 18
+        let mutable step = 0
+        let timer =
+            DispatcherTimer(
+                Interval =
+                    TimeSpan.FromMilliseconds(
+                        duration * 1000.0 / float steps))
+        timer.Tick.Add(fun _ ->
+            let t = float step / float steps
+            scale.ScaleX <- startX + (endX - startX) * t
+            scale.ScaleY <- startY + (endY - startY) * t
+            step <- step + 1
+            if step > steps then timer.Stop())
+        timer.Start()
+
     /// Creates an image control with hover effect.
     let private createImage
         (file : FileInfo) (source : IImage) dispatch =
@@ -30,46 +52,21 @@ module DirectoryView =
                 // Persist the ScaleTransform instance
                 let scaleTransform = ctx.useState (ScaleTransform(1.0, 1.0))
                 // Animate scale on hover using DispatcherTimer
-                let animateScale target =
-                    let scale = scaleTransform.Current
-                    let startX = scale.ScaleX
-                    let startY = scale.ScaleY
-                    let endX = if target then 1.08 else 1.0
-                    let endY = if target then 1.08 else 1.0
-                    let duration = 0.18
-                    let steps = 18
-                    let mutable step = 0
-                    let timer =
-                        DispatcherTimer(
-                            Interval =
-                                TimeSpan.FromMilliseconds(
-                                    duration * 1000.0 / float steps))
-                    timer.Tick.Add(fun _ ->
-                        let t = float step / float steps
-                        scale.ScaleX <- startX + (endX - startX) * t
-                        scale.ScaleY <- startY + (endY - startY) * t
-                        step <- step + 1
-                        if step > steps then timer.Stop())
-                    timer.Start()
-                Border.create [
-                    Border.child (
-                        Image.create [
-                            Image.source source
-                            Image.height source.Size.Height   // why is this necessary?
-                            Image.stretch Stretch.Uniform
-                            Image.margin 8.0
-                            Image.onTapped (fun _ ->
-                                dispatch (SwitchToImage file))
-                            Image.renderTransformOrigin RelativePoint.Center
-                            Image.renderTransform scaleTransform.Current
-                        ]
-                    )
-                    Border.onPointerEntered (fun _ ->
+                Image.create [
+                    Image.source source
+                    Image.height source.Size.Height   // why is this necessary?
+                    Image.stretch Stretch.Uniform
+                    Image.margin 8.0
+                    Image.onTapped (fun _ ->
+                        dispatch (SwitchToImage file))
+                    Image.renderTransformOrigin RelativePoint.Center
+                    Image.renderTransform scaleTransform.Current
+                    Image.onPointerEntered (fun _ ->
                         isHovered.Set true
-                        animateScale true)
-                    Border.onPointerExited (fun _ ->
+                        animateScale scaleTransform true)
+                    Image.onPointerExited (fun _ ->
                         isHovered.Set false
-                        animateScale false)
+                        animateScale scaleTransform false)
                 ]
         )
 
