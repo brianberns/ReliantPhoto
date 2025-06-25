@@ -1,6 +1,9 @@
 ﻿namespace Reliant.Photo
 
+open System.IO
+
 open Avalonia.Controls
+open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Input
@@ -16,25 +19,28 @@ module DirectoryView =
 
     /// Creates an image control with hover effect.
     let private createImage
-        file (source : IImage) isHovered dispatch =
-        Border.create [
-            if isHovered then
-                Border.background "DarkGray"
-                Border.cornerRadius 4.0
-            Border.child (
-                Image.create [
-                    Image.source source
-                    Image.height source.Size.Height   // why is this necessary?
-                    Image.stretch Stretch.Uniform
-                    Image.margin 8.0
-                    Image.onPointerEntered (fun _ ->
-                        dispatch (MkDirectoryMessage (ImageHoverEnter file)))
-                    Image.onPointerExited (fun _ ->
-                        dispatch (MkDirectoryMessage ImageHoverLeave))
-                    Image.onTapped (fun _ ->
-                        dispatch (SwitchToImage file))
-                ])
-        ]
+        (file : FileInfo) (source : IImage) dispatch =
+        Component.create (
+            file.FullName,
+            fun ctx ->
+                let isHovered = ctx.useState false
+                Border.create [
+                    Border.background (
+                        if isHovered.Current then "DarkGray"
+                        else "Transparent")
+                    Border.child (
+                        Image.create [
+                            Image.source source
+                            Image.height source.Size.Height   // why is this necessary?
+                            Image.stretch Stretch.Uniform
+                            Image.margin 8.0
+                            Image.onTapped (fun _ ->
+                                dispatch (SwitchToImage file))
+                        ])
+                    Border.onPointerEntered (fun _ -> isHovered.Set true)
+                    Border.onPointerExited (fun _ -> isHovered.Set false)
+                ]
+        )
 
     /// Creates a view of the given model.
     let view (model : DirectoryModel) dispatch =
@@ -49,10 +55,7 @@ module DirectoryView =
                     for file, result in model.ImageLoadPairs do
                         match result with
                             | Ok source ->
-                                let isHovered =
-                                    model.HoverFileOpt = Some file
-                                createImage
-                                    file source isHovered dispatch
+                                createImage file source dispatch
                                     :> IView
                             | _ -> ()
                 ]

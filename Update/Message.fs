@@ -51,8 +51,4 @@ module Message =
                 MkDirectoryModel (DirectoryModel.init dir),
                 Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
 
-                // ignore artificial hover end when switching to image model
-            | MkDirectoryMessage ImageHoverLeave, MkImageModel _ ->
-                model, Cmd.none
-
             | _ -> failwith $"Invalid message {message} for model {model}"
