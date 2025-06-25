@@ -14,15 +14,26 @@ module Cursor =
 
 module DirectoryView =
 
-    /// Creates an image control.
-    let private createImage file (source : IImage) dispatch =
-        Image.create [
-            Image.source source
-            Image.height source.Size.Height   // why is this necessary?
-            Image.stretch Stretch.Uniform
-            Image.margin 8.0
-            Image.onTapped (fun _ ->
-                dispatch (SwitchToImage file))
+    /// Creates an image control with hover effect.
+    let private createImage
+        file (source : IImage) isHovered dispatch =
+        Border.create [
+            if isHovered then
+                Border.background "DarkGray"
+                Border.cornerRadius 4.0
+            Border.child (
+                Image.create [
+                    Image.source source
+                    Image.height source.Size.Height   // why is this necessary?
+                    Image.stretch Stretch.Uniform
+                    Image.margin 8.0
+                    Image.onPointerEntered (fun _ ->
+                        dispatch (MkDirectoryMessage (ImageHoverEnter file)))
+                    Image.onPointerExited (fun _ ->
+                        dispatch (MkDirectoryMessage ImageHoverLeave))
+                    Image.onTapped (fun _ ->
+                        dispatch (SwitchToImage file))
+                ])
         ]
 
     /// Creates a view of the given model.
@@ -38,7 +49,10 @@ module DirectoryView =
                     for file, result in model.ImageLoadPairs do
                         match result with
                             | Ok source ->
-                                createImage file source dispatch
+                                let isHovered =
+                                    model.HoverFileOpt = Some file
+                                createImage
+                                    file source isHovered dispatch
                                     :> IView
                             | _ -> ()
                 ]

@@ -12,6 +12,12 @@ type DirectoryMessage =
     /// The current directory was loaded.
     | DirectoryLoaded of (FileInfo * ImageResult)[]
 
+    /// Start image hover.
+    | ImageHoverEnter of FileInfo
+
+    /// End image hover.
+    | ImageHoverLeave
+
 module DirectoryMessage =
 
     /// Browses to the given directory.
@@ -38,4 +44,12 @@ module DirectoryMessage =
                 { model with
                     IsLoading = false
                     ImageLoadPairs = results },
+                Cmd.none
+
+            | ImageHoverEnter file ->
+                { model with HoverFileOpt = Some file },
+                Cmd.none
+
+            | ImageHoverLeave ->
+                { model with HoverFileOpt = None },
                 Cmd.none

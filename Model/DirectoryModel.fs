@@ -13,6 +13,9 @@ type DirectoryModel =
 
         /// Loaded image results.
         ImageLoadPairs : (FileInfo * ImageResult)[]
+
+        /// Currently hovered image, if any.
+        HoverFileOpt : Option<FileInfo>
     }
 
 module DirectoryModel =
@@ -23,6 +26,7 @@ module DirectoryModel =
             Directory = dir
             IsLoading = false
             ImageLoadPairs = Array.empty
+            HoverFileOpt = None
         }
 
     /// Tries to load the contents of the given directory.
