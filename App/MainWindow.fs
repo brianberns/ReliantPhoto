@@ -53,7 +53,9 @@ module Window =
             |> Program.runWithAvaloniaSyncDispatch arg
 
 type MainWindow(args : _[]) as this =
-    inherit HostWindow(Title = "Reliant Photo")
+    inherit HostWindow(
+        Title = "Reliant Photo",
+        Icon = WindowIcon("icon.png"))
     do
         Window.loadSettings this
         this.Closing.Add(fun _ ->

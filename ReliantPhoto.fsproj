@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Prelude.fs" />
     <Compile Include="Model\ImageFile.fs" />
     <Compile Include="Model\DirectoryModel.fs" />
@@ -22,6 +25,8 @@
     <Compile Include="App\MainWindow.fs" />
     <Compile Include="App\Program.fs" />
   </ItemGroup>
+
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.1" />
