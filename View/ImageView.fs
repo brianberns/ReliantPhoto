@@ -10,10 +10,9 @@ open Avalonia.Media
 module ImageView =
 
     /// Button height and width.
-    let private browseButtonSize = 50
+    let private buttonSize = 50
 
-    /// Creates a browse button.
-    let private createBrowseButton text callback =
+    let private createButton text callback =
         Button.create [
             Button.content (
                 Viewbox.create [
@@ -29,7 +28,7 @@ module ImageView =
                     )
                 ]
             )
-            Button.height browseButtonSize
+            Button.height buttonSize
             Button.horizontalAlignment HorizontalAlignment.Stretch
             Button.verticalAlignment VerticalAlignment.Stretch
             Button.horizontalContentAlignment HorizontalAlignment.Center
@@ -37,14 +36,25 @@ module ImageView =
             Button.onClick callback
         ]
 
+    let private createToolbar dock =
+        StackPanel.create [
+            StackPanel.dock dock
+            StackPanel.orientation Orientation.Horizontal
+            StackPanel.spacing 5.0
+            StackPanel.margin 5.0
+            StackPanel.children [
+                createButton "←" (fun _ -> ())
+            ]
+        ]
+
     /// Creates a browse panel, with or without a button.
     let private createBrowsePanel dock text hasButton callback =
         DockPanel.create [
-            DockPanel.width browseButtonSize
+            DockPanel.width buttonSize
             DockPanel.dock dock
             DockPanel.children [
                 if hasButton then
-                    createBrowseButton text callback
+                    createButton text callback
             ]
         ]
 
@@ -57,6 +67,8 @@ module ImageView =
                 DockPanel.background "Transparent"
 
             DockPanel.children [
+
+                createToolbar Dock.Top
 
                 createBrowsePanel
                     Dock.Left "◀"
