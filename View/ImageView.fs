@@ -67,6 +67,8 @@ module ImageView =
                     | Ok image ->
                         Image.create [
                             Image.source image
+                            Image.maxHeight image.Size.Height
+                            Image.maxWidth image.Size.Width
                         ]
                     | Error str ->
                         TextBlock.create [
