@@ -8,6 +8,7 @@ type Message =
     | MkDirectoryMessage of DirectoryMessage
     | MkImageMessage of ImageMessage
     | SwitchToImage of FileInfo
+    | SwitchToDirectory of DirectoryInfo
 
 module Message =
 
@@ -25,17 +26,25 @@ module Message =
     /// Updates the given model based on the given message.
     let update setTitle message model =
         match message, model with
+
             | MkDirectoryMessage dirMsg, MkDirectoryModel dirModel ->
                 let dirModel, dirCmd =
                     DirectoryMessage.update dirMsg dirModel
                 MkDirectoryModel dirModel,
                 Cmd.map MkDirectoryMessage dirCmd
+
             | MkImageMessage imgMsg, MkImageModel imgModel ->
                 let imgModel, imgCmd =
                     ImageMessage.update setTitle imgMsg imgModel
                 MkImageModel imgModel,
                 Cmd.map MkImageMessage imgCmd
+
             | SwitchToImage file, _ ->
                 MkImageModel (ImageModel.init file),
                 Cmd.ofMsg (MkImageMessage LoadImage)
+
+            | SwitchToDirectory dir, _ ->
+                MkDirectoryModel (DirectoryModel.init dir),
+                Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
+
             | _ -> failwith $"Invalid message {message} for model {model}"

@@ -11,6 +11,4 @@ module View =
                 DirectoryView.view dirModel dispatch
                     :> IView
             | MkImageModel imgModel ->
-                ImageView.view
-                    imgModel
-                    (MkImageMessage >> dispatch)
+                ImageView.view imgModel dispatch

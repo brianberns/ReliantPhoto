@@ -1,5 +1,7 @@
 ﻿namespace Reliant.Photo
 
+open System.IO
+
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
@@ -36,14 +38,15 @@ module ImageView =
             Button.onClick callback
         ]
 
-    let private createToolbar dock =
+    let private createToolbar dock (file : FileInfo) dispatch =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
             StackPanel.children [
-                createButton "←" (fun _ -> ())
+                createButton "↩" (fun _ ->
+                    dispatch (SwitchToDirectory file.Directory))
             ]
         ]
 
@@ -68,17 +71,17 @@ module ImageView =
 
             DockPanel.children [
 
-                createToolbar Dock.Top
+                createToolbar Dock.Top model.File dispatch
 
                 createBrowsePanel
                     Dock.Left "◀"
                     model.HasPreviousImage
-                    (fun _ -> dispatch PreviousImage)
+                    (fun _ -> dispatch (MkImageMessage PreviousImage))
 
                 createBrowsePanel
                     Dock.Right "▶"
                     model.HasNextImage
-                    (fun _ -> dispatch NextImage)
+                    (fun _ -> dispatch (MkImageMessage NextImage))
 
                 match model.Result with
                     | Ok image ->
@@ -112,13 +115,13 @@ module ImageView =
                     KeyBinding.create [
                         KeyBinding.key Key.Left
                         KeyBinding.execute (fun _ ->
-                            dispatch PreviousImage)
+                            dispatch (MkImageMessage PreviousImage))
                     ]
                 if model.HasNextImage then
                     KeyBinding.create [
                         KeyBinding.key Key.Right
                         KeyBinding.execute (fun _ ->
-                            dispatch NextImage)
+                            dispatch (MkImageMessage NextImage))
                     ]
             ]
 
