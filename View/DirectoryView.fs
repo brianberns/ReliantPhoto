@@ -27,17 +27,13 @@ module DirectoryView =
                         for file, result in model.ImageResults do
                             match result with
                                 | Ok image ->
-                                    Border.create [
-                                        Border.child (
-                                            Image.create [
-                                                Image.source image
-                                                Image.height image.Size.Height   // why is this necessary?
-                                                Image.stretch Stretch.Uniform
-                                                Image.margin 8.0
-                                                Image.onTapped (fun _ ->
-                                                    dispatch (SwitchToImage file))
-                                            ]
-                                        )
+                                    Image.create [
+                                        Image.source image
+                                        Image.height image.Size.Height   // why is this necessary?
+                                        Image.stretch Stretch.Uniform
+                                        Image.margin 8.0
+                                        Image.onTapped (fun _ ->
+                                            dispatch (SwitchToImage file))
                                     ] :> IView
                                 | Error _ -> ()
                     ]

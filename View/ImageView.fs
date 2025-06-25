@@ -112,17 +112,19 @@ module ImageView =
 
             Border.keyBindings [
                 if model.HasPreviousImage then
-                    KeyBinding.create [
-                        KeyBinding.key Key.Left
-                        KeyBinding.execute (fun _ ->
-                            dispatch (MkImageMessage PreviousImage))
-                    ]
+                    for key in [ Key.Left; Key.PageUp ] do
+                        KeyBinding.create [
+                            KeyBinding.key key
+                            KeyBinding.execute (fun _ ->
+                                dispatch (MkImageMessage PreviousImage))
+                        ]
                 if model.HasNextImage then
-                    KeyBinding.create [
-                        KeyBinding.key Key.Right
-                        KeyBinding.execute (fun _ ->
-                            dispatch (MkImageMessage NextImage))
-                    ]
+                    for key in [ Key.Right; Key.PageDown ] do
+                        KeyBinding.create [
+                            KeyBinding.key key
+                            KeyBinding.execute (fun _ ->
+                                dispatch (MkImageMessage NextImage))
+                        ]
             ]
 
             Border.onLoaded (fun e ->
