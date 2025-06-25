@@ -26,10 +26,11 @@ module DirectoryView =
                                 | Ok image ->
                                     Image.create [
                                         Image.source image
-                                        Image.width 150.0
-                                        Image.height 150.0
+                                        Image.height image.Size.Height   // why is this necessary?
                                         Image.stretch Stretch.Uniform
                                         Image.margin 8.0
+                                        Image.onDoubleTapped (fun _ ->
+                                            dispatch (SwitchToImage file))
                                     ] :> IView
                                 | Error _ -> ()
                     ]

@@ -5,6 +5,7 @@ open System.IO
 open Avalonia.Media.Imaging
 
 open SixLabors.ImageSharp
+open SixLabors.ImageSharp.Formats
 open SixLabors.ImageSharp.Formats.Png
 
 type ImageResult = Result<Bitmap, string>
@@ -18,13 +19,22 @@ module ImageFile =
                 PngCompressionLevel.NoCompression)
 
     /// Tries to load an image from the given file.
-    let tryLoadImage (file : FileInfo) =
+    let tryLoadImage targetHeightOpt (file : FileInfo) =
         async {
             try
                     // load image to PNG format
                 use stream = new MemoryStream()
                 do
-                    use image = Image.Load(file.FullName)
+                    let options =
+                        match targetHeightOpt with
+                            | Some targetHeight ->
+                                let imgInfo = Image.Identify(file.FullName)
+                                let targetWidth =
+                                    int (float imgInfo.Width
+                                        / float imgInfo.Height * float targetHeight)
+                                DecoderOptions(TargetSize = Size(targetWidth, targetHeight))
+                            | None -> DecoderOptions()
+                    use image = Image.Load(options, file.FullName)
                     image.SaveAsPng(stream, pngEncoder)
                     stream.Position <- 0
 

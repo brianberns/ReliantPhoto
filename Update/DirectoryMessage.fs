@@ -28,7 +28,7 @@ module DirectoryMessage =
                     { model with IsLoading = true }
                 let cmd =
                     Cmd.OfAsync.perform
-                        DirectoryModel.tryLoadDirectory
+                        (DirectoryModel.tryLoadDirectory 150)
                         model.Directory
                         DirectoryLoaded
                 model, cmd

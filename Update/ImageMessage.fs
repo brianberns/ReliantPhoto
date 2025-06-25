@@ -33,7 +33,7 @@ module ImageMessage =
             | LoadImage ->
                 let cmd =
                     Cmd.OfAsync.perform
-                        ImageFile.tryLoadImage
+                        (ImageFile.tryLoadImage None)
                         model.File
                         ImageLoaded
                 model, cmd

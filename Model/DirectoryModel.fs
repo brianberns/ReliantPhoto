@@ -20,13 +20,15 @@ module DirectoryModel =
             ImageResults = Array.empty
         }
 
-    let tryLoadDirectory (dir : DirectoryInfo) =
+    let tryLoadDirectory targetHeight (dir : DirectoryInfo) =
         let files = dir.GetFiles()
         files
             |> Array.map (fun file ->
                 async {
                     let! result =
-                        ImageFile.tryLoadImage file
+                        ImageFile.tryLoadImage
+                            (Some targetHeight)
+                            file
                     return file, result
                 })
             |> Async.Parallel
