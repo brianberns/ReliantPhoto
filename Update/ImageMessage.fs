@@ -26,11 +26,13 @@ module ImageMessage =
         Cmd.ofMsg LoadImage
 
     /// Updates the given model based on the given message.
-    let update setTitle message model =
+    let update setTitle message (model : ImageModel) =
         match message with
 
                 // start browsing to an image
             | LoadImage ->
+                let model =
+                    { model with IsLoading = true }
                 let cmd =
                     Cmd.OfAsync.perform
                         (ImageFile.tryLoadImage None)
@@ -41,7 +43,9 @@ module ImageMessage =
                 // finish browsing to an image
             | ImageLoaded result ->
                 setTitle model   // side-effect
-                { model with Result = result },
+                { model with
+                    IsLoading = false
+                    Result = result },
                 Cmd.none
 
                 // browse to previous image

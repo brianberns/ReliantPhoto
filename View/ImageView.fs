@@ -51,6 +51,11 @@ module ImageView =
     /// Creates a panel that can display images.
     let private createImagePanel model dispatch =
         DockPanel.create [
+
+            if model.IsLoading then
+                DockPanel.cursor Cursor.wait
+                DockPanel.background "Transparent"
+
             DockPanel.children [
 
                 createBrowsePanel

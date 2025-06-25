@@ -13,8 +13,11 @@ type ImageModel =
         /// the image itself is loaded.
         File : FileInfo
 
-        /// Current loaded image, if any. This will be the old
-        /// image when starting to browse to a new one.
+        /// Image is in the process of loading?
+        IsLoading : bool
+
+        /// Current loaded image, or error message. This will
+        /// be the old image when starting to browse to a new one.
         Result : Result<Bitmap, string>
 
         /// User can browse to previous image?
@@ -78,6 +81,7 @@ module ImageModel =
     let init file =
         browseImage 0 {
             File = file
+            IsLoading = false
             Result = Error ""
             HasPreviousImage = false
             HasNextImage = false

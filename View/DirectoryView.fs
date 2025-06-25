@@ -7,15 +7,18 @@ open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
 
+module Cursor =
+
+    /// Wait cursor.
+    let wait = new Cursor(StandardCursorType.Wait)
+
 module DirectoryView =
 
-    let private waitCursor = new Cursor(StandardCursorType.Wait)
-
     /// Creates a view of the given model.
-    let view model dispatch =
+    let view (model : DirectoryModel) dispatch =
         DockPanel.create [
             if model.IsLoading then
-                DockPanel.cursor waitCursor
+                DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
             else
 

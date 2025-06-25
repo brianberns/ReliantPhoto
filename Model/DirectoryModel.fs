@@ -5,8 +5,13 @@ open System.IO
 /// Directory model.
 type DirectoryModel =
     {
+        /// Current directory.
         Directory : DirectoryInfo
+
+        /// Images in directory are in the process of loading?
         IsLoading : bool
+
+        /// Loaded image results.
         ImageResults : (FileInfo * ImageResult)[]
     }
 
