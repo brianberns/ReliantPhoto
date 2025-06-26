@@ -22,7 +22,7 @@ module Button =
     /// Button height and width.
     let buttonSize = 50
 
-    /// Creates a button.
+    /// Creates a text button.
     let createText text callback =
         Button.create [
             Button.content (
@@ -49,14 +49,15 @@ module Button =
 
 module DirectoryView =
 
-    let private onSelectDirectory dispatch (args : RoutedEventArgs) =
-        let control = args.Source :?> Control
-        let topLevel = TopLevel.GetTopLevel(control)
+    /// Allows user to select a directory.
+    let private onSelectDirectory dispatch args =
+        let topLevel =
+            (args : RoutedEventArgs).Source
+                :?> Control
+                |> TopLevel.GetTopLevel
         async {
-            let options =
-                FolderPickerOpenOptions(
-                    Title = "Select a folder")
             let! folders =
+                let options = FolderPickerOpenOptions()
                 topLevel
                     .StorageProvider
                     .OpenFolderPickerAsync(options)
@@ -76,7 +77,7 @@ module DirectoryView =
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
             StackPanel.children [
-                Button.createText "📁" (
+                Button.createText "🗀" (
                     onSelectDirectory dispatch)
             ]
         ]
