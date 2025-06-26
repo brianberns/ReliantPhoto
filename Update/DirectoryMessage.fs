@@ -12,6 +12,8 @@ type DirectoryMessage =
     /// The current directory was loaded.
     | DirectoryLoaded of (FileInfo * ImageResult)[]
 
+    | DirectorySelected of DirectoryInfo
+
 module DirectoryMessage =
 
     /// Browses to the given directory.
@@ -39,3 +41,6 @@ module DirectoryMessage =
                     IsLoading = false
                     ImageLoadPairs = results },
                 Cmd.none
+
+            | DirectorySelected dir ->
+                init dir

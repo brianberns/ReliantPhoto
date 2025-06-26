@@ -7,15 +7,79 @@ open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Input
+open Avalonia.Interactivity
 open Avalonia.Layout
 open Avalonia.Media
+open Avalonia.Platform.Storage
 
 module Cursor =
 
     /// Wait cursor.
     let wait = new Cursor(StandardCursorType.Wait)
 
+module Button =
+
+    /// Button height and width.
+    let buttonSize = 50
+
+    /// Creates a button.
+    let createText text callback =
+        Button.create [
+            Button.content (
+                Viewbox.create [
+                    Viewbox.stretch Stretch.Uniform
+                    Viewbox.stretchDirection StretchDirection.Both
+                    Viewbox.child (
+                        TextBlock.create [
+                            TextBlock.text text
+                            TextBlock.horizontalAlignment HorizontalAlignment.Center
+                            TextBlock.verticalAlignment VerticalAlignment.Center
+                            TextBlock.textWrapping TextWrapping.NoWrap
+                        ]
+                    )
+                ]
+            )
+            Button.height buttonSize
+            Button.horizontalAlignment HorizontalAlignment.Stretch
+            Button.verticalAlignment VerticalAlignment.Stretch
+            Button.horizontalContentAlignment HorizontalAlignment.Center
+            Button.verticalContentAlignment VerticalAlignment.Center
+            Button.onClick callback
+        ]
+
 module DirectoryView =
+
+    let private onSelectDirectory dispatch (args : RoutedEventArgs) =
+        let control = args.Source :?> Control
+        let topLevel = TopLevel.GetTopLevel(control)
+        async {
+            let options =
+                FolderPickerOpenOptions(
+                    Title = "Select a folder")
+            let! folders =
+                topLevel
+                    .StorageProvider
+                    .OpenFolderPickerAsync(options)
+                    |> Async.AwaitTask
+            if folders.Count > 0 then
+                folders[0].Path.LocalPath
+                    |> DirectoryInfo
+                    |> (DirectorySelected >> MkDirectoryMessage)
+                    |> dispatch
+        } |> Async.StartImmediate
+
+    /// Creates a toolbar.
+    let private createToolbar dock dispatch =
+        StackPanel.create [
+            StackPanel.dock dock
+            StackPanel.orientation Orientation.Horizontal
+            StackPanel.spacing 5.0
+            StackPanel.margin 5.0
+            StackPanel.children [
+                Button.createText "📁" (
+                    onSelectDirectory dispatch)
+            ]
+        ]
 
     /// Creates an image control with hover effect.
     let private createImage
@@ -61,6 +125,9 @@ module DirectoryView =
                 ]
 
             DockPanel.children [
+
+                createToolbar Dock.Top dispatch
+
                 ScrollViewer.create [
                     ScrollViewer.content (
                         WrapPanel.create [

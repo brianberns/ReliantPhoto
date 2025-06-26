@@ -11,34 +11,6 @@ open Avalonia.Media
 
 module ImageView =
 
-    /// Button height and width.
-    let private buttonSize = 50
-
-    /// Creates a button.
-    let private createButton text callback =
-        Button.create [
-            Button.content (
-                Viewbox.create [
-                    Viewbox.stretch Stretch.Uniform
-                    Viewbox.stretchDirection StretchDirection.Both
-                    Viewbox.child (
-                        TextBlock.create [
-                            TextBlock.text text
-                            TextBlock.horizontalAlignment HorizontalAlignment.Center
-                            TextBlock.verticalAlignment VerticalAlignment.Center
-                            TextBlock.textWrapping TextWrapping.NoWrap
-                        ]
-                    )
-                ]
-            )
-            Button.height buttonSize
-            Button.horizontalAlignment HorizontalAlignment.Stretch
-            Button.verticalAlignment VerticalAlignment.Stretch
-            Button.horizontalContentAlignment HorizontalAlignment.Center
-            Button.verticalContentAlignment VerticalAlignment.Center
-            Button.onClick callback
-        ]
-
     /// Creates a toolbar.
     let private createToolbar dock (file : FileInfo) dispatch =
         StackPanel.create [
@@ -47,7 +19,7 @@ module ImageView =
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
             StackPanel.children [
-                createButton "↩" (fun _ ->
+                Button.createText "↩" (fun _ ->
                     dispatch (SwitchToDirectory file.Directory))
             ]
         ]
@@ -55,11 +27,11 @@ module ImageView =
     /// Creates a browse panel, with or without a button.
     let private createBrowsePanel dock text hasButton callback =
         DockPanel.create [
-            DockPanel.width buttonSize
+            DockPanel.width Button.buttonSize
             DockPanel.dock dock
             DockPanel.children [
                 if hasButton then
-                    createButton text callback
+                    Button.createText text callback
             ]
         ]
 
