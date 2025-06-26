@@ -130,6 +130,7 @@ module DirectoryView =
                 createToolbar Dock.Top dispatch
 
                 ScrollViewer.create [
+                    ScrollViewer.background "#181818"
                     ScrollViewer.content (
                         WrapPanel.create [
                             WrapPanel.orientation
