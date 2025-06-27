@@ -9,9 +9,6 @@ type DirectoryModel =
         /// Current directory.
         Directory : DirectoryInfo
 
-        /// Images in directory are in the process of loading?
-        IsLoading : bool
-
         /// Loaded image results.
         ImageLoadPairs : (FileInfo * ImageResult)[]
     }
@@ -22,7 +19,6 @@ module DirectoryModel =
     let init dir =
         {
             Directory = dir
-            IsLoading = false
             ImageLoadPairs = Array.empty
         }
 

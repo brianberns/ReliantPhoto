@@ -36,8 +36,6 @@ module DirectoryMessage =
 
             | LoadDirectory ->
                 setTitle model.Directory.FullName   // side-effect
-                let model =
-                    { model with IsLoading = true }
                 let cmd =
                     model.Directory
                         |> DirectoryModel.tryLoadDirectory 150
@@ -48,7 +46,6 @@ module DirectoryMessage =
 
             | ImagesLoaded pairs ->
                 { model with
-                    IsLoading = false
                     ImageLoadPairs =
                         Array.append
                             model.ImageLoadPairs

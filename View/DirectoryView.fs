@@ -109,22 +109,18 @@ module DirectoryView =
 
     /// Creates a view of the given model.
     let view (model : DirectoryModel) dispatch =
+
+        let images =
+            [
+                for file, result in model.ImageLoadPairs do
+                    match result with
+                        | Ok source ->
+                            createImage file source dispatch
+                                :> IView
+                        | _ -> ()
+            ]
+
         DockPanel.create [
-
-            if model.IsLoading then
-                DockPanel.cursor Cursor.wait
-                DockPanel.background "Transparent"   // needed to force the cursor change for some reason
-
-            let images =
-                [
-                    for file, result in model.ImageLoadPairs do
-                        match result with
-                            | Ok source ->
-                                createImage file source dispatch
-                                    :> IView
-                            | _ -> ()
-                ]
-
             DockPanel.children [
 
                 createToolbar Dock.Top dispatch
