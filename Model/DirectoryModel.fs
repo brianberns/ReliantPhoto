@@ -25,3 +25,15 @@ module DirectoryModel =
             IsLoading = false
             ImageLoadPairs = Array.empty
         }
+
+    /// Tries to load the contents of the given directory.
+    let tryLoadDirectory targetHeight (dir : DirectoryInfo) =
+        dir.EnumerateFiles()
+            |> Seq.map (fun file ->
+                async {
+                    let! result =
+                        ImageFile.tryLoadImage
+                            (Some targetHeight)
+                            file
+                    return file, result
+                })

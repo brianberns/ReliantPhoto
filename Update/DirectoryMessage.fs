@@ -22,15 +22,6 @@ module DirectoryMessage =
         DirectoryModel.init dir,
         Cmd.ofMsg LoadDirectory
 
-    let private loadImage targetHeight file =
-        async {
-            let! result =
-                ImageFile.tryLoadImage
-                    (Some targetHeight)
-                    file
-            return file, result
-        }
-
     let private createEffect chunks dispatch =
         async {
             for chunk in chunks do
@@ -47,8 +38,8 @@ module DirectoryMessage =
                 let model =
                     { model with IsLoading = true }
                 let cmd =
-                    model.Directory.EnumerateFiles()
-                        |> Seq.map (loadImage 150)
+                    model.Directory
+                        |> DirectoryModel.tryLoadDirectory 150
                         |> Seq.chunkBySize 25
                         |> createEffect
                         |> Cmd.ofEffect
