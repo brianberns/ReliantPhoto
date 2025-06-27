@@ -26,7 +26,7 @@ module DirectoryMessage =
     let private createEffect asyncPairs dispatch =
         async {
             do! asyncPairs
-                |> AsyncSeq.chunkBySize 10
+                |> AsyncSeq.chunkBySize 25
                 |> AsyncSeq.iter (
                     ImagesLoaded >> dispatch)
         } |> Async.Start
