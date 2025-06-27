@@ -1,7 +1,6 @@
 ﻿namespace Reliant.Photo
 
 open Elmish
-open Avalonia.Media.Imaging
 
 /// Messages that can change the image model.
 type ImageMessage =
@@ -31,6 +30,7 @@ module ImageMessage =
 
                 // start browsing to an image
             | LoadImage ->
+                setTitle model.File.Name   // side-effect
                 let model =
                     { model with IsLoading = true }
                 let cmd =
@@ -42,7 +42,6 @@ module ImageMessage =
 
                 // finish browsing to an image
             | ImageLoaded result ->
-                setTitle model.File.Name   // side-effect
                 { model with
                     IsLoading = false
                     Result = result },

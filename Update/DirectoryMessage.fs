@@ -36,6 +36,7 @@ module DirectoryMessage =
         match message with
 
             | LoadDirectory ->
+                setTitle model.Directory.FullName   // side-effect
                 let model =
                     { model with IsLoading = true }
                 let cmd =
@@ -46,7 +47,6 @@ module DirectoryMessage =
                 model, cmd
 
             | ImagesLoaded pairs ->
-                // setTitle model.Directory.FullName   // side-effect
                 { model with
                     IsLoading = false
                     ImageLoadPairs =
