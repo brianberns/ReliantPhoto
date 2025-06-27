@@ -12,21 +12,3 @@ module OptionBuilder =
 
     /// Option computation expression builder.
     let option = OptionBuilder()
-
-module AsyncSeq =
-
-    open FSharp.Control
-
-    let chunkBySize (chunkSize : int) (source: AsyncSeq<'a>) =
-        asyncSeq {
-            use enumerator = source.GetEnumerator()
-            let mutable isFinished = false
-            while not isFinished do
-                let chunk = ResizeArray<'a>(chunkSize)
-                while chunk.Count < chunkSize && not isFinished do
-                    match! enumerator.MoveNext() with
-                        | Some item -> chunk.Add(item)
-                        | None -> isFinished <- true
-                if chunk.Count > 0 then
-                    yield chunk.ToArray()
-        }
