@@ -1,6 +1,7 @@
 ﻿namespace Reliant.Photo
 
 open System.IO
+open FSharp.Control
 
 /// Directory model.
 type DirectoryModel =
@@ -27,8 +28,9 @@ module DirectoryModel =
 
     /// Tries to load the contents of the given directory.
     let tryLoadDirectory targetHeight (dir : DirectoryInfo) =
-        dir.GetFiles()
-            |> Array.map (fun file ->
+        dir.EnumerateFiles()
+            |> AsyncSeq.ofSeq
+            |> AsyncSeq.mapAsync (fun file ->
                 async {
                     let! result =
                         ImageFile.tryLoadImage
@@ -36,4 +38,3 @@ module DirectoryModel =
                             file
                     return file, result
                 })
-            |> Async.Parallel
