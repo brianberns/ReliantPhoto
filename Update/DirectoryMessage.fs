@@ -10,8 +10,8 @@ type DirectoryMessage =
     /// Load the current directory, if possible.
     | LoadDirectory
 
-    /// An image in the current directory was loaded.
-    | ImageLoaded of FileInfo * ImageResult
+    /// Images in the current directory were loaded.
+    | ImagesLoaded of (FileInfo * ImageResult)[]
 
     /// User has selected a directory to load.
     | DirectorySelected of DirectoryInfo
@@ -26,8 +26,9 @@ module DirectoryMessage =
     let private createEffect asyncPairs dispatch =
         async {
             do! asyncPairs
+                |> AsyncSeq.chunkBySize 10
                 |> AsyncSeq.iter (
-                    ImageLoaded >> dispatch)
+                    ImagesLoaded >> dispatch)
         } |> Async.Start
 
     /// Updates the given model based on the given message.
@@ -44,14 +45,14 @@ module DirectoryMessage =
                         |> Cmd.ofEffect
                 model, cmd
 
-            | ImageLoaded (file, result) ->
+            | ImagesLoaded pairs ->
                 // setTitle model.Directory.FullName   // side-effect
                 { model with
                     IsLoading = false
                     ImageLoadPairs =
                         Array.append
                             model.ImageLoadPairs
-                            [| file, result |]},
+                            pairs },
                 Cmd.none
 
             | DirectorySelected dir ->
