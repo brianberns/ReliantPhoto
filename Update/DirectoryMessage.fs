@@ -12,7 +12,7 @@ type DirectoryMessage =
     /// The current directory was loaded.
     | DirectoryLoaded of (FileInfo * ImageResult)[]
 
-    /// User has opened a directory.
+    /// User has selected a directory to load.
     | DirectorySelected of DirectoryInfo
 
 module DirectoryMessage =
