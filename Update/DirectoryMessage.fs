@@ -22,6 +22,7 @@ module DirectoryMessage =
         DirectoryModel.init dir,
         Cmd.ofMsg LoadDirectory
 
+    /// Loads images in parallel within each chunk.
     let private createEffect chunks dispatch =
         async {
             for chunk in chunks do
@@ -40,7 +41,7 @@ module DirectoryMessage =
                 let cmd =
                     model.Directory
                         |> DirectoryModel.tryLoadDirectory 150
-                        |> Seq.chunkBySize 25
+                        |> Seq.chunkBySize 50
                         |> createEffect
                         |> Cmd.ofEffect
                 model, cmd
