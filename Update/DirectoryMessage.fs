@@ -31,7 +31,7 @@ module DirectoryMessage =
             return file, result
         }
 
-    let private createEffect (chunks : seq<_[]>) dispatch =
+    let private createEffect chunks dispatch =
         async {
             for chunk in chunks do
                 let! pairs = Async.Parallel chunk
@@ -48,8 +48,8 @@ module DirectoryMessage =
                     { model with IsLoading = true }
                 let cmd =
                     model.Directory.EnumerateFiles()
+                        |> Seq.map (loadImage 150)
                         |> Seq.chunkBySize 25
-                        |> Seq.map (Array.map (loadImage 150))
                         |> createEffect
                         |> Cmd.ofEffect
                 model, cmd
