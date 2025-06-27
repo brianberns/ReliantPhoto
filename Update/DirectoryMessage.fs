@@ -51,11 +51,9 @@ module DirectoryMessage =
                     model.Directory.EnumerateFiles()
                         |> Seq.chunkBySize 25
                         |> AsyncSeq.ofSeq
-                        |> AsyncSeq.mapAsync (fun chunk ->
-                            async {
-                                let asyncs = Array.map (loadImage 150) chunk
-                                return! Async.Parallel asyncs
-                            })
+                        |> AsyncSeq.mapAsync (
+                            Array.map (loadImage 150)
+                                >> Async.Parallel)
                         |> createEffect
                         |> Cmd.ofEffect
                 model, cmd
