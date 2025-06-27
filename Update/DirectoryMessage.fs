@@ -1,7 +1,6 @@
 ﻿namespace Reliant.Photo
 
 open System.IO
-open FSharp.Control
 open Elmish
 
 /// Messages that can change the directory model.
@@ -32,11 +31,11 @@ module DirectoryMessage =
             return file, result
         }
 
-    let private createEffect asyncChunks dispatch =
+    let private createEffect (chunks : seq<_[]>) dispatch =
         async {
-            do! asyncChunks
-                |> AsyncSeq.iter (
-                    ImagesLoaded >> dispatch)
+            for chunk in chunks do
+                let! pairs = Async.Parallel chunk
+                dispatch (ImagesLoaded pairs)
         } |> Async.Start
 
     /// Updates the given model based on the given message.
@@ -50,10 +49,7 @@ module DirectoryMessage =
                 let cmd =
                     model.Directory.EnumerateFiles()
                         |> Seq.chunkBySize 25
-                        |> AsyncSeq.ofSeq
-                        |> AsyncSeq.mapAsync (
-                            Array.map (loadImage 150)
-                                >> Async.Parallel)
+                        |> Seq.map (Array.map (loadImage 150))
                         |> createEffect
                         |> Cmd.ofEffect
                 model, cmd
