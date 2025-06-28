@@ -80,4 +80,6 @@ module DirectoryMessage =
                 Cmd.none
 
             | DirectorySelected dir ->
-                init dir
+                if dir.FullName = model.Directory.FullName then
+                    model, Cmd.none
+                else init dir

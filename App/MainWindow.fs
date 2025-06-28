@@ -46,14 +46,20 @@ module Window =
     let setTitle (window : Window) title =
         window.Title <- title
 
+    let subscribe = function
+        | MkDirectoryModel dirModel ->
+            dirModel
+                |> DirectoryMessage.subscribe
+                |> Sub.map "directory" MkDirectoryMessage
+        | MkImageModel _ ->
+            Sub.none
+
     let run window arg =
         Program.mkProgram
             Message.init
             (Message.update (setTitle window))
             View.view
-            |> Program.withSubscription (
-                DirectoryMessage.subscribe
-                    >> Sub.map "" MkDirectoryMessage)
+            |> Program.withSubscription subscribe
             |> Program.withHost window
             |> Program.runWithAvaloniaSyncDispatch arg
 
