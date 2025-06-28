@@ -3,6 +3,8 @@
 open System
 open System.IO
 
+open Elmish
+
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
@@ -45,10 +47,13 @@ module Window =
         window.Title <- title
 
     let run window arg =
-        Elmish.Program.mkProgram
+        Program.mkProgram
             Message.init
             (Message.update (setTitle window))
             View.view
+            |> Program.withSubscription (
+                DirectoryMessage.subscribe
+                    >> Sub.map "" MkDirectoryMessage)
             |> Program.withHost window
             |> Program.runWithAvaloniaSyncDispatch arg
 

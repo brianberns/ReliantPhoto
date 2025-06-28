@@ -1,7 +1,6 @@
 ﻿namespace Reliant.Photo
 
 open System.IO
-open FSharp.Control
 
 /// Directory model.
 type DirectoryModel =
@@ -11,6 +10,9 @@ type DirectoryModel =
 
         /// Loaded image results.
         ImageLoadPairs : (FileInfo * ImageResult)[]
+
+        /// Directory is in the process of loading?
+        IsLoading : bool
     }
 
 module DirectoryModel =
@@ -20,6 +22,7 @@ module DirectoryModel =
         {
             Directory = dir
             ImageLoadPairs = Array.empty
+            IsLoading = false
         }
 
     /// Tries to load the contents of the given directory.

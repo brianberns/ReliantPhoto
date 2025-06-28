@@ -1,6 +1,9 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
+open System.Threading
+
 open Elmish
 
 /// Messages that can change the directory model.
@@ -9,8 +12,11 @@ type DirectoryMessage =
     /// Load the current directory, if possible.
     | LoadDirectory
 
-    /// Images in the current directory were loaded.
+    /// Some images in the current directory were loaded.
     | ImagesLoaded of (FileInfo * ImageResult)[]
+
+    /// Loading of images in the current directory has finished.
+    | DirectoryLoaded
 
     /// User has selected a directory to load.
     | DirectorySelected of DirectoryInfo
@@ -23,12 +29,34 @@ module DirectoryMessage =
         Cmd.ofMsg LoadDirectory
 
     /// Loads images in parallel within each chunk.
-    let private createEffect chunks dispatch =
-        async {
-            for chunk in chunks do
-                let! pairs = Async.Parallel chunk
-                dispatch (ImagesLoaded pairs)
-        } |> Async.Start
+    let private createEffect (token : CancellationToken) chunks : Effect<_> =
+        fun dispatch ->
+            async {
+                for chunk in chunks do
+                    if not token.IsCancellationRequested then
+                        let! pairs = Async.Parallel chunk
+                        dispatch (ImagesLoaded pairs)
+            } |> Async.Start
+
+    let private startSub chunks : Subscribe<_> =
+        fun dispatch ->
+            use cts = new CancellationTokenSource()
+            createEffect cts.Token chunks dispatch
+            {
+                new IDisposable with
+                    member _.Dispose() = cts.Cancel()
+            }
+
+    let subscribe (model : DirectoryModel) : Sub<_> =
+        [
+            if model.IsLoading then
+                let start =
+                    model.Directory
+                        |> DirectoryModel.tryLoadDirectory 150
+                        |> Seq.chunkBySize 50
+                        |> startSub
+                [ model.Directory.FullName ], start
+        ]
 
     /// Updates the given model based on the given message.
     let update setTitle message (model : DirectoryModel) =
@@ -36,13 +64,8 @@ module DirectoryMessage =
 
             | LoadDirectory ->
                 setTitle model.Directory.FullName   // side-effect
-                let cmd =
-                    model.Directory
-                        |> DirectoryModel.tryLoadDirectory 150
-                        |> Seq.chunkBySize 50
-                        |> createEffect
-                        |> Cmd.ofEffect
-                model, cmd
+                { model with IsLoading = true },
+                Cmd.none
 
             | ImagesLoaded pairs ->
                 { model with
@@ -50,6 +73,10 @@ module DirectoryMessage =
                         Array.append
                             model.ImageLoadPairs
                             pairs },
+                Cmd.none
+
+            | DirectoryLoaded ->
+                { model with IsLoading = false },
                 Cmd.none
 
             | DirectorySelected dir ->
