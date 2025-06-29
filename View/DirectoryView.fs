@@ -82,9 +82,21 @@ module DirectoryView =
             ]
         ]
 
-    /// Creates an image control with hover effect.
+    /// Creates an image.
     let private createImage
         (file : FileInfo) (source : IImage) dispatch =
+        Image.create [
+            Image.source source
+            Image.height source.Size.Height   // why is this necessary?
+            Image.stretch Stretch.Uniform
+            Image.margin 8.0
+            Image.onTapped (fun _ ->
+                dispatch (SwitchToImage file))
+        ]
+
+    /// Creates an image control with hover effect.
+    let private createImageView
+        (file : FileInfo) source dispatch =
         Component.create (
             file.FullName,
             fun ctx ->
@@ -93,17 +105,11 @@ module DirectoryView =
                     Border.background (
                         if isHovered.Current then "DarkGray"
                         else "Transparent")
-                    Border.child (
-                        Image.create [
-                            Image.source source
-                            Image.height source.Size.Height   // why is this necessary?
-                            Image.stretch Stretch.Uniform
-                            Image.margin 8.0
-                            Image.onTapped (fun _ ->
-                                dispatch (SwitchToImage file))
-                        ])
-                    Border.onPointerEntered (fun _ -> isHovered.Set true)
-                    Border.onPointerExited (fun _ -> isHovered.Set false)
+                    Border.child (createImage file source dispatch)
+                    Border.onPointerEntered (fun _ ->
+                        isHovered.Set true)
+                    Border.onPointerExited (fun _ ->
+                        isHovered.Set false)
                 ]
         )
 
@@ -115,7 +121,7 @@ module DirectoryView =
                 for file, result in model.FileImageResults do
                     match result with
                         | Ok source ->
-                            createImage file source dispatch
+                            createImageView file source dispatch
                                 :> IView
                         | _ -> ()
             ]
