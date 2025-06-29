@@ -13,7 +13,7 @@ type DirectoryMessage =
     | LoadDirectory
 
     /// Some images in the current directory were loaded.
-    | ImagesLoaded of FileImageResult[]
+    | ImagesLoaded of DirectoryInfo * FileImageResult[]
 
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded
@@ -30,7 +30,9 @@ module DirectoryMessage =
 
     /// Loads images in parallel within each chunk.
     let private createEffect
-        (token : CancellationToken) chunks : Effect<_> =
+        (dir : DirectoryInfo)
+        (token : CancellationToken)
+        chunks : Effect<_> =
         fun dispatch ->
             async {
                 for chunk in chunks do
@@ -38,14 +40,16 @@ module DirectoryMessage =
                     if not token.IsCancellationRequested then
                         let! pairs = Async.Parallel chunk
                         printfn $"*** dispatching {fst pairs[0]}"
-                        dispatch (ImagesLoaded pairs)
+                        dispatch (ImagesLoaded (dir, pairs))
             } |> Async.Start
 
-    let private startSub chunks : Subscribe<_> =
+    let private startSub
+        dir
+        chunks : Subscribe<_> =
         fun dispatch ->
             let cts = new CancellationTokenSource()
             printfn $"*** create token {cts.Token.GetHashCode()}"
-            createEffect cts.Token chunks dispatch
+            createEffect dir cts.Token chunks dispatch
             {
                 new IDisposable with
                     member _.Dispose() =
@@ -62,7 +66,7 @@ module DirectoryMessage =
                     model.Directory
                         |> DirectoryModel.tryLoadDirectory 150
                         |> Seq.chunkBySize 50
-                        |> startSub
+                        |> startSub model.Directory
                 [ model.Directory.FullName ], start
         ]
 
@@ -75,13 +79,16 @@ module DirectoryMessage =
                 { model with IsLoading = true },
                 Cmd.none
 
-            | ImagesLoaded pairs ->
-                { model with
-                    FileImageResults =
-                        Array.append
-                            model.FileImageResults
-                            pairs },
-                Cmd.none
+            | ImagesLoaded (dir, pairs) ->
+                let model =
+                    if dir.FullName = model.Directory.FullName then
+                        { model with
+                            FileImageResults =
+                                Array.append
+                                    model.FileImageResults
+                                    pairs }
+                    else model   // ignore stale message
+                model, Cmd.none
 
             | DirectoryLoaded ->
                 { model with IsLoading = false },
@@ -89,5 +96,5 @@ module DirectoryMessage =
 
             | DirectorySelected dir ->
                 if dir.FullName = model.Directory.FullName then
-                    model, Cmd.none
+                    model, Cmd.none   // reloading the current directory could create a stealth stale message
                 else init dir
