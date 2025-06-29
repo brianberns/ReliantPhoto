@@ -13,7 +13,7 @@ type DirectoryMessage =
     | LoadDirectory
 
     /// Some images in the current directory were loaded.
-    | ImagesLoaded of (FileInfo * ImageResult)[]
+    | ImagePairsLoaded of (FileInfo * ImageResult)[]
 
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded
@@ -29,25 +29,33 @@ module DirectoryMessage =
         Cmd.ofMsg LoadDirectory
 
     /// Loads images in parallel within each chunk.
-    let private createEffect (token : CancellationToken) chunks : Effect<_> =
+    let private createEffect
+        (token : CancellationToken) chunks : Effect<_> =
         fun dispatch ->
             async {
                 for chunk in chunks do
+                    printfn $"*** token before {token.GetHashCode()}: {token.IsCancellationRequested}"
                     if not token.IsCancellationRequested then
                         let! pairs = Async.Parallel chunk
-                        dispatch (ImagesLoaded pairs)
+                        printfn $"*** dispatching {fst pairs[0]}"
+                        dispatch (ImagePairsLoaded pairs)
             } |> Async.Start
 
     let private startSub chunks : Subscribe<_> =
         fun dispatch ->
-            use cts = new CancellationTokenSource()
+            let cts = new CancellationTokenSource()
+            printfn $"*** create token {cts.Token.GetHashCode()}"
             createEffect cts.Token chunks dispatch
             {
                 new IDisposable with
-                    member _.Dispose() = cts.Cancel()
+                    member _.Dispose() =
+                        printfn $"*** cancel token {cts.Token.GetHashCode()}"
+                        cts.Cancel()
+                        cts.Dispose()
             }
 
     let subscribe (model : DirectoryModel) : Sub<_> =
+        printfn $"*** subscribe {model.Directory.FullName}"
         [
             if model.IsLoading then
                 let start =
@@ -67,7 +75,7 @@ module DirectoryMessage =
                 { model with IsLoading = true },
                 Cmd.none
 
-            | ImagesLoaded pairs ->
+            | ImagePairsLoaded pairs ->
                 { model with
                     ImageLoadPairs =
                         Array.append

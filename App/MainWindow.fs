@@ -1,5 +1,7 @@
 ﻿namespace Reliant.Photo
 
+open Elmish
+
 open System
 open System.IO
 
@@ -61,6 +63,7 @@ module Window =
             View.view
             |> Program.withSubscription subscribe
             |> Program.withHost window
+            |> Program.withConsoleTrace
             |> Program.runWithAvaloniaSyncDispatch arg
 
 type MainWindow(args : _[]) as this =

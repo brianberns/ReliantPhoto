@@ -51,8 +51,4 @@ module Message =
                 MkDirectoryModel (DirectoryModel.init dir),
                 Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
 
-                // ignore for now
-            | MkDirectoryMessage (ImagesLoaded _), MkImageModel _ ->
-                model, Cmd.none
-
             | _ -> failwith $"Invalid message {message} for model {model}"
