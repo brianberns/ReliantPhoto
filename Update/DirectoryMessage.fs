@@ -41,9 +41,8 @@ module DirectoryMessage =
                         dispatch (ImagesLoaded (dir, pairs))
             } |> Async.Start
 
-    let private startSub
-        dir
-        chunks : Subscribe<_> =
+    /// Creates a subscription that loads images asynchronously.
+    let private startSub dir chunks : Subscribe<_> =
         fun dispatch ->
             let cts = new CancellationTokenSource()
             createEffect dir cts.Token chunks dispatch
@@ -54,6 +53,7 @@ module DirectoryMessage =
                         cts.Dispose()
             }
 
+    /// Subscribes to loading images.
     let subscribe (model : DirectoryModel) : Sub<_> =
         [
             if model.IsLoading then
