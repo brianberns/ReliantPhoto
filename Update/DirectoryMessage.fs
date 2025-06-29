@@ -13,7 +13,7 @@ type DirectoryMessage =
     | LoadDirectory
 
     /// Some images in the current directory were loaded.
-    | ImagePairsLoaded of (FileInfo * ImageResult)[]
+    | ImagesLoaded of FileImageResult[]
 
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded
@@ -38,7 +38,7 @@ module DirectoryMessage =
                     if not token.IsCancellationRequested then
                         let! pairs = Async.Parallel chunk
                         printfn $"*** dispatching {fst pairs[0]}"
-                        dispatch (ImagePairsLoaded pairs)
+                        dispatch (ImagesLoaded pairs)
             } |> Async.Start
 
     let private startSub chunks : Subscribe<_> =
@@ -75,11 +75,11 @@ module DirectoryMessage =
                 { model with IsLoading = true },
                 Cmd.none
 
-            | ImagePairsLoaded pairs ->
+            | ImagesLoaded pairs ->
                 { model with
-                    ImageLoadPairs =
+                    FileImageResults =
                         Array.append
-                            model.ImageLoadPairs
+                            model.FileImageResults
                             pairs },
                 Cmd.none
 

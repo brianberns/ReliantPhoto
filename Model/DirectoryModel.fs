@@ -2,6 +2,9 @@
 
 open System.IO
 
+/// An image result for a specific file.
+type FileImageResult = FileInfo * ImageResult
+
 /// Directory model.
 type DirectoryModel =
     {
@@ -9,7 +12,7 @@ type DirectoryModel =
         Directory : DirectoryInfo
 
         /// Loaded image results.
-        ImageLoadPairs : (FileInfo * ImageResult)[]
+        FileImageResults : FileImageResult[]
 
         /// Directory is in the process of loading?
         IsLoading : bool
@@ -21,7 +24,7 @@ module DirectoryModel =
     let init dir =
         {
             Directory = dir
-            ImageLoadPairs = Array.empty
+            FileImageResults = Array.empty
             IsLoading = false
         }
 
@@ -34,5 +37,5 @@ module DirectoryModel =
                         ImageFile.tryLoadImage
                             (Some targetHeight)
                             file
-                    return file, result
+                    return ((file, result) : FileImageResult)
                 })

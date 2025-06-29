@@ -112,7 +112,7 @@ module DirectoryView =
 
         let images =
             [
-                for file, result in model.ImageLoadPairs do
+                for file, result in model.FileImageResults do
                     match result with
                         | Ok source ->
                             createImage file source dispatch
