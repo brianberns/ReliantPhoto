@@ -59,7 +59,7 @@ module DirectoryMessage =
             if model.IsLoading then
                 let start =
                     model.Directory
-                        |> DirectoryModel.tryLoadDirectory 150
+                        |> ImageFile.tryLoadDirectory 150
                         |> Seq.chunkBySize 50
                         |> startSub model.Directory
                 [ model.Directory.FullName ], start

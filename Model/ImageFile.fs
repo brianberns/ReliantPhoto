@@ -11,6 +11,9 @@ open SixLabors.ImageSharp.Formats.Png
 /// Result of trying to load an image.
 type ImageResult = Result<Bitmap, string (*error message*)>
 
+/// An image result for a specific file.
+type FileImageResult = FileInfo * ImageResult
+
 module ImageFile =
 
     /// PNG encoder.
@@ -54,3 +57,15 @@ module ImageFile =
             with exn ->
                 return Error exn.Message
         }
+
+    /// Tries to load the contents of the given directory.
+    let tryLoadDirectory targetHeight (dir : DirectoryInfo) =
+        dir.EnumerateFiles()
+            |> Seq.map (fun file ->
+                async {
+                    let! result =
+                        tryLoadImage
+                            (Some targetHeight)
+                            file
+                    return ((file, result) : FileImageResult)
+                })
