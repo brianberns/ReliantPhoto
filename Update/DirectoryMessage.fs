@@ -34,12 +34,14 @@ module DirectoryMessage =
         (token : CancellationToken)
         chunks : Effect<_> =
         fun dispatch ->
-            async {
-                for chunk in chunks do
-                    if not token.IsCancellationRequested then
-                        let! pairs = Async.Parallel chunk
-                        dispatch (ImagesLoaded (dir, pairs))
-            } |> Async.Start
+            let work =
+                async {
+                    for chunk in chunks do
+                        if not token.IsCancellationRequested then
+                            let! pairs = Async.Parallel chunk
+                            dispatch (ImagesLoaded (dir, pairs))
+                }
+            Async.Start(work, token)
 
     /// Creates a subscription that loads images asynchronously.
     let private startSub dir chunks : Subscribe<_> =
@@ -77,11 +79,11 @@ module DirectoryMessage =
             | ImagesLoaded (dir, pairs) ->
                 let model =
                     if dir.FullName = model.Directory.FullName then
-                        { model with
-                            FileImageResults =
-                                Array.append
-                                    model.FileImageResults
-                                    pairs }
+                    { model with
+                        FileImageResults =
+                            Array.append
+                                model.FileImageResults
+                                pairs }
                     else model   // ignore stale message
                 model, Cmd.none
 
