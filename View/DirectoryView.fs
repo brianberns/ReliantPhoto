@@ -83,15 +83,12 @@ module DirectoryView =
         ]
 
     /// Creates an image.
-    let private createImage
-        (file : FileInfo) (source : IImage) dispatch =
+    let private createImage (source : IImage) =
         Image.create [
             Image.source source
             Image.height source.Size.Height   // why is this necessary?
             Image.stretch Stretch.Uniform
             Image.margin 8.0
-            Image.onTapped (fun _ ->
-                dispatch (SwitchToImage file))
         ]
 
     /// Creates an image control with hover effect.
@@ -102,8 +99,7 @@ module DirectoryView =
             fun ctx ->
                 let isHovered = ctx.useState false
                 Border.create [
-                    Border.child (
-                        createImage file source dispatch)
+                    Border.child (createImage source)
                     ToolTip.tip file.Name
                     Border.background (
                         if isHovered.Current then "#808080"
@@ -112,6 +108,8 @@ module DirectoryView =
                         isHovered.Set true)
                     Border.onPointerExited (fun _ ->
                         isHovered.Set false)
+                    Border.onTapped (fun _ ->
+                        dispatch (SwitchToImage file))
                 ]
         )
 
