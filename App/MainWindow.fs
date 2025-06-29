@@ -5,8 +5,6 @@ open Elmish
 open System
 open System.IO
 
-open Elmish
-
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
