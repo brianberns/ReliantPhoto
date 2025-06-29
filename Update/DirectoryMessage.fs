@@ -79,12 +79,12 @@ module DirectoryMessage =
             | ImagesLoaded (dir, pairs) ->
                 let model =
                     if dir.FullName = model.Directory.FullName then
-                    { model with
-                        FileImageResults =
-                            Array.append
-                                model.FileImageResults
-                                pairs }
-                    else model   // ignore stale message
+                        { model with
+                            FileImageResults =
+                                Array.append
+                                    model.FileImageResults
+                                    pairs }
+                        else model   // ignore stale message
                 model, Cmd.none
 
             | DirectoryLoaded ->
