@@ -24,28 +24,28 @@ module private SixLabors =
                 PngCompressionLevel.NoCompression)
 
     /// Creates decoder options for loading an image.
-    let private getDecoderOptions targetHeightOpt (file : FileInfo) =
-        match targetHeightOpt with
+    let private getDecoderOptions heightOpt (file : FileInfo) =
+        match heightOpt with
 
                 // decode to the given height
-            | Some targetHeight ->
-                let targetWidth =
+            | Some height ->
+                let width =
                     let imgInfo = Image.Identify(file.FullName)
                     int (float imgInfo.Width
-                        / float imgInfo.Height * float targetHeight)
+                        / float imgInfo.Height * float height)
                 DecoderOptions(
-                    TargetSize = Size(targetWidth, targetHeight))
+                    TargetSize = Size(width, height))
 
             | None -> DecoderOptions()
 
     /// Loads an image from the given file.
-    let loadImage targetHeightOpt file =
+    let loadImage heightOpt file =
 
             // load image to PNG format
         use stream = new MemoryStream()
         do
             let options =
-                getDecoderOptions targetHeightOpt file
+                getDecoderOptions heightOpt file
             use image = Image.Load(options, file.FullName)
             image.SaveAsPng(stream, pngEncoder)
             stream.Position <- 0
@@ -56,37 +56,37 @@ module private SixLabors =
 module ImageFile =
 
     /// Loads an image from the given file.
-    let private loadImage targetHeightOpt (file : FileInfo) =
+    let private loadImage heightOpt (file : FileInfo) =
 
         try
             use stream = file.OpenRead()
-            match targetHeightOpt with
+            match heightOpt with
                 | Some height ->
                     Bitmap.DecodeToHeight(stream, height)
                 | None -> new Bitmap(stream)
 
             // try SixLabors for images not supported by Avalonia
         with _ ->
-            SixLabors.loadImage targetHeightOpt file
+            SixLabors.loadImage heightOpt file
 
     /// Tries to load an image from the given file.
-    let tryLoadImage targetHeightOpt file =
+    let tryLoadImage heightOpt file =
         async {
             try
-                let image = loadImage targetHeightOpt file
+                let image = loadImage heightOpt file
                 return (Ok image : ImageResult)
             with exn ->
                 return Error exn.Message
         }
 
     /// Tries to load the contents of the given directory.
-    let tryLoadDirectory targetHeight (dir : DirectoryInfo) =
+    let tryLoadDirectory height (dir : DirectoryInfo) =
         dir.EnumerateFiles()
             |> Seq.map (fun file ->
                 async {
                     let! result =
                         tryLoadImage
-                            (Some targetHeight)
+                            (Some height)
                             file
                     return ((file, result) : FileImageResult)
                 })
