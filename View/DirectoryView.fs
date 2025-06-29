@@ -102,10 +102,12 @@ module DirectoryView =
             fun ctx ->
                 let isHovered = ctx.useState false
                 Border.create [
+                    Border.child (
+                        createImage file source dispatch)
+                    ToolTip.tip file.Name
                     Border.background (
                         if isHovered.Current then "DarkGray"
                         else "Transparent")
-                    Border.child (createImage file source dispatch)
                     Border.onPointerEntered (fun _ ->
                         isHovered.Set true)
                     Border.onPointerExited (fun _ ->
