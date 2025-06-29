@@ -68,7 +68,7 @@ module Window =
 
 type MainWindow(args : _[]) as this =
     inherit HostWindow(
-        Title = "Reliant Photo",
+        Title = "Reliant Photo Viewer",
         Icon = WindowIcon("icon.png"))
     do
         Window.loadSettings this

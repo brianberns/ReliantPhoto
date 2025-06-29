@@ -8,6 +8,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>ReliantPhotoViewer</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
