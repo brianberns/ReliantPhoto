@@ -36,10 +36,8 @@ module DirectoryMessage =
         fun dispatch ->
             async {
                 for chunk in chunks do
-                    printfn $"*** token before {token.GetHashCode()}: {token.IsCancellationRequested}"
                     if not token.IsCancellationRequested then
                         let! pairs = Async.Parallel chunk
-                        printfn $"*** dispatching {fst pairs[0]}"
                         dispatch (ImagesLoaded (dir, pairs))
             } |> Async.Start
 
@@ -48,18 +46,15 @@ module DirectoryMessage =
         chunks : Subscribe<_> =
         fun dispatch ->
             let cts = new CancellationTokenSource()
-            printfn $"*** create token {cts.Token.GetHashCode()}"
             createEffect dir cts.Token chunks dispatch
             {
                 new IDisposable with
                     member _.Dispose() =
-                        printfn $"*** cancel token {cts.Token.GetHashCode()}"
                         cts.Cancel()
                         cts.Dispose()
             }
 
     let subscribe (model : DirectoryModel) : Sub<_> =
-        printfn $"*** subscribe {model.Directory.FullName}"
         [
             if model.IsLoading then
                 let start =
