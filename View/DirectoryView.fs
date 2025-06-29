@@ -106,7 +106,7 @@ module DirectoryView =
                         createImage file source dispatch)
                     ToolTip.tip file.Name
                     Border.background (
-                        if isHovered.Current then "DarkGray"
+                        if isHovered.Current then "#808080"
                         else "Transparent")
                     Border.onPointerEntered (fun _ ->
                         isHovered.Set true)
