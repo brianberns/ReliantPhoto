@@ -82,7 +82,7 @@ module ImageModel =
         browseImage 0 {
             File = file
             IsLoading = false
-            Result = Error ""
+            Result = Error ""   // dummy value will be replaced
             HasPreviousImage = false
             HasNextImage = false
         }
