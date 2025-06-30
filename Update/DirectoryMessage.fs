@@ -65,24 +65,29 @@ module DirectoryMessage =
                         cts.Cancel(); cts.Dispose()
             }
 
+    /// Responds to the creation of a new file.
+    let private onFileCreated dir dispatch (args : FileSystemEventArgs) =
+        async {
+            let file = FileInfo(args.FullPath)
+            let! result =
+                ImageFile.tryLoadImage
+                    (Some imageHeight) file
+            let pair = file, result
+            dispatch (ImagesLoaded (dir, [|pair|]))
+        } |> Async.Start
+
+    /// Watches the given directory for changes.
     let private watch (dir : DirectoryInfo) : Subscribe<_> =
         fun dispatch ->
 
+                // watch for changes
             let watcher =
                 new FileSystemWatcher(
                     dir.FullName,
                     EnableRaisingEvents = true)
+            watcher.Created.Add(onFileCreated dir dispatch)
 
-            watcher.Created.Add(fun args ->
-                async {
-                    let file = FileInfo(args.FullPath)
-                    let! result =
-                        ImageFile.tryLoadImage
-                            (Some imageHeight) file
-                    let pair = file, result
-                    dispatch (ImagesLoaded (dir, [|pair|]))
-                } |> Async.Start)
-
+                // cleanup
             {
                 new IDisposable with
                     member _.Dispose() =
