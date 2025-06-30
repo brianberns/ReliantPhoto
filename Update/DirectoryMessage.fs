@@ -69,6 +69,7 @@ module DirectoryMessage =
     let private onFileCreated dir dispatch (args : FileSystemEventArgs) =
         async {
             let file = FileInfo(args.FullPath)
+            do! FileInfo.waitForFileRead file
             let! result =
                 ImageFile.tryLoadImage
                     (Some imageHeight) file

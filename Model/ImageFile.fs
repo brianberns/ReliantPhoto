@@ -4,11 +4,24 @@ open System.IO
 
 open Avalonia.Media.Imaging
 
-/// Result of trying to load an image.
-type ImageResult = Result<Bitmap, string (*error message*)>
+module FileInfo =
 
-/// An image result for a specific file.
-type FileImageResult = FileInfo * ImageResult
+    /// Waits for the given file to be readable.
+    let waitForFileRead (file : FileInfo) =
+
+        let rec loop duration =
+            async {
+                try
+                    use _ = file.OpenRead()
+                    return ()
+                with
+                    :? IOException as exn
+                        when exn.HResult = 0x80070020 ->   // file in use by another process
+                    do! Async.Sleep(duration : int)
+                    return! loop (2 * duration)
+            }
+
+        loop 100
 
 /// SixLabors supports TIFF, while Avalonia doesn't.
 module private SixLabors =
@@ -53,14 +66,19 @@ module private SixLabors =
             // create Avalonia bitmap
         new Bitmap(stream)
 
+/// Result of trying to load an image.
+type ImageResult = Result<Bitmap, string (*error message*)>
+
+/// An image result for a specific file.
+type FileImageResult = FileInfo * ImageResult
+
 module ImageFile =
 
     /// Loads an image from the given file.
     let private loadImage heightOpt (file : FileInfo) =
 
         try
-            use stream =
-                file.Open(FileMode.Open, FileAccess.Read)   // OpenRead fails with "The process cannot access the file 'foo.jpg' because it is being used by another process."
+            use stream = file.OpenRead()
             match heightOpt with
                 | Some height ->
                     Bitmap.DecodeToHeight(stream, height)
