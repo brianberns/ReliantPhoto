@@ -41,6 +41,9 @@ module DirectoryMessage =
                 }
             Async.Start(work, token)
 
+    /// Height of each image.
+    let private imageHeight = 150
+
     /// Loads images in a directory asynchronously.
     let private loadDirectory dir : Subscribe<_> =
         fun dispatch ->
@@ -48,7 +51,7 @@ module DirectoryMessage =
                 // create async image chunks
             let chunks =
                 dir
-                    |> ImageFile.tryLoadDirectory 150
+                    |> ImageFile.tryLoadDirectory imageHeight
                     |> Seq.chunkBySize 50
 
                 // load chunks
@@ -62,12 +65,39 @@ module DirectoryMessage =
                         cts.Cancel(); cts.Dispose()
             }
 
+    let private watch (dir : DirectoryInfo) : Subscribe<_> =
+        fun dispatch ->
+
+            let watcher =
+                new FileSystemWatcher(
+                    dir.FullName,
+                    EnableRaisingEvents = true)
+
+            watcher.Created.Add(fun args ->
+                async {
+                    let file = FileInfo(args.FullPath)
+                    let! result =
+                        ImageFile.tryLoadImage
+                            (Some imageHeight) file
+                    let pair = file, result
+                    dispatch (ImagesLoaded (dir, [|pair|]))
+                } |> Async.Start)
+
+            {
+                new IDisposable with
+                    member _.Dispose() =
+                        watcher.Dispose()
+            }
+
     /// Subscribes to loading images.
     let subscribe (model : DirectoryModel) : Sub<_> =
         [
             if model.IsLoading then
-                [ model.Directory.FullName ],
+                [ model.Directory.FullName; "load" ],
                 loadDirectory model.Directory
+
+            [ model.Directory.FullName; "watch" ],
+            watch model.Directory
         ]
 
     /// Updates the given model based on the given message.
