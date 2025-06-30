@@ -22,6 +22,7 @@ module Window =
     let loadSettings (window : Window) =
         Settings.tryLoad ()
             |> Option.iter (fun settings ->
+
                 if settings.Maximized then
                     window.WindowState <- WindowState.Maximized
                     // other settings are garbage when window is maximized: https://github.com/AvaloniaUI/Avalonia/issues/5285
@@ -29,6 +30,7 @@ module Window =
                     window.Position <- PixelPoint(settings.Left, settings.Top)
                     window.Width <- settings.Width
                     window.Height <- settings.Height
+
                 let dir = DirectoryInfo(settings.Directory)
                 if dir.Exists then directory <- dir)
 
