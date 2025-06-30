@@ -29,10 +29,8 @@ module DirectoryMessage =
         Cmd.ofMsg LoadDirectory
 
     /// Loads images in parallel within each chunk.
-    let private createEffect
-        (dir : DirectoryInfo)
-        (token : CancellationToken)
-        chunks : Effect<_> =
+    let private loadChunks
+        dir (token : CancellationToken) chunks : Effect<_> =
         fun dispatch ->
             let work =
                 async {
@@ -43,22 +41,25 @@ module DirectoryMessage =
                 }
             Async.Start(work, token)
 
-    /// Creates a subscription that loads images asynchronously.
-    let private startSub dir : Subscribe<_> =
+    /// Loads images in a directory asynchronously.
+    let private loadDirectory dir : Subscribe<_> =
         fun dispatch ->
 
+                // create async image chunks
             let chunks =
                 dir
                     |> ImageFile.tryLoadDirectory 150
                     |> Seq.chunkBySize 50
 
+                // load chunks
             let cts = new CancellationTokenSource()
-            createEffect dir cts.Token chunks dispatch
+            loadChunks dir cts.Token chunks dispatch
+
+                // allow cancellation
             {
                 new IDisposable with
                     member _.Dispose() =
-                        cts.Cancel()
-                        cts.Dispose()
+                        cts.Cancel(); cts.Dispose()
             }
 
     /// Subscribes to loading images.
@@ -66,7 +67,7 @@ module DirectoryMessage =
         [
             if model.IsLoading then
                 [ model.Directory.FullName ],
-                startSub model.Directory
+                loadDirectory model.Directory
         ]
 
     /// Updates the given model based on the given message.
@@ -74,7 +75,7 @@ module DirectoryMessage =
         match message with
 
             | LoadDirectory ->
-                { model with IsLoading = true },
+                { model with IsLoading = true },   // trigger subscription
                 Cmd.none
 
             | ImagesLoaded (dir, pairs) ->
