@@ -24,20 +24,20 @@ module Message =
         model, cmd
 
     /// Updates the given model based on the given message.
-    let update setTitle message model =
+    let update message model =
         match message, model with
 
                 // process directory message
             | MkDirectoryMessage dirMsg, MkDirectoryModel dirModel ->
                 let dirModel, dirCmd =
-                    DirectoryMessage.update setTitle dirMsg dirModel
+                    DirectoryMessage.update dirMsg dirModel
                 MkDirectoryModel dirModel,
                 Cmd.map MkDirectoryMessage dirCmd
 
                 // process image message
             | MkImageMessage imgMsg, MkImageModel imgModel ->
                 let imgModel, imgCmd =
-                    ImageMessage.update setTitle imgMsg imgModel
+                    ImageMessage.update imgMsg imgModel
                 MkImageModel imgModel,
                 Cmd.map MkImageMessage imgCmd
 

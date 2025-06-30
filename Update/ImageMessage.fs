@@ -25,12 +25,11 @@ module ImageMessage =
         Cmd.ofMsg LoadImage
 
     /// Updates the given model based on the given message.
-    let update setTitle message (model : ImageModel) =
+    let update message (model : ImageModel) =
         match message with
 
                 // start browsing to an image
             | LoadImage ->
-                setTitle model.File.Name   // side-effect
                 let model =
                     { model with IsLoading = true }
                 let cmd =

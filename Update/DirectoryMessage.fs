@@ -68,11 +68,10 @@ module DirectoryMessage =
         ]
 
     /// Updates the given model based on the given message.
-    let update setTitle message (model : DirectoryModel) =
+    let update message (model : DirectoryModel) =
         match message with
 
             | LoadDirectory ->
-                setTitle model.Directory.FullName   // side-effect
                 { model with IsLoading = true },
                 Cmd.none
 
