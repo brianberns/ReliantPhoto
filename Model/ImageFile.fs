@@ -60,7 +60,7 @@ module ImageFile =
 
         try
             use stream =
-                file.Open(FileMode.Open, FileAccess.Read)
+                file.Open(FileMode.Open, FileAccess.Read)   // OpenRead fails with "The process cannot access the file 'foo.jpg' because it is being used by another process."
             match heightOpt with
                 | Some height ->
                     Bitmap.DecodeToHeight(stream, height)
