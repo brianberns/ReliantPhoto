@@ -59,7 +59,8 @@ module ImageFile =
     let private loadImage heightOpt (file : FileInfo) =
 
         try
-            use stream = file.Open(FileMode.Open, FileAccess.Read)
+            use stream =
+                file.Open(FileMode.Open, FileAccess.Read)
             match heightOpt with
                 | Some height ->
                     Bitmap.DecodeToHeight(stream, height)
