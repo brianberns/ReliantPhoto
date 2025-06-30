@@ -44,8 +44,14 @@ module DirectoryMessage =
             Async.Start(work, token)
 
     /// Creates a subscription that loads images asynchronously.
-    let private startSub dir chunks : Subscribe<_> =
+    let private startSub dir : Subscribe<_> =
         fun dispatch ->
+
+            let chunks =
+                dir
+                    |> ImageFile.tryLoadDirectory 150
+                    |> Seq.chunkBySize 50
+
             let cts = new CancellationTokenSource()
             createEffect dir cts.Token chunks dispatch
             {
@@ -59,12 +65,8 @@ module DirectoryMessage =
     let subscribe (model : DirectoryModel) : Sub<_> =
         [
             if model.IsLoading then
-                let start =
-                    model.Directory
-                        |> ImageFile.tryLoadDirectory 150
-                        |> Seq.chunkBySize 50
-                        |> startSub model.Directory
-                [ model.Directory.FullName ], start
+                [ model.Directory.FullName ],
+                startSub model.Directory
         ]
 
     /// Updates the given model based on the given message.
