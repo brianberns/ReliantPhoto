@@ -22,6 +22,9 @@ type Settings =
 
         /// Window is maximized?
         Maximized : bool
+
+        /// Current directory.
+        Directory : string
     }
 
 module Settings =
@@ -31,7 +34,7 @@ module Settings =
         Path.Combine(
             Environment.GetFolderPath(
                 Environment.SpecialFolder.ApplicationData),
-            "ReliantPhoto",
+            "ReliantPhotoViewer",
             "Settings.json")
             |> FileInfo
 
