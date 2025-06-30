@@ -18,7 +18,7 @@ module Window =
             |> Environment.GetFolderPath
             |> DirectoryInfo
 
-    /// Load user settings.
+    /// Loads user settings, if possible.
     let loadSettings (window : Window) =
         Settings.tryLoad ()
             |> Option.iter (fun settings ->
