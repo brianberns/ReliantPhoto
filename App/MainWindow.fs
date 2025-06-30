@@ -12,11 +12,13 @@ open Avalonia.FuncUI.Hosts
 
 module Window =
 
+    /// Current directory.
     let mutable directory =
         Environment.SpecialFolder.MyPictures
             |> Environment.GetFolderPath
             |> DirectoryInfo
 
+    /// Load user settings.
     let loadSettings (window : Window) =
         Settings.tryLoad ()
             |> Option.iter (fun settings ->
@@ -27,8 +29,10 @@ module Window =
                     window.Position <- PixelPoint(settings.Left, settings.Top)
                     window.Width <- settings.Width
                     window.Height <- settings.Height
-                directory <- DirectoryInfo(settings.Directory))
+                let dir = DirectoryInfo(settings.Directory)
+                if dir.Exists then directory <- dir)
 
+    /// Saves user settings.
     let saveSettings (window : Window) =
         Settings.save {
             Left = window.Position.X
@@ -39,24 +43,30 @@ module Window =
             Directory = directory.FullName
         }
 
+    /// Subscribes to effects.
     let subscribe (window : Window) = function
         | MkDirectoryModel dirModel ->
 
+                // side effects
             directory <- dirModel.Directory
             if dirModel.Directory.FullName <> window.Title then
                 window.Title <- dirModel.Directory.FullName
 
+                // Elmish subscription
             dirModel
                 |> DirectoryMessage.subscribe
                 |> Sub.map "directory" MkDirectoryMessage
 
         | MkImageModel imgModel ->
 
+                // side effects
             if imgModel.File.Name <> window.Title then
                 window.Title <- imgModel.File.Name
 
+                // Elmish subscription
             Sub.none
 
+    /// Starts the Elmish MVU loop.
     let run window =
         Program.mkProgram Message.init Message.update View.view
             |> Program.withSubscription (
@@ -66,12 +76,18 @@ module Window =
             |> Program.runWithAvaloniaSyncDispatch
                 directory
 
+/// Main window.
 type MainWindow(_args : string[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo Viewer",
         Icon = WindowIcon("icon.png"))
     do
+            // load settings at startup
         Window.loadSettings this
+
+            // save settings at exit
         this.Closing.Add(fun _ ->
             Window.saveSettings this)
+
+            // run the app
         Window.run this
