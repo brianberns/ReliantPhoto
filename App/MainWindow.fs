@@ -43,9 +43,6 @@ module Window =
                 |> FileInfo
                 :> _
 
-    let setTitle (window : Window) title =
-        window.Title <- title
-
     let subscribe (window : Window) = function
         | MkDirectoryModel dirModel ->
 
