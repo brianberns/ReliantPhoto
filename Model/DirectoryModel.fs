@@ -1,12 +1,19 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
+
+/// Session identifier.
+type SessionId = int64
 
 /// Directory model.
 type DirectoryModel =
     {
         /// Current directory.
         Directory : DirectoryInfo
+
+        /// Unique ID of this session.
+        SessionId : SessionId
 
         /// Loaded image results.
         FileImageResults : FileImageResult[]
@@ -21,6 +28,7 @@ module DirectoryModel =
     let init dir =
         {
             Directory = dir
+            SessionId = DateTime.Now.Ticks
             FileImageResults = Array.empty
             IsLoading = false
         }

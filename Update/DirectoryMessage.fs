@@ -13,7 +13,7 @@ type DirectoryMessage =
     | LoadDirectory
 
     /// Some images in the current directory were loaded.
-    | ImagesLoaded of DirectoryInfo * FileImageResult[]
+    | ImagesLoaded of SessionId * FileImageResult[]
 
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded
@@ -30,14 +30,15 @@ module DirectoryMessage =
 
     /// Loads images in parallel within each chunk.
     let private loadChunks
-        dir (token : CancellationToken) chunks : Effect<_> =
+        sessionId (token : CancellationToken) chunks : Effect<_> =
         fun dispatch ->
             let work =
                 async {
                     for chunk in chunks do
                         if not token.IsCancellationRequested then
                             let! pairs = Async.Parallel chunk
-                            dispatch (ImagesLoaded (dir, pairs))
+                            dispatch (
+                                ImagesLoaded (sessionId, pairs))
                 }
             Async.Start(work, token)
 
@@ -45,18 +46,19 @@ module DirectoryMessage =
     let private imageHeight = 150
 
     /// Loads images in a directory asynchronously.
-    let private loadDirectory dir : Subscribe<_> =
+    let private loadDirectory model : Subscribe<_> =
         fun dispatch ->
 
                 // create async image chunks
             let chunks =
-                dir
+                model.Directory
                     |> ImageFile.tryLoadDirectory imageHeight
                     |> Seq.chunkBySize 50
 
                 // load chunks
             let cts = new CancellationTokenSource()
-            loadChunks dir cts.Token chunks dispatch
+            loadChunks
+                model.SessionId cts.Token chunks dispatch
 
                 // allow cancellation
             {
@@ -66,7 +68,8 @@ module DirectoryMessage =
             }
 
     /// Responds to the creation of a new file.
-    let private onFileCreated dir dispatch (args : FileSystemEventArgs) =
+    let private onFileCreated
+        sessionId dispatch (args : FileSystemEventArgs) =
         async {
             let file = FileInfo(args.FullPath)
             do! FileInfo.waitForFileRead file
@@ -74,19 +77,20 @@ module DirectoryMessage =
                 ImageFile.tryLoadImage
                     (Some imageHeight) file
             let pair = file, result
-            dispatch (ImagesLoaded (dir, [|pair|]))
+            dispatch (ImagesLoaded (sessionId, [|pair|]))
         } |> Async.Start
 
-    /// Watches the given directory for changes.
-    let private watch (dir : DirectoryInfo) : Subscribe<_> =
+    /// Watches the model's directory for changes.
+    let private watch model : Subscribe<_> =
         fun dispatch ->
 
                 // watch for changes
             let watcher =
                 new FileSystemWatcher(
-                    dir.FullName,
+                    model.Directory.FullName,
                     EnableRaisingEvents = true)
-            watcher.Created.Add(onFileCreated dir dispatch)
+            watcher.Created.Add(
+                onFileCreated model.SessionId dispatch)
 
                 // cleanup
             {
@@ -97,13 +101,12 @@ module DirectoryMessage =
 
     /// Subscribes to loading images.
     let subscribe (model : DirectoryModel) : Sub<_> =
+        let key = string model.SessionId
         [
             if model.IsLoading then
-                [ model.Directory.FullName; "load" ],
-                loadDirectory model.Directory
+                [ key; "load" ], loadDirectory model
 
-            [ model.Directory.FullName; "watch" ],
-            watch model.Directory
+            [ key; "watch" ], watch model
         ]
 
     /// Updates the given model based on the given message.
@@ -114,9 +117,9 @@ module DirectoryMessage =
                 { model with IsLoading = true },   // trigger subscription
                 Cmd.none
 
-            | ImagesLoaded (dir, pairs) ->
+            | ImagesLoaded (sessionId, pairs) ->
                 let model =
-                    if dir.FullName = model.Directory.FullName then
+                    if sessionId = model.SessionId then
                         { model with
                             FileImageResults =
                                 Array.append
@@ -130,6 +133,4 @@ module DirectoryMessage =
                 Cmd.none
 
             | DirectorySelected dir ->
-                if dir.FullName = model.Directory.FullName then
-                    model, Cmd.none   // reloading the current directory could create a stealth stale message
-                else init dir
+                init dir
