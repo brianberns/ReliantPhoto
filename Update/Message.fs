@@ -27,7 +27,7 @@ module Message =
         match message, model.ImageModelOpt with
 
                 // process directory message
-            | MkDirectoryMessage dirMsg, None ->
+            | MkDirectoryMessage dirMsg, _ ->
                 let dirModel, dirCmd =
                     DirectoryMessage.update dirMsg model.DirectoryModel
                 { model with DirectoryModel = dirModel },
@@ -50,9 +50,5 @@ module Message =
             | SwitchToDirectory, Some _ ->
                 { model with ImageModelOpt = None },
                 Cmd.none
-
-                // ignore stale message
-            | MkDirectoryMessage (ImagesLoaded _), Some _ ->
-                model, Cmd.none
 
             | _ -> failwith $"Invalid message {message} for model {model}"
