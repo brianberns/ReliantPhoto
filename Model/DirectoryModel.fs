@@ -3,6 +3,8 @@
 open System
 open System.IO
 
+open Avalonia.Media.Imaging
+
 /// Session identifier.
 type SessionId = int64
 
@@ -15,8 +17,8 @@ type DirectoryModel =
         /// Unique ID of this session.
         SessionId : SessionId
 
-        /// Loaded image results.
-        FileImageResults : FileImageResult[]
+        /// Loaded images.
+        FileImages : FileImage[]
 
         /// Directory is in the process of loading?
         IsLoading : bool
@@ -29,6 +31,6 @@ module DirectoryModel =
         {
             Directory = dir
             SessionId = DateTime.Now.Ticks
-            FileImageResults = Array.empty
+            FileImages = Array.empty
             IsLoading = false
         }

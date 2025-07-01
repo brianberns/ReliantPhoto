@@ -13,7 +13,7 @@ type DirectoryMessage =
     | LoadDirectory
 
     /// Some images in the current directory were loaded.
-    | ImagesLoaded of SessionId * FileImageResult[]
+    | ImagesLoaded of SessionId * FileImage[]
 
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded
@@ -36,7 +36,8 @@ module DirectoryMessage =
                 async {
                     for chunk in chunks do
                         if not token.IsCancellationRequested then
-                            let! pairs = Async.Parallel chunk
+                            let! pairOpts = Async.Parallel chunk
+                            let pairs = Array.choose id pairOpts
                             dispatch (
                                 ImagesLoaded (sessionId, pairs))
                     dispatch DirectoryLoaded
@@ -77,8 +78,11 @@ module DirectoryMessage =
             let! result =
                 ImageFile.tryLoadImage
                     (Some imageHeight) file
-            let pair = file, result
-            dispatch (ImagesLoaded (sessionId, [|pair|]))
+            match result with
+                | Ok image ->
+                    let pair = file, image
+                    dispatch (ImagesLoaded (sessionId, [|pair|]))
+                | _ -> ()
         } |> Async.Start
 
     /// Watches the model's directory for changes.
@@ -127,9 +131,9 @@ module DirectoryMessage =
                 let model =
                     if sessionId = model.SessionId then
                         { model with
-                            FileImageResults =
+                            FileImages =
                                 Array.append
-                                    model.FileImageResults
+                                    model.FileImages
                                     pairs }
                         else model   // ignore stale message
                 model, Cmd.none
