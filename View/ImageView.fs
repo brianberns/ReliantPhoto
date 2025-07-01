@@ -12,7 +12,7 @@ open Avalonia.Media
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock (file : FileInfo) dispatch =
+    let private createToolbar dock dispatch =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -20,7 +20,7 @@ module ImageView =
             StackPanel.margin 5.0
             StackPanel.children [
                 Button.createText "↩" (fun _ ->
-                    dispatch (SwitchToDirectory file.Directory))
+                    dispatch SwitchToDirectory)
             ]
         ]
 
@@ -45,7 +45,7 @@ module ImageView =
 
             DockPanel.children [
 
-                createToolbar Dock.Top model.File dispatch
+                createToolbar Dock.Top dispatch
 
                 createBrowsePanel
                     Dock.Left "◀"

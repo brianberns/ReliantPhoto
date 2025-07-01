@@ -8,7 +8,7 @@ type Message =
     | MkDirectoryMessage of DirectoryMessage
     | MkImageMessage of ImageMessage
     | SwitchToImage of FileInfo
-    | SwitchToDirectory of DirectoryInfo
+    | SwitchToDirectory
 
 module Message =
 
@@ -47,9 +47,9 @@ module Message =
                 Cmd.ofMsg (MkImageMessage LoadImage)
 
                 // switch to directory mode
-            | SwitchToDirectory dir, Some _ ->
+            | SwitchToDirectory, Some _ ->
                 { model with ImageModelOpt = None },
-                Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
+                Cmd.none
 
                 // ignore stale message
             | MkDirectoryMessage (ImagesLoaded _), Some _ ->
