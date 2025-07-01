@@ -83,10 +83,7 @@ module DirectoryView =
         ]
 
     /// Creates a status bar.
-    let private createStatusBar dock model =
-
-        let text = $"{model.FileImageResults.Length} images"
-
+    let private createStatusBar dock (numImages : int) =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -94,7 +91,7 @@ module DirectoryView =
             StackPanel.margin 5.0
             StackPanel.children [
                 TextBlock.create [
-                    TextBlock.text text
+                    TextBlock.text $"{numImages} images"
                 ]
             ]
         ]
@@ -147,7 +144,7 @@ module DirectoryView =
             DockPanel.children [
 
                 createToolbar Dock.Top dispatch
-                createStatusBar Dock.Bottom model
+                createStatusBar Dock.Bottom images.Length
 
                 ScrollViewer.create [
                     ScrollViewer.background "#181818"
