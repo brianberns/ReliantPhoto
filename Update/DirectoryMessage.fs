@@ -16,7 +16,7 @@ type DirectoryMessage =
     | ImagesLoaded of SessionId * FileImageResult[]
 
     /// Loading of images in the current directory has finished.
-    | DirectoryLoaded
+    | DirectoryLoaded of SessionId
 
     /// User has selected a directory to load.
     | DirectorySelected of DirectoryInfo
@@ -39,7 +39,8 @@ module DirectoryMessage =
                             let! pairs = Async.Parallel chunk
                             dispatch (
                                 ImagesLoaded (sessionId, pairs))
-                    dispatch DirectoryLoaded
+                    if not token.IsCancellationRequested then
+                        dispatch (DirectoryLoaded sessionId)
                 }
             Async.Start(work, token)
 
@@ -134,9 +135,12 @@ module DirectoryMessage =
                         else model   // ignore stale message
                 model, Cmd.none
 
-            | DirectoryLoaded ->
-                { model with IsLoading = false },
-                Cmd.none
+            | DirectoryLoaded sessionId ->
+                let model =
+                    if sessionId = model.SessionId then
+                        { model with IsLoading = false }
+                    else model   // ignore stale message
+                model, Cmd.none
 
             | DirectorySelected dir ->
                 init dir
