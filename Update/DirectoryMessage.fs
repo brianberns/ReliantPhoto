@@ -72,15 +72,17 @@ module DirectoryMessage =
     /// Responds to the creation of a new file.
     let private onFileCreated
         sessionId token dispatch (args : FileSystemEventArgs) =
-        async {
-            let file = FileInfo(args.FullPath)
-            do! FileInfo.waitForFileRead token file
-            let! result =
-                ImageFile.tryLoadImage
-                    (Some imageHeight) file
-            let pair = file, result
-            dispatch (ImagesLoaded (sessionId, [|pair|]))
-        } |> Async.Start
+        let work =
+            async {
+                let file = FileInfo(args.FullPath)
+                do! FileInfo.waitForFileRead token file
+                let! result =
+                    ImageFile.tryLoadImage
+                        (Some imageHeight) file
+                let pair = file, result
+                dispatch (ImagesLoaded (sessionId, [|pair|]))
+            }
+        Async.Start(work, token)
 
     /// Watches the model's directory for changes.
     let private watch model : Subscribe<_> =
