@@ -47,28 +47,32 @@ module Window =
 
     /// Subscribes to effects.
     let subscribe (window : Window) model =
-        match model.ImageModelOpt with
-            | None ->
+        [
+                // directory subscriptions
+                // ... side effects
+            let dirModel = model.DirectoryModel
+            directory <- dirModel.Directory
+            if dirModel.Directory.FullName <> window.Title then
+                window.Title <- dirModel.Directory.FullName
 
-                    // side effects
-                let dirModel = model.DirectoryModel
-                directory <- dirModel.Directory
-                if dirModel.Directory.FullName <> window.Title then
-                    window.Title <- dirModel.Directory.FullName
+                // ... Elmish subscription
+            yield! dirModel
+                |> DirectoryMessage.subscribe
+                |> Sub.map "directory" MkDirectoryMessage
 
-                    // Elmish subscription
-                dirModel
-                    |> DirectoryMessage.subscribe
-                    |> Sub.map "directory" MkDirectoryMessage
+                // image subscriptions
+            match model.ImageModelOpt with
+                | Some imgModel ->
 
-            | Some imgModel ->
+                        // side effects
+                    if imgModel.File.Name <> window.Title then
+                        window.Title <- imgModel.File.Name
 
-                    // side effects
-                if imgModel.File.Name <> window.Title then
-                    window.Title <- imgModel.File.Name
+                        // Elmish subscription
+                    yield! Sub.none
 
-                    // Elmish subscription
-                Sub.none
+                | None -> ()
+        ]
 
     /// Starts the Elmish MVU loop.
     let run window =
