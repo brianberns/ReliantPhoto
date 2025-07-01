@@ -85,7 +85,7 @@ module DirectoryView =
     /// Creates a status bar.
     let private createStatusBar dock model =
 
-        let text = $"{model.FileImages.Length} images"
+        let text = $"{model.FileImageResults.Length} images"
 
         StackPanel.create [
             StackPanel.dock dock
@@ -135,9 +135,12 @@ module DirectoryView =
 
         let images =
             [
-                for file, image in model.FileImages do
-                    createImageView file image dispatch
-                        :> IView
+                for file, result in model.FileImageResults do
+                    match result with
+                        | Ok source ->
+                            createImageView file source dispatch
+                                :> IView
+                        | _ -> ()
             ]
 
         DockPanel.create [

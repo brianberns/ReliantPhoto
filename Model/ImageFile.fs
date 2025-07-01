@@ -75,8 +75,8 @@ module private SixLabors =
 /// Result of trying to load an image.
 type ImageResult = Result<Bitmap, string (*error message*)>
 
-/// An image for a specific file.
-type FileImage = FileInfo * Bitmap
+/// An image result for a specific file.
+type FileImageResult = FileInfo * ImageResult
 
 module ImageFile =
 
@@ -113,8 +113,5 @@ module ImageFile =
                         tryLoadImage
                             (Some height)
                             file
-                    match result with
-                        | Ok image ->
-                            return Some ((file, image) : FileImage)
-                        | _ -> return None   // ignore error message
+                    return ((file, result) : FileImageResult)
                 })
