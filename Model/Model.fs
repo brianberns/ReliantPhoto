@@ -4,12 +4,13 @@ open System.IO
 
 /// Top-level model.
 type Model =
+    {
+        /// Directory model.
+        DirectoryModel : DirectoryModel
 
-    /// Directory model.
-    | MkDirectoryModel of DirectoryModel
-
-    /// Image model.
-    | MkImageModel of ImageModel
+        /// Image model, if in image mode.
+        ImageModelOpt : Option<ImageModel>
+    }
 
 module Model =
 
@@ -17,9 +18,13 @@ module Model =
     let init (entity : FileSystemInfo) =
         match entity with
             | :? DirectoryInfo as dir ->
-                DirectoryModel.init dir
-                    |> MkDirectoryModel
+                {
+                    DirectoryModel = DirectoryModel.init dir
+                    ImageModelOpt = None
+                }
             | :? FileInfo as file ->
-                ImageModel.init file
-                    |> MkImageModel
+                {
+                    DirectoryModel = DirectoryModel.init file.Directory
+                    ImageModelOpt = Some (ImageModel.init file)
+                }
             | _ -> failwith "Unexpected file system entity"

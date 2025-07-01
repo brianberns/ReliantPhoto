@@ -16,43 +16,43 @@ module Message =
     let init arg =
         let model = Model.init arg
         let cmd =
-            match model with
-                | MkDirectoryModel _ ->
-                    Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
-                | MkImageModel _ ->
-                    Cmd.ofMsg (MkImageMessage LoadImage)
+            if model.ImageModelOpt.IsNone then
+                Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
+            else
+                Cmd.ofMsg (MkImageMessage LoadImage)
         model, cmd
 
     /// Updates the given model based on the given message.
     let update message model =
-        match message, model with
+        match message, model.ImageModelOpt with
 
                 // process directory message
-            | MkDirectoryMessage dirMsg, MkDirectoryModel dirModel ->
+            | MkDirectoryMessage dirMsg, None ->
                 let dirModel, dirCmd =
-                    DirectoryMessage.update dirMsg dirModel
-                MkDirectoryModel dirModel,
+                    DirectoryMessage.update dirMsg model.DirectoryModel
+                { model with DirectoryModel = dirModel },
                 Cmd.map MkDirectoryMessage dirCmd
 
                 // process image message
-            | MkImageMessage imgMsg, MkImageModel imgModel ->
+            | MkImageMessage imgMsg, Some imgModel ->
                 let imgModel, imgCmd =
                     ImageMessage.update imgMsg imgModel
-                MkImageModel imgModel,
+                { model with ImageModelOpt = Some imgModel },
                 Cmd.map MkImageMessage imgCmd
 
                 // switch to image mode
-            | SwitchToImage file, _ ->
-                MkImageModel (ImageModel.init file),
+            | SwitchToImage file, None ->
+                { model with
+                    ImageModelOpt = Some (ImageModel.init file) },
                 Cmd.ofMsg (MkImageMessage LoadImage)
 
                 // switch to directory mode
-            | SwitchToDirectory dir, _ ->
-                MkDirectoryModel (DirectoryModel.init dir),
+            | SwitchToDirectory dir, Some _ ->
+                { model with ImageModelOpt = None },
                 Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
 
                 // ignore stale message
-            | MkDirectoryMessage (ImagesLoaded _), MkImageModel _ ->
+            | MkDirectoryMessage (ImagesLoaded _), Some _ ->
                 model, Cmd.none
 
             | _ -> failwith $"Invalid message {message} for model {model}"
