@@ -1,13 +1,15 @@
 ﻿namespace Reliant.Photo
 
 open System.IO
+open System.Threading
 
 open Avalonia.Media.Imaging
 
 module FileInfo =
 
     /// Waits for the given file to be readable.
-    let waitForFileRead (file : FileInfo) =
+    let waitForFileRead
+        (token : CancellationToken) (file : FileInfo) =
 
         let rec loop duration =
             async {
@@ -15,10 +17,14 @@ module FileInfo =
                     use _ = file.OpenRead()
                     return ()
                 with
-                    :? IOException as exn
+                    | :? IOException as exn
                         when exn.HResult = 0x80070020 ->   // file in use by another process
-                    do! Async.Sleep(duration : int)
-                    return! loop (2 * duration)
+                        if not token.IsCancellationRequested then
+                            do! Async.Sleep(duration : int)
+                            return! loop (2 * duration)
+                    | :? IOException as exn
+                        when exn.HResult = 0x80070002 ->   // file does not exist (why does this happen?)
+                        ()
             }
 
         loop 100

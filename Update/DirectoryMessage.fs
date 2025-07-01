@@ -69,10 +69,10 @@ module DirectoryMessage =
 
     /// Responds to the creation of a new file.
     let private onFileCreated
-        sessionId dispatch (args : FileSystemEventArgs) =
+        sessionId token dispatch (args : FileSystemEventArgs) =
         async {
             let file = FileInfo(args.FullPath)
-            do! FileInfo.waitForFileRead file
+            do! FileInfo.waitForFileRead token file
             let! result =
                 ImageFile.tryLoadImage
                     (Some imageHeight) file
@@ -85,18 +85,23 @@ module DirectoryMessage =
         fun dispatch ->
 
                 // watch for changes
+            let cts = new CancellationTokenSource()
             let watcher =
                 new FileSystemWatcher(
                     model.Directory.FullName,
                     EnableRaisingEvents = true)
             watcher.Created.Add(
-                onFileCreated model.SessionId dispatch)
+                onFileCreated
+                    model.SessionId
+                    cts.Token
+                    dispatch)
 
                 // cleanup
             {
                 new IDisposable with
                     member _.Dispose() =
                         watcher.Dispose()
+                        cts.Cancel(); cts.Dispose()
             }
 
     /// Subscribes to loading images.
