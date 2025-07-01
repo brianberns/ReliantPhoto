@@ -23,7 +23,7 @@ module FileInfo =
                             do! Async.Sleep(duration : int)
                             return! loop (2 * duration)
                     | :? IOException as exn
-                        when exn.HResult = 0x80070002 ->   // file does not exist (why does this happen?)
+                        when exn.HResult = 0x80070002 ->   // file no longer exists
                         ()
             }
 
