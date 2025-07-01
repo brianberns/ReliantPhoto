@@ -49,8 +49,10 @@ module ImageModel =
         let files =
             model.File.Directory.GetFiles()
                 |> Seq.where (fun file ->
-                    file.Attributes.HasFlag(FileAttributes.Hidden)
-                        |> not)
+                    file.Attributes
+                        &&& (FileAttributes.Hidden
+                            ||| FileAttributes.System)
+                        = FileAttributes.None)
                 |> Seq.sortWith compareFiles
                 |> Seq.toArray
 
