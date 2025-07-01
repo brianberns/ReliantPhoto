@@ -39,6 +39,7 @@ module DirectoryMessage =
                             let! pairs = Async.Parallel chunk
                             dispatch (
                                 ImagesLoaded (sessionId, pairs))
+                    dispatch DirectoryLoaded
                 }
             Async.Start(work, token)
 
