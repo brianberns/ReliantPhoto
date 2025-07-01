@@ -106,7 +106,7 @@ module ImageFile =
 
     /// Tries to load the contents of the given directory.
     let tryLoadDirectory height (dir : DirectoryInfo) =
-        dir.EnumerateFiles()
+        dir.EnumerateFiles("*", EnumerationOptions())   // ignore hidden and system files
             |> Seq.map (fun file ->
                 async {
                     let! result =
