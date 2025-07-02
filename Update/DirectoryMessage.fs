@@ -18,9 +18,6 @@ type DirectoryMessage =
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded of SessionId
 
-    /// User has selected a directory to load.
-    | DirectorySelected of DirectoryInfo
-
 module DirectoryMessage =
 
     /// Browses to the given directory.
@@ -143,6 +140,3 @@ module DirectoryMessage =
                         { model with IsLoading = false }
                     else model   // ignore stale message
                 model, Cmd.none
-
-            | DirectorySelected dir ->
-                init dir

@@ -5,10 +5,21 @@ open Elmish
 
 /// Messages that can change the model.
 type Message =
+
+    /// A directory-mode message.
     | MkDirectoryMessage of DirectoryMessage
+
+    /// An image-mode message.
     | MkImageMessage of ImageMessage
+
+    /// Switch from directory mode to image mode.
     | SwitchToImage of FileInfo
+
+    /// Switch from image mode to directory mode.
     | SwitchToDirectory
+
+    /// User has selected an imageto load.
+    | ImageSelected of FileInfo
 
 module Message =
 
@@ -26,14 +37,14 @@ module Message =
     let update message model =
         match message, model.ImageModelOpt with
 
-                // process directory message
+                // process directory-mode message
             | MkDirectoryMessage dirMsg, _ ->
                 let dirModel, dirCmd =
                     DirectoryMessage.update dirMsg model.DirectoryModel
                 { model with DirectoryModel = dirModel },
                 Cmd.map MkDirectoryMessage dirCmd
 
-                // process image message
+                // process image-mode message
             | MkImageMessage imgMsg, Some imgModel ->
                 let imgModel, imgCmd =
                     ImageMessage.update imgMsg imgModel
@@ -50,5 +61,9 @@ module Message =
             | SwitchToDirectory, Some _ ->
                 { model with ImageModelOpt = None },
                 Cmd.none
+
+                // image selected
+            | ImageSelected file, _ ->
+                init file
 
             | _ -> failwith $"Invalid message {message} for model {model}"

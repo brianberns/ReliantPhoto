@@ -49,23 +49,23 @@ module Button =
 
 module DirectoryView =
 
-    /// Allows user to select a directory.
-    let private onSelectDirectory dispatch args =
+    /// Allows user to select an image.
+    let private onSelectImage dispatch args =
         let topLevel =
             (args : RoutedEventArgs).Source
                 :?> Control
                 |> TopLevel.GetTopLevel
         async {
             let! folders =
-                let options = FolderPickerOpenOptions()
+                let options = FilePickerOpenOptions()
                 topLevel
                     .StorageProvider
-                    .OpenFolderPickerAsync(options)
+                    .OpenFilePickerAsync(options)
                     |> Async.AwaitTask
             if folders.Count > 0 then
                 folders[0].Path.LocalPath
-                    |> DirectoryInfo
-                    |> (DirectorySelected >> MkDirectoryMessage)
+                    |> FileInfo
+                    |> ImageSelected
                     |> dispatch
         } |> Async.StartImmediate
 
@@ -78,7 +78,7 @@ module DirectoryView =
             StackPanel.margin 5.0
             StackPanel.children [
                 Button.createText "🗀" (
-                    onSelectDirectory dispatch)
+                    onSelectImage dispatch)
             ]
         ]
 
