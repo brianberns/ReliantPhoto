@@ -47,10 +47,10 @@ module Button =
             Button.onClick callback
         ]
 
-module DirectoryView =
+module FileSystemView =
 
     /// Allows user to select an image.
-    let private onSelectImage dispatch args =
+    let onSelectImage dispatch args =
         let topLevel =
             (args : RoutedEventArgs).Source
                 :?> Control
@@ -69,6 +69,8 @@ module DirectoryView =
                     |> dispatch
         } |> Async.StartImmediate
 
+module DirectoryView =
+
     /// Creates a toolbar.
     let private createToolbar dock dispatch =
         StackPanel.create [
@@ -78,7 +80,7 @@ module DirectoryView =
             StackPanel.margin 5.0
             StackPanel.children [
                 Button.createText "🗀" (
-                    onSelectImage dispatch)
+                    FileSystemView.onSelectImage dispatch)
             ]
         ]
 

@@ -21,6 +21,8 @@ module ImageView =
             StackPanel.children [
                 Button.createText "↩" (fun _ ->
                     dispatch SwitchToDirectory)
+                Button.createText "🗀" (
+                    FileSystemView.onSelectImage dispatch)
             ]
         ]
 
