@@ -27,10 +27,11 @@ module Message =
     let init arg =
         let model = Model.init arg
         let cmd =
-            if model.ImageModelOpt.IsNone then
+            Cmd.batch [
                 Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
-            else
-                Cmd.ofMsg (MkImageMessage LoadImage)
+                if model.ImageModelOpt.IsSome then
+                    Cmd.ofMsg (MkImageMessage LoadImage)
+            ]
         model, cmd
 
     /// Updates the given model based on the given message.

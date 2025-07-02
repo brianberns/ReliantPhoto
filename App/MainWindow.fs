@@ -81,8 +81,7 @@ module Window =
                 subscribe window)
             |> Program.withHost window
             |> Program.withConsoleTrace
-            |> Program.runWithAvaloniaSyncDispatch
-                directory
+            |> Program.runWithAvaloniaSyncDispatch directory
 
 /// Main window.
 type MainWindow(_args : string[]) as this =
