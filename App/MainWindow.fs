@@ -96,7 +96,11 @@ module Window =
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo Viewer",
-        Icon = WindowIcon("icon.png"))
+        Icon =
+            WindowIcon(
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    "icon.png")))
     do
             // load settings at startup
         Window.loadSettings this
