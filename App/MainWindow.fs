@@ -74,17 +74,26 @@ module Window =
                 | None -> ()
         ]
 
+    /// Gets initial file or directory.
+    let getInitialArg (args : _[]) =
+        if args.Length = 0 then
+            directory :> FileSystemInfo
+        else
+            args[0]
+                |> FileInfo
+                :> _
+
     /// Starts the Elmish MVU loop.
-    let run window =
+    let run window arg =
         Program.mkProgram Message.init Message.update View.view
             |> Program.withSubscription (
                 subscribe window)
             |> Program.withHost window
             |> Program.withConsoleTrace
-            |> Program.runWithAvaloniaSyncDispatch directory
+            |> Program.runWithAvaloniaSyncDispatch arg
 
 /// Main window.
-type MainWindow(_args : string[]) as this =
+type MainWindow(args : string[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo Viewer",
         Icon = WindowIcon("icon.png"))
@@ -97,4 +106,5 @@ type MainWindow(_args : string[]) as this =
             Window.saveSettings this)
 
             // run the app
-        Window.run this
+        Window.getInitialArg args
+            |> Window.run this
