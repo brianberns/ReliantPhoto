@@ -7,7 +7,6 @@ open Avalonia.FuncUI.Types
 open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
-open Avalonia.Media.Imaging
 
 module ImageView =
 

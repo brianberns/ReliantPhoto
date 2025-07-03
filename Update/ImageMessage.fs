@@ -19,7 +19,7 @@ type ImageMessage =
     | NextImage
 
     | ImageSized of Size
-    | WheelZoom of int (*sign*) * Point
+    | WheelZoom of int (*sign*) * Point (*pointer position*)
 
 module ImageMessage =
 
@@ -52,12 +52,12 @@ module ImageMessage =
 
                 // browse to previous image
             | PreviousImage  ->
-                ImageModel.browseImage -1 model,
+                ImageModel.browse -1 model.File,
                 Cmd.ofMsg LoadImage
 
                 // browse to next image
             | NextImage  ->
-                ImageModel.browseImage 1 model,
+                ImageModel.browse 1 model.File,
                 Cmd.ofMsg LoadImage
 
             | ImageSized size ->
@@ -69,8 +69,6 @@ module ImageMessage =
                 let incr = 10.0   // increment by tenths
                 let zoom =
                     floor ((model.ZoomScale * incr) + float sign) / incr
-                        |> max 0.1
-                        |> min 10.0
                 let origin =
                     let originX = pointerPos.X / model.ImageSize.Width
                     let originY = pointerPos.Y / model.ImageSize.Height

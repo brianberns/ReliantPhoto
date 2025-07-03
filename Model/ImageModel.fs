@@ -53,13 +53,29 @@ module ImageModel =
     let private fileComparer =
         Comparer.Create(compareFiles)
 
-    /// Browses to an image in the current directory, if
-    /// possible.
-    let browseImage incr model =
+    /// Image center.
+    let private imageCenter =
+        RelativePoint(0.5, 0.5, RelativeUnit.Relative)
+
+    /// An unintialized model.
+    let empty =
+        {
+            File = null
+            IsLoading = false
+            Result = Error ""           // dummy value will be replaced
+            HasPreviousImage = false
+            HasNextImage = false
+            ImageSize = Size.Infinity   // dummy value
+            ZoomScale = 1.0
+            ZoomOrigin = imageCenter
+        }
+
+    /// Browses to an image, if possible.
+    let browse incr (fromFile : FileInfo) =
 
             // get all candidate files for browsing
         let files =
-            model.File.Directory.GetFiles()
+            fromFile.Directory.GetFiles()
                 |> Seq.where (fun file ->
                     file.Attributes
                         &&& (FileAttributes.Hidden
@@ -68,41 +84,28 @@ module ImageModel =
                 |> Seq.sortWith compareFiles
                 |> Seq.toArray
 
-            // find index of file we're browsing to, if possible
-        let toIdxOpt =
+            // find file we're browsing to, if possible
+        let modelOpt =
             option {
                 let! fromIdx =
                     let idx =
                         Array.BinarySearch(
-                            files, model.File, fileComparer)
+                            files, fromFile, fileComparer)
                     if idx >= 0 then Some idx
                     else None
                 let toIdx = fromIdx + incr
                 if toIdx >= 0 && toIdx < files.Length then
-                    return toIdx
+                    return {
+                        empty with
+                            File = files[toIdx]
+                            HasPreviousImage = toIdx > 0
+                            HasNextImage = toIdx < files.Length - 1
+                    }
             }
-
-            // update model accordingly
-        match toIdxOpt with
-            | Some toIdx ->
-                { model with
-                    File = files[toIdx]
-                    HasPreviousImage = toIdx > 0
-                    HasNextImage = toIdx < files.Length - 1 }
-            | None -> model
+        modelOpt
+            |> Option.defaultValue
+                { empty with File = fromFile }
 
     /// Browses to the given file.
     let init file =
-        browseImage 0 {
-            File = file
-            IsLoading = false
-            Result = Error ""           // dummy value will be replaced
-            HasPreviousImage = false
-            HasNextImage = false
-            ImageSize = Size.Infinity   // dummy value
-            ZoomScale = 1.0
-            ZoomOrigin =
-                RelativePoint(          // image center
-                    0.5, 0.5,
-                    RelativeUnit.Relative)
-        }
+        browse 0 file
