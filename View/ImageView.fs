@@ -43,7 +43,7 @@ module ImageView =
 
     /// Creates a zoomable image.
     let private createZoomableImage
-        (osScale : float) source zoomScale zoomOrigin dispatch =
+        source zoomScale zoomOrigin dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
@@ -60,7 +60,7 @@ module ImageView =
                             |> MkImageMessage
                             |> dispatch)
                     Image.onSizeChanged (fun args ->
-                        (args.NewSize * osScale)       // undo any OS-level scaling
+                        args.NewSize
                             |> ImageSized
                             |> MkImageMessage
                             |> dispatch)
@@ -119,7 +119,6 @@ module ImageView =
                 match model.Result with
                     | Ok bitmap ->
                         createZoomableImage
-                            osScale
                             bitmap
                             model.ZoomScale
                             model.ZoomOrigin
