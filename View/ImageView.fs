@@ -11,7 +11,7 @@ open Avalonia.Media
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock zoomPercent dispatch =
+    let private createToolbar dock zoomTotal dispatch =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -24,8 +24,8 @@ module ImageView =
                     FileSystemView.onSelectImage dispatch)
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
-                    if zoomPercent > 0.0 then
-                        TextBlock.text $"%0.1f{zoomPercent}%%"
+                    if zoomTotal > 0.0 then
+                        TextBlock.text $"%0.1f{zoomTotal * 100.0}%%"
                 ]
             ]
         ]
@@ -83,13 +83,13 @@ module ImageView =
     /// Creates a panel that can display images.
     let private createImagePanel osScale model dispatch =
 
-        let zoomPercent =
+            // calculate total zoom
+        let zoomTotal =
             match model.Result with
                 | Ok bitmap when bitmap.Size.Width > 0 ->
                     float model.ImageSize.Width
                         * model.ZoomScale
                         * osScale
-                        * 100.0
                         / float bitmap.Size.Width
                 | _ -> 0.0
 
@@ -101,10 +101,7 @@ module ImageView =
 
             DockPanel.children [
 
-                createToolbar
-                    Dock.Top
-                    zoomPercent
-                    dispatch
+                createToolbar Dock.Top zoomTotal dispatch
 
                 createBrowsePanel
                     Dock.Left "◀"
