@@ -65,8 +65,10 @@ module ImageMessage =
                 Cmd.none
 
             | WheelZoom (sign, pointerPos) ->
+                assert(abs sign = 1)
+                let incr = 10.0   // increment by tenths
                 let zoom =
-                    floor ((model.ZoomScale * 10.0) + float sign) / 10.0
+                    floor ((model.ZoomScale * incr) + float sign) / incr
                         |> max 0.1
                         |> min 10.0
                 let origin =
