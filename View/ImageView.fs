@@ -1,7 +1,6 @@
 ﻿namespace Reliant.Photo
 
-open System.IO
-
+open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
@@ -37,8 +36,31 @@ module ImageView =
             ]
         ]
 
+    let private createImage
+        (osScale : float) (source : IImage) zoomScale zoomOrigin dispatch =
+        Image.create [
+            Image.source source
+            Image.maxHeight source.Size.Height
+            Image.maxWidth source.Size.Width
+            Image.renderTransformOrigin zoomOrigin
+            Image.renderTransform (
+                ScaleTransform(zoomScale, zoomScale))
+            Image.onPointerWheelChanged (fun e ->
+                e.Handled <- true
+                let pointerPos = e.GetPosition(e.Source :?> Visual)
+                (sign e.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
+                    |> WheelZoom
+                    |> MkImageMessage
+                    |> dispatch)
+            Image.onSizeChanged (fun args ->
+                (args.NewSize * osScale)
+                    |> ImageSized
+                    |> MkImageMessage
+                    |> dispatch)
+        ]
+
     /// Creates a panel that can display images.
-    let private createImagePanel model dispatch =
+    let private createImagePanel osScale model dispatch =
         DockPanel.create [
 
             if model.IsLoading then
@@ -60,12 +82,13 @@ module ImageView =
                     (fun _ -> dispatch (MkImageMessage NextImage))
 
                 match model.Result with
-                    | Ok image ->
-                        Image.create [
-                            Image.source image
-                            Image.maxHeight image.Size.Height
-                            Image.maxWidth image.Size.Width
-                        ]
+                    | Ok source ->
+                        createImage
+                            osScale
+                            source
+                            model.ZoomScale
+                            model.ZoomOrigin
+                            dispatch
                     | Error str ->
                         TextBlock.create [
                             TextBlock.text str
@@ -111,6 +134,6 @@ module ImageView =
         ]
 
     /// Creates a view of the given model.
-    let view model dispatch =
-        createImagePanel model dispatch
+    let view osScale model dispatch =
+        createImagePanel osScale model dispatch
             |> createKeyBindingBorder model dispatch

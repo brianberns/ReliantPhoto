@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 
+open Avalonia
 open Avalonia.Media.Imaging
 
 /// Image model.
@@ -25,6 +26,17 @@ type ImageModel =
 
         /// User can browse to next image?
         HasNextImage : bool
+
+        /// Displayed image size. This is different from the bitmap
+        /// size due to scaling and zooming.
+        ImageSize : Size
+
+        /// Image zoom scale. This is different from scaling done by
+        /// Avalonia.
+        ZoomScale : float
+
+        /// Point at which to center zoom.
+        ZoomOrigin: RelativePoint
     }
 
 module ImageModel =
@@ -84,7 +96,13 @@ module ImageModel =
         browseImage 0 {
             File = file
             IsLoading = false
-            Result = Error ""   // dummy value will be replaced
+            Result = Error ""           // dummy value will be replaced
             HasPreviousImage = false
             HasNextImage = false
+            ImageSize = Size.Infinity   // dummy value
+            ZoomScale = 1.0
+            ZoomOrigin =
+                RelativePoint(          // image center
+                    0.5, 0.5,
+                    RelativeUnit.Relative)
         }

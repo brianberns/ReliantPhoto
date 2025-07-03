@@ -1,6 +1,7 @@
 ﻿namespace Reliant.Photo
 
 open Elmish
+open Avalonia
 
 /// Messages that can change the image model.
 type ImageMessage =
@@ -16,6 +17,9 @@ type ImageMessage =
 
     /// Browse to next image in directory, if possible.
     | NextImage
+
+    | ImageSized of Size
+    | WheelZoom of int (*sign*) * Point
 
 module ImageMessage =
 
@@ -55,3 +59,21 @@ module ImageMessage =
             | NextImage  ->
                 ImageModel.browseImage 1 model,
                 Cmd.ofMsg LoadImage
+
+            | ImageSized size ->
+                { model with ImageSize = size },
+                Cmd.none
+
+            | WheelZoom (sign, pointerPos) ->
+                let zoom =
+                    floor ((model.ZoomScale * 10.0) + float sign) / 10.0
+                        |> max 0.1
+                        |> min 10.0
+                let origin =
+                    let originX = pointerPos.X / model.ImageSize.Width
+                    let originY = pointerPos.Y / model.ImageSize.Height
+                    RelativePoint(originX, originY, RelativeUnit.Relative)
+                { model with
+                    ZoomScale = zoom
+                    ZoomOrigin = origin },
+                Cmd.none
