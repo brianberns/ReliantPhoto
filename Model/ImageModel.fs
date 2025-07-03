@@ -31,7 +31,7 @@ type ImageModel =
         /// size due to scaling and zooming.
         ImageSize : Size
 
-        /// Image zoom scale. This is different from scaling done by
+        /// User zoom scale. This is different from scaling done by
         /// Avalonia.
         ZoomScale : float
 
@@ -53,21 +53,18 @@ module ImageModel =
     let private fileComparer =
         Comparer.Create(compareFiles)
 
-    /// Image center.
-    let private imageCenter =
-        RelativePoint(0.5, 0.5, RelativeUnit.Relative)
-
-    /// An unintialized model.
-    let empty =
+    /// An uninitialized model.
+    let private empty =
         {
             File = null
             IsLoading = false
-            Result = Error ""           // dummy value will be replaced
+            Result = Error ""
             HasPreviousImage = false
             HasNextImage = false
-            ImageSize = Size.Infinity   // dummy value
+            ImageSize = Size.Infinity
             ZoomScale = 1.0
-            ZoomOrigin = imageCenter
+            ZoomOrigin =
+                RelativePoint(0.5, 0.5, RelativeUnit.Relative)   // image center
         }
 
     /// Browses to an image, if possible.
@@ -102,6 +99,8 @@ module ImageModel =
                             HasNextImage = toIdx < files.Length - 1
                     }
             }
+
+            // create default model if necessary
         modelOpt
             |> Option.defaultValue
                 { empty with File = fromFile }

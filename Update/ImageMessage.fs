@@ -9,7 +9,7 @@ type ImageMessage =
     /// Load the current image file, if possible.
     | LoadImage
 
-    /// The current image file was (maybe) loaded.
+    /// The current image file has (maybe) loaded.
     | ImageLoaded of ImageResult
 
     /// Browse to previous image in directory, if possible.
@@ -18,7 +18,10 @@ type ImageMessage =
     /// Browse to next image in directory, if possible.
     | NextImage
 
+    /// The size of the displayed image has changed.
     | ImageSized of Size
+
+    /// The pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
 module ImageMessage =
