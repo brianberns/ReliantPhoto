@@ -36,24 +36,23 @@ module ImageView =
             ]
         ]
 
+    /// Creates a zoomable image.
     let private createImage
-        (osScale : float) (source : IImage) zoomScale zoomOrigin dispatch =
+        (osScale : float) source zoomScale zoomOrigin dispatch =
         Image.create [
             Image.source source
-            Image.maxHeight source.Size.Height
-            Image.maxWidth source.Size.Width
-            Image.renderTransformOrigin zoomOrigin
             Image.renderTransform (
                 ScaleTransform(zoomScale, zoomScale))
+            Image.renderTransformOrigin zoomOrigin
             Image.onPointerWheelChanged (fun e ->
-                e.Handled <- true
                 let pointerPos = e.GetPosition(e.Source :?> Visual)
+                e.Handled <- true
                 (sign e.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
                     |> WheelZoom
                     |> MkImageMessage
                     |> dispatch)
             Image.onSizeChanged (fun args ->
-                (args.NewSize * osScale)
+                (args.NewSize * osScale)       // undo any OS-level scaling
                     |> ImageSized
                     |> MkImageMessage
                     |> dispatch)
