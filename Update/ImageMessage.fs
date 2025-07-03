@@ -69,9 +69,12 @@ module ImageMessage =
 
             | WheelZoom (sign, pointerPos) ->
                 assert(abs sign = 1)
-                let incr = 10.0   // increment by tenths
                 let zoom =
-                    floor ((model.ZoomScale * incr) + float sign) / incr
+                    let factor = 1.1
+                    if sign >= 0 then
+                        model.ZoomScale * factor
+                    else
+                        model.ZoomScale / factor
                 let origin =
                     let originX = pointerPos.X / model.ImageSize.Width
                     let originY = pointerPos.Y / model.ImageSize.Height
