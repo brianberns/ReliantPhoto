@@ -37,25 +37,42 @@ module ImageView =
         ]
 
     /// Creates a zoomable image.
-    let private createImage
+    let private createZoomableImage
         (osScale : float) source zoomScale zoomOrigin dispatch =
-        Image.create [
-            Image.source source
-            Image.renderTransform (
-                ScaleTransform(zoomScale, zoomScale))
-            Image.renderTransformOrigin zoomOrigin
-            Image.onPointerWheelChanged (fun e ->
-                let pointerPos = e.GetPosition(e.Source :?> Visual)
-                e.Handled <- true
-                (sign e.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
-                    |> WheelZoom
-                    |> MkImageMessage
-                    |> dispatch)
-            Image.onSizeChanged (fun args ->
-                (args.NewSize * osScale)       // undo any OS-level scaling
-                    |> ImageSized
-                    |> MkImageMessage
-                    |> dispatch)
+        Border.create [
+            Border.clipToBounds true
+            Border.child (
+                Image.create [
+                    Image.source source
+                    Image.renderTransform (
+                        ScaleTransform(zoomScale, zoomScale))
+                    Image.renderTransformOrigin zoomOrigin
+                    Image.onPointerWheelChanged (fun e ->
+                        let pointerPos = e.GetPosition(e.Source :?> Visual)
+                        e.Handled <- true
+                        (sign e.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
+                            |> WheelZoom
+                            |> MkImageMessage
+                            |> dispatch)
+                    Image.onSizeChanged (fun args ->
+                        (args.NewSize * osScale)       // undo any OS-level scaling
+                            |> ImageSized
+                            |> MkImageMessage
+                            |> dispatch)
+                ]
+            )
+        ]
+
+    /// Creates an error message.
+    let private createErrorMessage str =
+        TextBlock.create [
+            TextBlock.text str
+            TextBlock.horizontalAlignment
+                HorizontalAlignment.Center
+            TextBlock.verticalAlignment
+                VerticalAlignment.Center
+            TextBlock.textAlignment
+                TextAlignment.Center
         ]
 
     /// Creates a panel that can display images.
@@ -82,22 +99,14 @@ module ImageView =
 
                 match model.Result with
                     | Ok source ->
-                        createImage
+                        createZoomableImage
                             osScale
                             source
                             model.ZoomScale
                             model.ZoomOrigin
                             dispatch
                     | Error str ->
-                        TextBlock.create [
-                            TextBlock.text str
-                            TextBlock.horizontalAlignment
-                                HorizontalAlignment.Center
-                            TextBlock.verticalAlignment
-                                VerticalAlignment.Center
-                            TextBlock.textAlignment
-                                TextAlignment.Center
-                        ]
+                        createErrorMessage str
             ]
         ]
 
