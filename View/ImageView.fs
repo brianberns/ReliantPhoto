@@ -22,8 +22,10 @@ module ImageView =
                     dispatch SwitchToDirectory)
                 Button.createText "🗀" (
                     FileSystemView.onSelectImage dispatch)
-                TextBox.create [
-                    TextBox.text $"%0.1f{zoomPercent}"
+                TextBlock.create [
+                    TextBlock.verticalAlignment VerticalAlignment.Center
+                    if zoomPercent > 0.0 then
+                        TextBlock.text $"%0.1f{zoomPercent}%%"
                 ]
             ]
         ]
