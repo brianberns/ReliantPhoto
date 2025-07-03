@@ -7,11 +7,12 @@ open Avalonia.FuncUI.Types
 open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
+open Avalonia.Media.Imaging
 
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock dispatch =
+    let private createToolbar dock zoomPercent dispatch =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -22,6 +23,9 @@ module ImageView =
                     dispatch SwitchToDirectory)
                 Button.createText "🗀" (
                     FileSystemView.onSelectImage dispatch)
+                TextBox.create [
+                    TextBox.text $"%0.1f{zoomPercent}"
+                ]
             ]
         ]
 
@@ -77,6 +81,17 @@ module ImageView =
 
     /// Creates a panel that can display images.
     let private createImagePanel osScale model dispatch =
+
+        let zoomPercent =
+            match model.Result with
+                | Ok bitmap when bitmap.Size.Width > 0 ->
+                    float model.ImageSize.Width
+                        * model.ZoomScale
+                        * osScale
+                        * 100.0
+                        / float bitmap.Size.Width
+                | _ -> 0.0
+
         DockPanel.create [
 
             if model.IsLoading then
@@ -85,7 +100,10 @@ module ImageView =
 
             DockPanel.children [
 
-                createToolbar Dock.Top dispatch
+                createToolbar
+                    Dock.Top
+                    zoomPercent
+                    dispatch
 
                 createBrowsePanel
                     Dock.Left "◀"
@@ -98,10 +116,10 @@ module ImageView =
                     (fun _ -> dispatch (MkImageMessage NextImage))
 
                 match model.Result with
-                    | Ok source ->
+                    | Ok bitmap ->
                         createZoomableImage
                             osScale
-                            source
+                            bitmap
                             model.ZoomScale
                             model.ZoomOrigin
                             dispatch
