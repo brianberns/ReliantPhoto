@@ -31,22 +31,41 @@ module ImageMessage =
         ImageModel.init file,
         Cmd.ofMsg LoadImage
 
+    /// Starts loading the current image.
+    let private onLoadImage (model : ImageModel) =
+        let model =
+            { model with IsLoading = true }
+        let cmd =
+            Cmd.OfAsync.perform
+                (ImageFile.tryLoadImage None)
+                model.File
+                ImageLoaded
+        model, cmd
+
+    /// Updates zoom.
+    let private onWheelZoom sign (pointerPos : Point) model =
+        assert(abs sign = 1)
+        let zoom =
+            let factor = 1.1
+            if sign >= 0 then model.ZoomScale * factor
+            else model.ZoomScale / factor
+        let origin =
+            let originX = pointerPos.X / model.ImageSize.Width
+            let originY = pointerPos.Y / model.ImageSize.Height
+            RelativePoint(originX, originY, RelativeUnit.Relative)
+        { model with
+            ZoomScale = zoom
+            ZoomOrigin = origin },
+        Cmd.none
+
     /// Updates the given model based on the given message.
-    let update message (model : ImageModel) =
+    let update message model=
         match message with
 
-                // start browsing to an image
-            | LoadImage ->
-                let model =
-                    { model with IsLoading = true }
-                let cmd =
-                    Cmd.OfAsync.perform
-                        (ImageFile.tryLoadImage None)
-                        model.File
-                        ImageLoaded
-                model, cmd
+                // start loading an image
+            | LoadImage -> onLoadImage model
 
-                // finish browsing to an image
+                // finish loading an image
             | ImageLoaded result ->
                 { model with
                     IsLoading = false
@@ -70,18 +89,4 @@ module ImageMessage =
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
-                assert(abs sign = 1)
-                let zoom =
-                    let factor = 1.1
-                    if sign >= 0 then
-                        model.ZoomScale * factor
-                    else
-                        model.ZoomScale / factor
-                let origin =
-                    let originX = pointerPos.X / model.ImageSize.Width
-                    let originY = pointerPos.Y / model.ImageSize.Height
-                    RelativePoint(originX, originY, RelativeUnit.Relative)
-                { model with
-                    ZoomScale = zoom
-                    ZoomOrigin = origin },
-                Cmd.none
+                onWheelZoom sign pointerPos model
