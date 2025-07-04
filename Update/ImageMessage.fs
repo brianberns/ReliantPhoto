@@ -45,43 +45,48 @@ module ImageMessage =
         model, cmd
 
     /// Calculates total zoom.
-    let private getZoomTotal systemScale model =
-        match model.Result with
-            | Ok bitmap when bitmap.Size.Width > 0.0 ->
-                float model.ImageSize.Width
-                    * model.ZoomScale
-                    * systemScale
-                    / float bitmap.Size.Width
-            | _ -> 0.0
+    let private getZoomTotal
+        systemScale (bitmap : Bitmap) (imageSize : Size) zoomScale =
+        float imageSize.Width
+            * zoomScale
+            * systemScale
+            / float bitmap.Size.Width
 
-    let private getZoomScale systemScale model =
-        match model.Result with
-            | Ok bitmap when bitmap.Size.Width > 0.0 ->
-                (model.ZoomTotal * bitmap.Size.Width)
-                    / (model.ImageSize.Width * systemScale)
-            | _ -> 1.0
+    let private getZoomScale
+        systemScale (bitmap : Bitmap) (imageSize : Size) zoomTotal =
+        (zoomTotal * bitmap.Size.Width)
+            / (imageSize.Width * systemScale)
+
+    let private getZoom systemScale bitmap imageSize zoomScale =
+        let zoomTotal =
+            min
+                (getZoomTotal
+                    systemScale bitmap imageSize zoomScale)
+                1.0
+        let zoomScale =
+            getZoomScale systemScale bitmap imageSize zoomTotal
+        zoomScale, zoomTotal
 
     /// Updates displayed image size.
     let private onImageSized systemScale imageSize model =
         let model =
-            { model with ImageSize = imageSize }
-        let model =
-            { model with
-                ZoomTotal =
-                    min
-                        (getZoomTotal systemScale model)
-                        1.0 }
-        let model =
-            { model with
-                ZoomScale =
-                    getZoomScale systemScale model }
+            match model.Result with
+                | Ok bitmap ->
+                    let zoomScale, zoomTotal =
+                        getZoom
+                            systemScale bitmap imageSize model.ZoomScale
+                    { model with
+                        ImageSize = imageSize
+                        ZoomScale = zoomScale
+                        ZoomTotal = zoomTotal }
+                | _ -> model
         model, Cmd.none
 
     /// Updates user zoom.
     let private onWheelZoom
         systemScale sign (pointerPos : Point) model =
         assert(abs sign = 1)
-        let zoom =
+        let zoomScale =
             let factor = 1.1
             if sign >= 0 then model.ZoomScale * factor
             else model.ZoomScale / factor
@@ -89,12 +94,18 @@ module ImageMessage =
             let originX = pointerPos.X / model.ImageSize.Width
             let originY = pointerPos.Y / model.ImageSize.Height
             RelativePoint(originX, originY, RelativeUnit.Relative)
-        let zoomTotal = getZoomTotal systemScale model
         let model =
-            { model with
-                ZoomScale = zoom
-                ZoomOrigin = origin
-                ZoomTotal = zoomTotal }
+            match model.Result with
+                | Ok bitmap ->
+                    let zoomTotal =
+                        getZoomTotal
+                            systemScale bitmap
+                            model.ImageSize model.ZoomScale
+                    { model with
+                        ZoomScale = zoomScale
+                        ZoomOrigin = origin
+                        ZoomTotal = zoomTotal }
+                | _ -> model
         model, Cmd.none
 
     /// Updates the given model based on the given message.
