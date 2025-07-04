@@ -37,6 +37,11 @@ type ImageModel =
 
         /// Point at which to center zoom.
         ZoomOrigin: RelativePoint
+
+        /// Total zoom as a function of the underlying bitmap's size,
+        /// the displayed image's size, the user zoom scale, and OS
+        /// scaling.
+        ZoomTotal : float
     }
 
 module ImageModel =
@@ -65,6 +70,7 @@ module ImageModel =
             ZoomScale = 1.0
             ZoomOrigin =
                 RelativePoint(0.5, 0.5, RelativeUnit.Relative)   // image center
+            ZoomTotal = 0.0
         }
 
     /// Browses to an image, if possible.
@@ -108,3 +114,15 @@ module ImageModel =
     /// Browses to the given file.
     let init file =
         browse 0 file
+
+    /// Sets total zoom.
+    let setZoomTotal systemScale model =
+        let zoomTotal =
+            match model.Result with
+                | Ok bitmap when bitmap.Size.Width > 0 ->
+                    float model.ImageSize.Width
+                        * model.ZoomScale
+                        * systemScale
+                        / float bitmap.Size.Width
+                | _ -> 0.0
+        { model with ZoomTotal = zoomTotal }

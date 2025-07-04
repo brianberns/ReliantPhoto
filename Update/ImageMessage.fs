@@ -42,8 +42,16 @@ module ImageMessage =
                 ImageLoaded
         model, cmd
 
-    /// Updates zoom.
-    let private onWheelZoom sign (pointerPos : Point) model =
+    /// Updates displayed image size.
+    let private onImageSized systemScale size model =
+        let model =
+            { model with ImageSize = size }
+                |> ImageModel.setZoomTotal systemScale
+        model, Cmd.none
+
+    /// Updates user zoom.
+    let private onWheelZoom
+        systemScale sign (pointerPos : Point) model =
         assert(abs sign = 1)
         let zoom =
             let factor = 1.1
@@ -53,17 +61,20 @@ module ImageMessage =
             let originX = pointerPos.X / model.ImageSize.Width
             let originY = pointerPos.Y / model.ImageSize.Height
             RelativePoint(originX, originY, RelativeUnit.Relative)
-        { model with
-            ZoomScale = zoom
-            ZoomOrigin = origin },
-        Cmd.none
+        let model =
+            { model with
+                ZoomScale = zoom
+                ZoomOrigin = origin }
+                |> ImageModel.setZoomTotal systemScale
+        model, Cmd.none
 
     /// Updates the given model based on the given message.
-    let update message model=
+    let update systemScale message model=
         match message with
 
                 // start loading an image
-            | LoadImage -> onLoadImage model
+            | LoadImage ->
+                onLoadImage model
 
                 // finish loading an image
             | ImageLoaded result ->
@@ -84,9 +95,8 @@ module ImageMessage =
 
                 // update image size
             | ImageSized size ->
-                { model with ImageSize = size },
-                Cmd.none
+                onImageSized systemScale size model
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
-                onWheelZoom sign pointerPos model
+                onWheelZoom systemScale sign pointerPos model

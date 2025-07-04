@@ -35,7 +35,7 @@ module Message =
         model, cmd
 
     /// Updates the given model based on the given message.
-    let update message model =
+    let update systemScale message model =
         match message, model.ImageModelOpt with
 
                 // process directory-mode message
@@ -48,7 +48,7 @@ module Message =
                 // process image-mode message
             | MkImageMessage imgMsg, Some imgModel ->
                 let imgModel, imgCmd =
-                    ImageMessage.update imgMsg imgModel
+                    ImageMessage.update systemScale imgMsg imgModel
                 { model with ImageModelOpt = Some imgModel },
                 Cmd.map MkImageMessage imgCmd
 

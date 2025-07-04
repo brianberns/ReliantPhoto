@@ -81,18 +81,7 @@ module ImageView =
         ]
 
     /// Creates a panel that can display images.
-    let private createImagePanel osScale model dispatch =
-
-            // calculate total zoom
-        let zoomTotal =
-            match model.Result with
-                | Ok bitmap when bitmap.Size.Width > 0 ->
-                    float model.ImageSize.Width
-                        * model.ZoomScale
-                        * osScale
-                        / float bitmap.Size.Width
-                | _ -> 0.0
-
+    let private createImagePanel model dispatch =
         DockPanel.create [
 
             if model.IsLoading then
@@ -101,7 +90,10 @@ module ImageView =
 
             DockPanel.children [
 
-                createToolbar Dock.Top zoomTotal dispatch
+                createToolbar
+                    Dock.Top
+                    model.ZoomTotal
+                    dispatch
 
                 createBrowsePanel
                     Dock.Left "◀"
@@ -157,6 +149,6 @@ module ImageView =
         ]
 
     /// Creates a view of the given model.
-    let view osScale model dispatch =
-        createImagePanel osScale model dispatch
+    let view model dispatch =
+        createImagePanel model dispatch
             |> createKeyBindingBorder model dispatch

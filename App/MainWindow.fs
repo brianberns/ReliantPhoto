@@ -85,11 +85,11 @@ module Window =
 
     /// Starts the Elmish MVU loop.
     let run window arg =
-        let osScale = TopLevel.GetTopLevel(window).RenderScaling
+        let systemScale = TopLevel.GetTopLevel(window).RenderScaling
         Program.mkProgram
             Message.init
-            Message.update
-            (View.view osScale)
+            (Message.update systemScale)
+            View.view
             |> Program.withSubscription (
                 subscribe window)
             |> Program.withHost window
