@@ -43,12 +43,12 @@ module ImageView =
 
     /// Creates a zoomable image.
     let private createZoomableImage
-        source zoomScale zoomOrigin dispatch =
+        bitmap zoomScale zoomOrigin dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
                 Image.create [
-                    Image.source source
+                    Image.source bitmap
                     Image.renderTransform (
                         ScaleTransform(zoomScale, zoomScale))
                     Image.renderTransformOrigin zoomOrigin

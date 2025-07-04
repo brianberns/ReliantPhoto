@@ -1,7 +1,9 @@
 ﻿namespace Reliant.Photo
 
 open Elmish
+
 open Avalonia
+open Avalonia.Media.Imaging
 
 /// Messages that can change the image model.
 type ImageMessage =
@@ -42,11 +44,37 @@ module ImageMessage =
                 ImageLoaded
         model, cmd
 
+    /// Calculates total zoom.
+    let private getZoomTotal systemScale model =
+        match model.Result with
+            | Ok bitmap when bitmap.Size.Width > 0.0 ->
+                float model.ImageSize.Width
+                    * model.ZoomScale
+                    * systemScale
+                    / float bitmap.Size.Width
+            | _ -> 0.0
+
+    let private getZoomScale systemScale model =
+        match model.Result with
+            | Ok bitmap when bitmap.Size.Width > 0.0 ->
+                (model.ZoomTotal * bitmap.Size.Width)
+                    / (model.ImageSize.Width * systemScale)
+            | _ -> 1.0
+
     /// Updates displayed image size.
-    let private onImageSized systemScale size model =
+    let private onImageSized systemScale imageSize model =
         let model =
-            { model with ImageSize = size }
-                |> ImageModel.setZoomTotal systemScale
+            { model with ImageSize = imageSize }
+        let model =
+            { model with
+                ZoomTotal =
+                    min
+                        (getZoomTotal systemScale model)
+                        1.0 }
+        let model =
+            { model with
+                ZoomScale =
+                    getZoomScale systemScale model }
         model, Cmd.none
 
     /// Updates user zoom.
@@ -61,15 +89,16 @@ module ImageMessage =
             let originX = pointerPos.X / model.ImageSize.Width
             let originY = pointerPos.Y / model.ImageSize.Height
             RelativePoint(originX, originY, RelativeUnit.Relative)
+        let zoomTotal = getZoomTotal systemScale model
         let model =
             { model with
                 ZoomScale = zoom
-                ZoomOrigin = origin }
-                |> ImageModel.setZoomTotal systemScale
+                ZoomOrigin = origin
+                ZoomTotal = zoomTotal }
         model, Cmd.none
 
     /// Updates the given model based on the given message.
-    let update systemScale message model=
+    let update systemScale message model =
         match message with
 
                 // start loading an image
@@ -94,8 +123,8 @@ module ImageMessage =
                 Cmd.ofMsg LoadImage
 
                 // update image size
-            | ImageSized size ->
-                onImageSized systemScale size model
+            | ImageSized imageSize ->
+                onImageSized systemScale imageSize model
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
