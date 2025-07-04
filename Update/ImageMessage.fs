@@ -63,10 +63,12 @@ module ImageMessage =
                 ImageModel.browse 1 model.File,
                 Cmd.ofMsg LoadImage
 
+                // update image size
             | ImageSized size ->
                 { model with ImageSize = size },
                 Cmd.none
 
+                // update zoom
             | WheelZoom (sign, pointerPos) ->
                 assert(abs sign = 1)
                 let zoom =
