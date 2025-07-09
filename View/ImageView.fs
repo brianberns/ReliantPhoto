@@ -11,7 +11,7 @@ open Avalonia.Media
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock zoomScale dispatch =
+    let private createToolbar dock zoomScaleOpt dispatch =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -24,7 +24,10 @@ module ImageView =
                     FileSystemView.onSelectImage dispatch)
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
-                    TextBlock.text $"%0.1f{zoomScale * 100.0}%%"
+                    match zoomScaleOpt with
+                        | Some zoomScale ->
+                            TextBlock.text $"%0.1f{zoomScale * 100.0}%%"
+                        | None -> ()
                 ]
             ]
         ]
@@ -96,10 +99,23 @@ module ImageView =
             DockPanel.children [
 
                     // toolbar
-                match model.ZoomScaleOpt with
-                    | Some zoomScale ->
-                        createToolbar Dock.Top zoomScale dispatch
-                    | None -> failwith "Zoom scale not set"
+                let zoomScaleOpt =
+                    match model.ZoomScaleOpt, model.Result, model.ImageSizeOpt with
+
+                            // fixed zoom scale
+                        | Some zoomScale, _, _ -> Some zoomScale
+
+                            // variable zoom scale 
+                        | None, Ok bitmap, Some imageSize ->
+                            let zoomScale =
+                                imageSize / bitmap.Size
+                            assert(abs (zoomScale.X - zoomScale.Y) < 0.001)
+                            Some zoomScale.X
+
+                            // e.g. no zoom scale for invalid image
+                        | None, _, _ -> None
+
+                createToolbar Dock.Top zoomScaleOpt dispatch
 
                     // "previous image" button
                 createBrowsePanel
