@@ -1,9 +1,7 @@
 ﻿namespace Reliant.Photo
 
 open Elmish
-
 open Avalonia
-open Avalonia.Media.Imaging
 
 /// Messages that can change the image model.
 type ImageMessage =
@@ -44,72 +42,35 @@ module ImageMessage =
                 ImageLoaded
         model, cmd
 
-    /// Calculates total zoom.
-    let private getZoomTotal
-        systemScale (bitmap : Bitmap) (imageSize : Size) zoomScale =
-        float imageSize.Width
-            * zoomScale
-            * systemScale
-            / float bitmap.Size.Width
-
-    let private getZoomScale
-        systemScale (bitmap : Bitmap) (imageSize : Size) zoomTotal =
-        (zoomTotal * bitmap.Size.Width)
-            / (imageSize.Width * systemScale)
-
-    let private getZoom systemScale bitmap imageSize zoomScale =
-        let zoomTotal =
-            min
-                (getZoomTotal
-                    systemScale bitmap imageSize zoomScale)
-                1.0
-        let zoomScale =
-            getZoomScale systemScale bitmap imageSize zoomTotal
-        zoomScale, zoomTotal
-
     /// Updates displayed image size.
-    let private onImageSized systemScale imageSize model =
+    let private onImageSized imageSize model =
         let model =
-            match model.Result with
-                | Ok bitmap ->
-                    let zoomScale, zoomTotal =
-                        getZoom
-                            systemScale bitmap imageSize model.ZoomScale
-                    { model with
-                        ImageSize = imageSize
-                        ZoomScale = zoomScale
-                        ZoomTotal = zoomTotal }
-                | _ -> model
+            { model with ImageSizeOpt = Some imageSize }
         model, Cmd.none
 
-    /// Updates user zoom.
-    let private onWheelZoom
-        systemScale sign (pointerPos : Point) model =
+    /// Updates zoom scale.
+    let private onWheelZoom sign (pointerPos : Point) model =
         assert(abs sign = 1)
-        let zoomScale =
-            let factor = 1.1
-            if sign >= 0 then model.ZoomScale * factor
-            else model.ZoomScale / factor
-        let origin =
-            let originX = pointerPos.X / model.ImageSize.Width
-            let originY = pointerPos.Y / model.ImageSize.Height
-            RelativePoint(originX, originY, RelativeUnit.Relative)
-        let model =
-            match model.Result with
-                | Ok bitmap ->
-                    let zoomTotal =
-                        getZoomTotal
-                            systemScale bitmap
-                            model.ImageSize model.ZoomScale
+        match model.ZoomScaleOpt, model.ImageSizeOpt with
+            | Some zoomScale, Some imageSize ->
+                let zoomScale =
+                    let factor = 1.1
+                    if sign >= 0 then zoomScale * factor
+                    else zoomScale / factor
+                let origin =
+                    let originX = pointerPos.X / imageSize.Width
+                    let originY = pointerPos.Y / imageSize.Height
+                    RelativePoint(originX, originY, RelativeUnit.Relative)
+                let model =
                     { model with
-                        ZoomScale = zoomScale
-                        ZoomOrigin = origin
-                        ZoomTotal = zoomTotal }
-                | _ -> model
-        model, Cmd.none
+                        ZoomScaleOpt = Some zoomScale
+                        ZoomOrigin = origin }
+                model, Cmd.none
+            | None, _ -> failwith "Zoom scale not set"
+            | _, None -> failwith "Image size not set"
 
     /// Updates the given model based on the given message.
-    let update systemScale message model =
+    let update message model =
         match message with
 
                 // start loading an image
@@ -135,8 +96,8 @@ module ImageMessage =
 
                 // update image size
             | ImageSized imageSize ->
-                onImageSized systemScale imageSize model
+                onImageSized imageSize model
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
-                onWheelZoom systemScale sign pointerPos model
+                onWheelZoom sign pointerPos model

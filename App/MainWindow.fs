@@ -88,7 +88,7 @@ module Window =
         let systemScale = TopLevel.GetTopLevel(window).RenderScaling
         Program.mkProgram
             Message.init
-            (Message.update systemScale)
+            Message.update
             View.view
             |> Program.withSubscription (
                 subscribe window)

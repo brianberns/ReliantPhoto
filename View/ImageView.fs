@@ -11,7 +11,7 @@ open Avalonia.Media
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock zoomTotal dispatch =
+    let private createToolbar dock zoomScale dispatch =
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -24,8 +24,7 @@ module ImageView =
                     FileSystemView.onSelectImage dispatch)
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
-                    if zoomTotal > 0.0 then
-                        TextBlock.text $"%0.1f{zoomTotal * 100.0}%%"
+                    TextBlock.text $"%0.1f{zoomScale * 100.0}%%"
                 ]
             ]
         ]
@@ -43,15 +42,20 @@ module ImageView =
 
     /// Creates a zoomable image.
     let private createZoomableImage
-        bitmap zoomScale zoomOrigin dispatch =
+        bitmap zoomScaleOpt zoomOrigin dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
                 Image.create [
                     Image.source bitmap
-                    Image.renderTransform (
-                        ScaleTransform(zoomScale, zoomScale))
-                    Image.renderTransformOrigin zoomOrigin
+
+                    match zoomScaleOpt with
+                        | Some zoomScale ->
+                            Image.renderTransform (
+                                ScaleTransform(zoomScale, zoomScale))
+                            Image.renderTransformOrigin zoomOrigin
+                        | None -> ()
+
                     Image.onPointerWheelChanged (fun e ->
                         let pointerPos = e.GetPosition(e.Source :?> Visual)
                         e.Handled <- true
@@ -59,6 +63,7 @@ module ImageView =
                             |> WheelZoom
                             |> MkImageMessage
                             |> dispatch)
+
                     Image.onSizeChanged (fun args ->
                         args.NewSize
                             |> ImageSized
@@ -90,26 +95,30 @@ module ImageView =
 
             DockPanel.children [
 
-                createToolbar
-                    Dock.Top
-                    model.ZoomTotal
-                    dispatch
+                    // toolbar
+                match model.ZoomScaleOpt with
+                    | Some zoomScale ->
+                        createToolbar Dock.Top zoomScale dispatch
+                    | None -> failwith "Zoom scale not set"
 
+                    // "previous image" button
                 createBrowsePanel
                     Dock.Left "◀"
                     model.HasPreviousImage
                     (fun _ -> dispatch (MkImageMessage PreviousImage))
 
+                    // "next image" button
                 createBrowsePanel
                     Dock.Right "▶"
                     model.HasNextImage
                     (fun _ -> dispatch (MkImageMessage NextImage))
 
+                    // image
                 match model.Result with
                     | Ok bitmap ->
                         createZoomableImage
                             bitmap
-                            model.ZoomScale
+                            model.ZoomScaleOpt
                             model.ZoomOrigin
                             dispatch
                     | Error str ->

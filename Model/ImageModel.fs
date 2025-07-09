@@ -17,8 +17,7 @@ type ImageModel =
         /// Image is in the process of loading?
         IsLoading : bool
 
-        /// Current loaded image, or error message. This will
-        /// be the old image when starting to browse to a new one.
+        /// Current underlying bitmap, or error message.
         Result : Result<Bitmap, string>
 
         /// User can browse to previous image?
@@ -27,21 +26,15 @@ type ImageModel =
         /// User can browse to next image?
         HasNextImage : bool
 
-        /// Displayed image size. This is different from the bitmap
-        /// size due to scaling and zooming.
-        ImageSize : Size
-
-        /// User zoom scale. This is different from scaling done by
-        /// Avalonia.
-        ZoomScale : float
+        /// Displayed image size, if known. This may be different
+        /// from the underlying bitmap size due to scaling.
+        ImageSizeOpt : Option<Size>
+       
+        /// Zoom scale, if set.
+        ZoomScaleOpt : Option<float>
 
         /// Point at which to center zoom.
         ZoomOrigin: RelativePoint
-
-        /// Total zoom as a function of the underlying bitmap's size,
-        /// the displayed image's size, the user zoom scale, and OS
-        /// scaling.
-        ZoomTotal : float
     }
 
 module ImageModel =
@@ -66,11 +59,10 @@ module ImageModel =
             Result = Error ""
             HasPreviousImage = false
             HasNextImage = false
-            ImageSize = Size.Infinity
-            ZoomScale = 1.0
+            ImageSizeOpt = None
+            ZoomScaleOpt = None
             ZoomOrigin =
                 RelativePoint(0.5, 0.5, RelativeUnit.Relative)   // image center
-            ZoomTotal = 0.0
         }
 
     /// Browses to an image, if possible.
