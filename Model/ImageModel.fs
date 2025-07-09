@@ -107,20 +107,25 @@ module ImageModel =
     let init file =
         browse 0 file
 
+    /// Gets the scale of the given image size relative to the
+    /// given underlying bitmap.
+    let getImageScale (bitmap : Bitmap) imageSize =
+        let zoomScale =
+            imageSize / bitmap.Size
+        assert(abs (zoomScale.X - zoomScale.Y) < 0.001)
+        zoomScale.X
+
     /// Gets the given model's zoom scale, be it fixed or
     /// variable.
     let getZoomScale model =
         match model.ZoomScaleOpt, model.Result, model.ImageSizeOpt with
 
                 // fixed zoom scale
-            | Some zoomScale, _, _ ->Some zoomScale
+            | Some zoomScale, _, _ -> Some zoomScale
 
                 // variable zoom scale 
             | None, Ok bitmap, Some imageSize ->
-                let zoomScale =
-                    imageSize / bitmap.Size
-                assert(abs (zoomScale.X - zoomScale.Y) < 0.001)
-                Some zoomScale.X
+                Some (getImageScale bitmap imageSize)
 
                 // e.g. no zoom scale for invalid image
             | None, _, _ -> None

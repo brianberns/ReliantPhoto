@@ -45,15 +45,18 @@ module ImageView =
 
     /// Creates a zoomable image.
     let private createZoomableImage
-        bitmap zoomScaleOpt zoomOrigin dispatch =
+        bitmap imageSizeOpt zoomScaleOpt zoomOrigin dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
                 Image.create [
+
                     Image.source bitmap
 
                     match zoomScaleOpt with
                         | Some zoomScale ->
+                            let imageSize = Option.get imageSizeOpt
+                            let zoomScale = zoomScale / (ImageModel.getImageScale bitmap imageSize)
                             Image.renderTransform (
                                 ScaleTransform(zoomScale, zoomScale))
                             Image.renderTransformOrigin zoomOrigin
@@ -119,6 +122,7 @@ module ImageView =
                     | Ok bitmap ->
                         createZoomableImage
                             bitmap
+                            model.ImageSizeOpt
                             model.ZoomScaleOpt
                             model.ZoomOrigin
                             dispatch
