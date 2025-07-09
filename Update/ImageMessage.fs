@@ -51,7 +51,8 @@ module ImageMessage =
     /// Updates zoom scale and origin.
     let private onWheelZoom sign (pointerPos : Point) model =
         assert(abs sign = 1)
-        match model.ZoomScaleOpt, model.ImageSizeOpt with
+        let zoomScaleOpt = ImageModel.getZoomScale model
+        match zoomScaleOpt, model.ImageSizeOpt with
             | Some zoomScale, Some imageSize ->
                 let zoomScale =
                     let factor = 1.1

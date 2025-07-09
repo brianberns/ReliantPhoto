@@ -99,22 +99,7 @@ module ImageView =
             DockPanel.children [
 
                     // toolbar
-                let zoomScaleOpt =
-                    match model.ZoomScaleOpt, model.Result, model.ImageSizeOpt with
-
-                            // fixed zoom scale
-                        | Some zoomScale, _, _ -> Some zoomScale
-
-                            // variable zoom scale 
-                        | None, Ok bitmap, Some imageSize ->
-                            let zoomScale =
-                                imageSize / bitmap.Size
-                            assert(abs (zoomScale.X - zoomScale.Y) < 0.001)
-                            Some zoomScale.X
-
-                            // e.g. no zoom scale for invalid image
-                        | None, _, _ -> None
-
+                let zoomScaleOpt = ImageModel.getZoomScale model
                 createToolbar Dock.Top zoomScaleOpt dispatch
 
                     // "previous image" button
