@@ -41,6 +41,7 @@ type DisplayedImage =
         ImageSize : Size
     }
 
+    /// Browsed image file.
     member this.Browsed = this.Loaded.Browsed
 
 module DisplayedImage =
@@ -66,7 +67,10 @@ type ZoomedImage =
         Origin : RelativePoint
     }
 
+    /// Browsed image file.
     member this.Browsed = this.Displayed.Browsed
+
+    /// Loaded image.
     member this.Loaded = this.Displayed.Loaded
 
 /// An image file that could not be browsed.
@@ -109,6 +113,7 @@ type ImageModel =
     /// Image could not be loaded.
     | LoadError of LoadError
 
+    /// Browsed image file.
     member this.BrowsedImage =
         match this with
             | Browsed browsed -> browsed
@@ -118,6 +123,7 @@ type ImageModel =
             | LoadError errored -> errored.Browsed
             | BrowseError _ -> failwith "Invalid state"
 
+    /// Loaded image.
     member this.LoadedImage =
         match this with
             | Loaded loaded -> loaded
