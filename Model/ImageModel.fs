@@ -7,6 +7,7 @@ open System.IO
 open Avalonia
 open Avalonia.Media.Imaging
 
+/// A browsed image file.
 type BrowsedImage =
     {
         /// Image file.
@@ -19,6 +20,7 @@ type BrowsedImage =
         HasNextImage : bool
     }
 
+/// A bitmap loaded from an image file.
 type LoadedImage =
     {
         /// Browsed image.
@@ -32,6 +34,7 @@ type LoadedImage =
     member this.HasPreviousImage = this.Browsed.HasPreviousImage
     member this.HasNextImage = this.Browsed.HasNextImage
 
+/// A displayed image from a loaded image file.
 type DisplayedImage =
     {
         /// Loaded image.
@@ -58,6 +61,7 @@ module DisplayedImage =
         assert(abs (vector.X - vector.Y) < 0.001)
         vector.X
 
+/// An image with a fixed zoom scale and origin.
 type ZoomedImage =
     {
         /// Displayed image.
@@ -89,13 +93,13 @@ type ImageError =
 
 type ImageModel =
 
-    /// File has been browsed, but not yet loaded.
+    /// File has been browsed and is ready to be loaded.
     | Browsed of BrowsedImage
 
-    /// Bitmap has been loaded, but not yet displayed.
+    /// Bitmap has been loaded and is ready to be displayed.
     | Loaded of LoadedImage
 
-    /// Image has been displayed, but has variable scale.
+    /// Image has been displayed and has variable zoom scale.
     | Displayed of DisplayedImage
 
     /// Image has been zoomed to a specific scale.
