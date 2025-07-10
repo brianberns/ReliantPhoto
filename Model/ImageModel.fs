@@ -52,7 +52,7 @@ module DisplayedImage =
         let vector =
             displayed.ImageSize / displayed.Loaded.Bitmap.Size
         assert(abs (vector.X - vector.Y) < 0.001)
-        vector.X * systemScale
+        vector.X * systemScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
 
 /// An image with a fixed zoom scale and origin.
 type ZoomedImage =
@@ -122,16 +122,6 @@ type ImageModel =
             | Zoomed zoomed -> zoomed.Browsed
             | LoadError errored -> errored.Browsed
             | BrowseError _ -> failwith "Invalid state"
-
-    /// Loaded image.
-    member this.LoadedImage =
-        match this with
-            | Loaded loaded -> loaded
-            | Displayed displayed -> displayed.Loaded
-            | Zoomed zoomed -> zoomed.Loaded
-            | Browsed _
-            | BrowseError _
-            | LoadError _ -> failwith "Invalid state"
 
 module ImageModel =
 
