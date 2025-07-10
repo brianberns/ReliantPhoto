@@ -7,6 +7,7 @@ open Avalonia.FuncUI.Types
 open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
+open Avalonia.Media.Imaging
 
 module ImageView =
 
@@ -57,9 +58,13 @@ module ImageView =
         ]
 
     /// Attributes common to any image.
-    let private imageAttributes bitmap dispatch =
+    let private imageAttributes
+        systemScale (bitmap : Bitmap) dispatch =
         [
             Image.source bitmap
+            Image.stretch Stretch.Uniform
+            Image.maxWidth (bitmap.Size.Width / systemScale)   // prevent initial zoom past 100%
+            Image.maxHeight (bitmap.Size.Height / systemScale)
 
             Image.onSizeChanged (fun args ->
                 args.Handled <- true
@@ -88,15 +93,15 @@ module ImageView =
 
                         | Loaded loaded ->
                             yield! imageAttributes
-                                loaded.Bitmap dispatch
+                                systemScale loaded.Bitmap dispatch
 
                         | Displayed displayed ->
                             yield! imageAttributes
-                                displayed.Loaded.Bitmap dispatch
+                                systemScale displayed.Loaded.Bitmap dispatch
 
                         | Zoomed zoomed ->
                             yield! imageAttributes
-                                zoomed.Loaded.Bitmap dispatch
+                                systemScale zoomed.Loaded.Bitmap dispatch
 
                             let zoomScale =
                                 let imageScale =
