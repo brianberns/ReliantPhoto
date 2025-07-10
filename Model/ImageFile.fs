@@ -72,11 +72,8 @@ module private SixLabors =
             // create Avalonia bitmap
         new Bitmap(stream)
 
-/// Result of trying to load an image.
-type ImageResult = Result<Bitmap, string (*error message*)>
-
 /// An image result for a specific file.
-type FileImageResult = FileInfo * ImageResult
+type FileImageResult = FileInfo * Result<Bitmap, string (*error message*)>
 
 module ImageFile =
 
@@ -99,7 +96,7 @@ module ImageFile =
         async {
             try
                 let image = loadImage heightOpt file
-                return (Ok image : ImageResult)
+                return Ok image
             with exn ->
                 return Error exn.Message
         }
