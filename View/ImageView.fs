@@ -12,13 +12,13 @@ open Avalonia.Media.Imaging
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock systemScale model dispatch =
+    let private createToolbar dock dpiScale model dispatch =
 
         let zoomScaleOpt =
             match model with
                 | Displayed displayed ->
                     displayed
-                        |> DisplayedImage.getImageScale systemScale
+                        |> DisplayedImage.getImageScale dpiScale
                         |> Some
                 | Zoomed zoomed ->
                     Some zoomed.Scale
@@ -59,12 +59,12 @@ module ImageView =
 
     /// Attributes common to any image.
     let private imageAttributes
-        systemScale (bitmap : Bitmap) dispatch =
+        dpiScale (bitmap : Bitmap) dispatch =
         [
             Image.source bitmap
             Image.stretch Stretch.Uniform
-            Image.maxWidth (bitmap.Size.Width / systemScale)   // prevent initial zoom past 100%
-            Image.maxHeight (bitmap.Size.Height / systemScale)
+            Image.maxWidth (bitmap.Size.Width / dpiScale)   // prevent initial zoom past 100%
+            Image.maxHeight (bitmap.Size.Height / dpiScale)
 
             Image.onSizeChanged (fun args ->
                 args.Handled <- true
@@ -83,7 +83,7 @@ module ImageView =
         ]
 
     /// Creates a zoomable image.
-    let private createZoomableImage systemScale model dispatch =
+    let private createZoomableImage dpiScale model dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
@@ -93,20 +93,20 @@ module ImageView =
 
                         | Loaded loaded ->
                             yield! imageAttributes
-                                systemScale loaded.Bitmap dispatch
+                                dpiScale loaded.Bitmap dispatch
 
                         | Displayed displayed ->
                             yield! imageAttributes
-                                systemScale displayed.Loaded.Bitmap dispatch
+                                dpiScale displayed.Loaded.Bitmap dispatch
 
                         | Zoomed zoomed ->
                             yield! imageAttributes
-                                systemScale zoomed.Loaded.Bitmap dispatch
+                                dpiScale zoomed.Loaded.Bitmap dispatch
 
                             let zoomScale =
                                 let imageScale =
                                     DisplayedImage.getImageScale
-                                        systemScale zoomed.Displayed
+                                        dpiScale zoomed.Displayed
                                 zoomed.Scale / imageScale
                             Image.renderTransform (
                                 ScaleTransform(zoomScale, zoomScale))
@@ -131,7 +131,7 @@ module ImageView =
 
     /// Creates a panel that can display images.
     let private createImagePanel
-        systemScale (model : ImageModel) dispatch =
+        dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
 
             if model.IsBrowsed then
@@ -142,7 +142,7 @@ module ImageView =
 
                     // toolbar
                 createToolbar
-                    Dock.Top systemScale model dispatch
+                    Dock.Top dpiScale model dispatch
 
                     // "previous image" button
                 createBrowsePanel
@@ -164,7 +164,7 @@ module ImageView =
                         createErrorMessage errored.Message
                     | _ ->
                         createZoomableImage
-                            systemScale model dispatch
+                            dpiScale model dispatch
             ]
         ]
 
@@ -201,6 +201,6 @@ module ImageView =
         ]
 
     /// Creates a view of the given model.
-    let view systemScale model dispatch =
-        createImagePanel systemScale model dispatch
+    let view dpiScale model dispatch =
+        createImagePanel dpiScale model dispatch
             |> createKeyBindingBorder model dispatch

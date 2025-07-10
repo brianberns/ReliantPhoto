@@ -48,11 +48,11 @@ module DisplayedImage =
 
     /// Gets the scale of displayed image size relative to the
     /// underlying bitmap.
-    let getImageScale systemScale displayed =
+    let getImageScale dpiScale displayed =
         let vector =
             displayed.ImageSize / displayed.Loaded.Bitmap.Size
         assert(abs (vector.X - vector.Y) < 0.001)
-        vector.X * systemScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
+        vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
 
 /// An image with a fixed zoom scale and origin.
 type ZoomedImage =
