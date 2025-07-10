@@ -68,10 +68,13 @@ module ImageMessage =
     /// Finishes loading an image and starts displaying it.
     let private onDisplayImage bitmap (model : ImageModel) =
         let model =
-            Loaded {
-                Browsed = model.BrowsedImage
-                Bitmap = bitmap
-            }
+            match model with
+                | Browsed browsed ->
+                    Loaded {
+                        Browsed = browsed
+                        Bitmap = bitmap
+                    }
+                | _ -> failwith "Invalid state"
         model, Cmd.none
 
     /// Sets or updates image size for a displayed image.
