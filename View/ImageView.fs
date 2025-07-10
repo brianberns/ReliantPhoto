@@ -153,7 +153,7 @@ module ImageView =
 
                     // image?
                 match model with
-                    | Errored errored ->
+                    | LoadError errored ->
                         createErrorMessage errored.Message
                     | _ ->
                         createZoomableImage model dispatch

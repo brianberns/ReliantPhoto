@@ -26,8 +26,8 @@ type ImageMessage =
     /// The pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
-    /// Error occurred.
-    | HandleError of string
+    /// Load error occurred.
+    | HandleLoadError of string
 
 module Cmd =
 
@@ -55,11 +55,11 @@ module ImageMessage =
                     (ImageFile.tryLoadImage None)
                     browsed.File
                     Display
-                    HandleError
+                    HandleLoadError
             model, cmd
 
             // browse failed, can't load image
-        | Errored _ as model ->
+        | BrowseError _ as model ->
             model, Cmd.none
 
         | _ -> failwith "Invalid state"
@@ -119,11 +119,11 @@ module ImageMessage =
             }
         model, Cmd.none
 
-    /// Handles an error.
-    let private onHandleError error (model : ImageModel) =
+    /// Handles a load error.
+    let private onHandleLoadError error (model : ImageModel) =
         let model =
-            Errored {
-                File = model.File
+            LoadError {
+                Browsed = model.BrowsedImage
                 Message = error
             }
         model, Cmd.none
@@ -158,5 +158,6 @@ module ImageMessage =
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
 
-            | HandleError error ->
-                onHandleError error model
+                // handle load error
+            | HandleLoadError error ->
+                onHandleLoadError error model

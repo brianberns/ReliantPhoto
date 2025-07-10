@@ -23,7 +23,7 @@ type BrowsedImage =
 /// A bitmap loaded from an image file.
 type LoadedImage =
     {
-        /// Browsed image.
+        /// Browsed image file.
         Browsed : BrowsedImage
 
         /// Loaded bitmap.
@@ -82,14 +82,29 @@ type ZoomedImage =
     member this.Bitmap = this.Loaded.Bitmap
     member this.ImageSize = this.Displayed.ImageSize
 
-type ImageError =
+/// An image file that could not be browsed.
+type BrowseError =
     {
-        /// Image file that couldn't be browsed/loaded.
+        /// Image file that couldn't be browsed.
         File : FileInfo
 
         /// Error message.
         Message : string
     }
+
+/// An image file that could not be loaded.
+type LoadError =
+    {
+        /// Browsed image file.
+        Browsed : BrowsedImage
+
+        /// Error message.
+        Message : string
+    }
+
+    member this.File = this.Browsed.File
+    member this.HasPreviousImage = this.Browsed.HasPreviousImage
+    member this.HasNextImage = this.Browsed.HasNextImage
 
 type ImageModel =
 
@@ -105,8 +120,11 @@ type ImageModel =
     /// Image has been zoomed to a specific scale.
     | Zoomed of ZoomedImage
 
-    /// File could not be browsed/loaded.
-    | Errored of ImageError
+    /// File could not be browsed.
+    | BrowseError of BrowseError
+
+    /// Image could not be loaded.
+    | LoadError of LoadError
 
     member this.File =
         match this with
@@ -114,7 +132,8 @@ type ImageModel =
             | Loaded loaded -> loaded.File
             | Displayed displayed -> displayed.File
             | Zoomed zoomed -> zoomed.File
-            | Errored errored -> errored.File
+            | BrowseError errored -> errored.File
+            | LoadError errored -> errored.File
 
     member this.HasPreviousImage =
         match this with
@@ -122,7 +141,8 @@ type ImageModel =
             | Loaded loaded -> loaded.HasPreviousImage
             | Displayed displayed -> displayed.HasPreviousImage
             | Zoomed zoomed -> zoomed.HasPreviousImage
-            | Errored _ -> failwith "Invalid state"
+            | LoadError errored -> errored.HasPreviousImage
+            | BrowseError _ -> failwith "Invalid state"
 
     member this.HasNextImage =
         match this with
@@ -130,7 +150,8 @@ type ImageModel =
             | Loaded loaded -> loaded.HasNextImage
             | Displayed displayed -> displayed.HasNextImage
             | Zoomed zoomed -> zoomed.HasNextImage
-            | Errored _ -> failwith "Invalid state"
+            | LoadError errored -> errored.HasNextImage
+            | BrowseError _ -> failwith "Invalid state"
 
     member this.BrowsedImage =
         match this with
@@ -138,7 +159,8 @@ type ImageModel =
             | Loaded loaded -> loaded.Browsed
             | Displayed displayed -> displayed.Browsed
             | Zoomed zoomed -> zoomed.Browsed
-            | Errored _ -> failwith "Invalid state"
+            | LoadError errored -> errored.Browsed
+            | BrowseError _ -> failwith "Invalid state"
 
     member this.LoadedImage =
         match this with
@@ -146,7 +168,8 @@ type ImageModel =
             | Displayed displayed -> displayed.Loaded
             | Zoomed zoomed -> zoomed.Loaded
             | Browsed _
-            | Errored _ -> failwith "Invalid state"
+            | BrowseError _
+            | LoadError _ -> failwith "Invalid state"
 
 module ImageModel =
 
@@ -197,7 +220,7 @@ module ImageModel =
             // could not browse to file?
         modelOpt
             |> Option.defaultValue
-                (Errored {
+                (BrowseError {
                     File = fromFile
                     Message = "Could not browse file"
                 })
