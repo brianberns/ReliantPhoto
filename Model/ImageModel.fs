@@ -48,11 +48,11 @@ module DisplayedImage =
 
     /// Gets the scale of displayed image size relative to the
     /// underlying bitmap.
-    let getImageScale displayed =
+    let getImageScale systemScale displayed =
         let vector =
             displayed.ImageSize / displayed.Loaded.Bitmap.Size
         assert(abs (vector.X - vector.Y) < 0.001)
-        vector.X
+        vector.X * systemScale
 
 /// An image with a fixed zoom scale and origin.
 type ZoomedImage =

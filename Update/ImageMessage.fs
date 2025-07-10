@@ -98,7 +98,8 @@ module ImageMessage =
         model, Cmd.none
 
     /// Updates zoom scale and origin.
-    let private onWheelZoom sign (pointerPos : Point) model =
+    let private onWheelZoom
+        systemScale sign (pointerPos : Point) model =
         assert(abs sign = 1)
 
         let displayed, scale, size =
@@ -107,7 +108,8 @@ module ImageMessage =
                     // variable zoom scale 
                 | Displayed displayed ->
                     let scale =
-                        DisplayedImage.getImageScale displayed
+                        DisplayedImage.getImageScale
+                            systemScale displayed
                     displayed, scale, displayed.ImageSize
 
                     // fixed zoom scale
@@ -146,7 +148,7 @@ module ImageMessage =
         model, Cmd.none
 
     /// Updates the given model based on the given message.
-    let update message model =
+    let update systemScale message model =
         match message with
 
                 // start loading an image
@@ -173,7 +175,7 @@ module ImageMessage =
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
-                onWheelZoom sign pointerPos model
+                onWheelZoom systemScale sign pointerPos model
 
                 // handle load error
             | HandleLoadError error ->

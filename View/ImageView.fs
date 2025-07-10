@@ -11,13 +11,13 @@ open Avalonia.Media
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock model dispatch =
+    let private createToolbar dock systemScale model dispatch =
 
         let zoomScaleOpt =
             match model with
                 | Displayed displayed ->
                     displayed
-                        |> DisplayedImage.getImageScale
+                        |> DisplayedImage.getImageScale systemScale
                         |> Some
                 | Zoomed zoomed ->
                     Some zoomed.Scale
@@ -78,7 +78,7 @@ module ImageView =
         ]
 
     /// Creates a zoomable image.
-    let private createZoomableImage model dispatch =
+    let private createZoomableImage systemScale model dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
@@ -100,7 +100,8 @@ module ImageView =
 
                             let zoomScale =
                                 let imageScale =
-                                    DisplayedImage.getImageScale zoomed.Displayed
+                                    DisplayedImage.getImageScale
+                                        systemScale zoomed.Displayed
                                 zoomed.Scale / imageScale
                             Image.renderTransform (
                                 ScaleTransform(zoomScale, zoomScale))
@@ -125,7 +126,7 @@ module ImageView =
 
     /// Creates a panel that can display images.
     let private createImagePanel
-        (model : ImageModel) dispatch =
+        systemScale (model : ImageModel) dispatch =
         DockPanel.create [
 
             if model.IsBrowsed then
@@ -135,7 +136,8 @@ module ImageView =
             DockPanel.children [
 
                     // toolbar
-                createToolbar Dock.Top model dispatch
+                createToolbar
+                    Dock.Top systemScale model dispatch
 
                     // "previous image" button
                 createBrowsePanel
@@ -156,7 +158,8 @@ module ImageView =
                     | LoadError errored ->
                         createErrorMessage errored.Message
                     | _ ->
-                        createZoomableImage model dispatch
+                        createZoomableImage
+                            systemScale model dispatch
             ]
         ]
 
@@ -193,6 +196,6 @@ module ImageView =
         ]
 
     /// Creates a view of the given model.
-    let view model dispatch =
-        createImagePanel model dispatch
+    let view systemScale model dispatch =
+        createImagePanel systemScale model dispatch
             |> createKeyBindingBorder model dispatch
