@@ -23,7 +23,7 @@ module Button =
     let buttonSize = 50
 
     /// Creates a text button.
-    let createText text callback =
+    let createText text onClick =
         Button.create [
             Button.content (
                 Viewbox.create [
@@ -44,7 +44,7 @@ module Button =
             Button.verticalAlignment VerticalAlignment.Stretch
             Button.horizontalContentAlignment HorizontalAlignment.Center
             Button.verticalContentAlignment VerticalAlignment.Center
-            Button.onClick callback
+            Button.onClick onClick
         ]
 
 module FileSystemView =

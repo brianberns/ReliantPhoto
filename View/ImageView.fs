@@ -44,13 +44,15 @@ module ImageView =
         ]
 
     /// Creates a browse panel, with or without a button.
-    let private createBrowsePanel dock text hasButton callback =
+    let private createBrowsePanel
+        dock text hasButton message dispatch =
         DockPanel.create [
             DockPanel.width Button.buttonSize
             DockPanel.dock dock
             DockPanel.children [
                 if hasButton then
-                    Button.createText text callback
+                    Button.createText text (fun _ ->
+                        MkImageMessage message |> dispatch)
             ]
         ]
 
@@ -140,13 +142,15 @@ module ImageView =
                 createBrowsePanel
                     Dock.Left "◀"
                     model.HasPreviousImage
-                    (fun _ -> dispatch (MkImageMessage PreviousImage))
+                    PreviousImage
+                    dispatch
 
                     // "next image" button
                 createBrowsePanel
                     Dock.Right "▶"
                     model.HasNextImage
-                    (fun _ -> dispatch (MkImageMessage NextImage))
+                    NextImage
+                    dispatch
 
                     // image?
                 match model with
