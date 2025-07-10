@@ -73,13 +73,28 @@ module ImageMessage =
             }
         model, Cmd.none
 
-    /// Finishes displaying an image.
+    /// Sets or updates image size for a displayed image.
     let private onImageSized imageSize (model : ImageModel) =
-        let model =
-            Displayed {
-                Loaded = model.LoadedImage
+
+        let create loaded =
+            {
+                Loaded = loaded
                 ImageSize = imageSize
             }
+
+        let model =
+            match model with
+                | Loaded loaded ->
+                    Displayed (create loaded)
+                | Displayed displayed ->
+                    Displayed (create displayed.Loaded)
+                | Zoomed zoomed ->
+                    Zoomed {
+                        zoomed with
+                            Displayed =
+                                create zoomed.Loaded }
+                | _ -> failwith "Invalid state"
+
         model, Cmd.none
 
     /// Updates zoom scale and origin.
