@@ -92,11 +92,11 @@ module ImageView =
 
                         | Displayed displayed ->
                             yield! imageAttributes
-                                displayed.Bitmap dispatch
+                                displayed.Loaded.Bitmap dispatch
 
                         | Zoomed zoomed ->
                             yield! imageAttributes
-                                zoomed.Bitmap dispatch
+                                zoomed.Loaded.Bitmap dispatch
 
                             let zoomScale =
                                 let imageScale =
@@ -140,14 +140,14 @@ module ImageView =
                     // "previous image" button
                 createBrowsePanel
                     Dock.Left "◀"
-                    model.HasPreviousImage
+                    model.BrowsedImage.HasPreviousImage
                     PreviousImage
                     dispatch
 
                     // "next image" button
                 createBrowsePanel
                     Dock.Right "▶"
-                    model.HasNextImage
+                    model.BrowsedImage.HasNextImage
                     NextImage
                     dispatch
 
@@ -169,14 +169,14 @@ module ImageView =
             Border.background "Transparent"
 
             Border.keyBindings [
-                if model.HasPreviousImage then
+                if model.BrowsedImage.HasPreviousImage then
                     for key in [ Key.Left; Key.PageUp ] do
                         KeyBinding.create [
                             KeyBinding.key key
                             KeyBinding.execute (fun _ ->
                                 dispatch (MkImageMessage PreviousImage))
                         ]
-                if model.HasNextImage then
+                if model.BrowsedImage.HasNextImage then
                     for key in [ Key.Right; Key.PageDown ] do
                         KeyBinding.create [
                             KeyBinding.key key

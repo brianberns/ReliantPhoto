@@ -97,7 +97,9 @@ module ImageMessage =
 
                     // fixed zoom scale
                 | Zoomed zoomed ->
-                    zoomed.Displayed, zoomed.Scale, zoomed.ImageSize
+                    zoomed.Displayed,
+                    zoomed.Scale,
+                    zoomed.Displayed.ImageSize
 
                 | _ -> failwith "Invalid state"
 
@@ -146,12 +148,12 @@ module ImageMessage =
 
                 // browse to previous image
             | PreviousImage  ->
-                ImageModel.browse -1 model.File,
+                ImageModel.browse -1 model.BrowsedImage.File,
                 Cmd.ofMsg LoadImage
 
                 // browse to next image
             | NextImage  ->
-                ImageModel.browse 1 model.File,
+                ImageModel.browse 1 model.BrowsedImage.File,
                 Cmd.ofMsg LoadImage
 
                 // update zoom

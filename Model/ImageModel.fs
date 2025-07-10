@@ -30,10 +30,6 @@ type LoadedImage =
         Bitmap : Bitmap
     }
 
-    member this.File = this.Browsed.File
-    member this.HasPreviousImage = this.Browsed.HasPreviousImage
-    member this.HasNextImage = this.Browsed.HasNextImage
-
 /// A displayed image from a loaded image file.
 type DisplayedImage =
     {
@@ -45,11 +41,7 @@ type DisplayedImage =
         ImageSize : Size
     }
 
-    member this.File = this.Loaded.File
-    member this.HasPreviousImage = this.Loaded.HasPreviousImage
-    member this.HasNextImage = this.Loaded.HasNextImage
     member this.Browsed = this.Loaded.Browsed
-    member this.Bitmap = this.Loaded.Bitmap
 
 module DisplayedImage =
 
@@ -57,7 +49,7 @@ module DisplayedImage =
     /// underlying bitmap.
     let getImageScale displayed =
         let vector =
-            displayed.ImageSize / displayed.Bitmap.Size
+            displayed.ImageSize / displayed.Loaded.Bitmap.Size
         assert(abs (vector.X - vector.Y) < 0.001)
         vector.X
 
@@ -74,13 +66,8 @@ type ZoomedImage =
         Origin : RelativePoint
     }
 
-    member this.File = this.Displayed.File
-    member this.HasPreviousImage = this.Displayed.HasPreviousImage
-    member this.HasNextImage = this.Displayed.HasNextImage
     member this.Browsed = this.Displayed.Browsed
     member this.Loaded = this.Displayed.Loaded
-    member this.Bitmap = this.Loaded.Bitmap
-    member this.ImageSize = this.Displayed.ImageSize
 
 /// An image file that could not be browsed.
 type BrowseError =
@@ -125,33 +112,6 @@ type ImageModel =
 
     /// Image could not be loaded.
     | LoadError of LoadError
-
-    member this.File =
-        match this with
-            | Browsed browsed -> browsed.File
-            | Loaded loaded -> loaded.File
-            | Displayed displayed -> displayed.File
-            | Zoomed zoomed -> zoomed.File
-            | BrowseError errored -> errored.File
-            | LoadError errored -> errored.File
-
-    member this.HasPreviousImage =
-        match this with
-            | Browsed browsed -> browsed.HasPreviousImage
-            | Loaded loaded -> loaded.HasPreviousImage
-            | Displayed displayed -> displayed.HasPreviousImage
-            | Zoomed zoomed -> zoomed.HasPreviousImage
-            | LoadError errored -> errored.HasPreviousImage
-            | BrowseError _ -> failwith "Invalid state"
-
-    member this.HasNextImage =
-        match this with
-            | Browsed browsed -> browsed.HasNextImage
-            | Loaded loaded -> loaded.HasNextImage
-            | Displayed displayed -> displayed.HasNextImage
-            | Zoomed zoomed -> zoomed.HasNextImage
-            | LoadError errored -> errored.HasNextImage
-            | BrowseError _ -> failwith "Invalid state"
 
     member this.BrowsedImage =
         match this with

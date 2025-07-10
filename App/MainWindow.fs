@@ -65,8 +65,9 @@ module Window =
                 | Some imgModel ->
 
                         // side effects
-                    if imgModel.File.Name <> window.Title then
-                        window.Title <- imgModel.File.Name
+                    let name = imgModel.BrowsedImage.File.Name
+                    if name <> window.Title then
+                        window.Title <- name
 
                         // Elmish subscription
                     yield! Sub.none
