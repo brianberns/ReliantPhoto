@@ -56,23 +56,23 @@ module ImageView =
             ]
         ]
 
-    /// Attributes common to any loaded image.
-    let private loadedImageAttributes loaded dispatch =
+    /// Attributes common to any image.
+    let private imageAttributes bitmap dispatch =
         [
-            Image.source loaded.Bitmap
+            Image.source bitmap
+
+            Image.onSizeChanged (fun args ->
+                args.Handled <- true
+                args.NewSize
+                    |> ImageSized
+                    |> MkImageMessage
+                    |> dispatch)
 
             Image.onPointerWheelChanged (fun args ->
                 let pointerPos = args.GetPosition(args.Source :?> Visual)
                 args.Handled <- true
                 (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
                     |> WheelZoom
-                    |> MkImageMessage
-                    |> dispatch)
-
-            Image.onSizeChanged (fun args ->
-                args.Handled <- true
-                args.NewSize
-                    |> ImageSized
                     |> MkImageMessage
                     |> dispatch)
         ]
@@ -87,16 +87,16 @@ module ImageView =
                     match model with
 
                         | Loaded loaded ->
-                            yield! loadedImageAttributes
-                                loaded dispatch
+                            yield! imageAttributes
+                                loaded.Bitmap dispatch
 
                         | Displayed displayed ->
-                            yield! loadedImageAttributes
-                                displayed.Loaded dispatch
+                            yield! imageAttributes
+                                displayed.Bitmap dispatch
 
                         | Zoomed zoomed ->
-                            yield! loadedImageAttributes
-                                zoomed.Loaded dispatch
+                            yield! imageAttributes
+                                zoomed.Bitmap dispatch
 
                             let zoomScale =
                                 let imageScale =
