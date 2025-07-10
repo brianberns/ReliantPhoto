@@ -1,16 +1,21 @@
 ﻿namespace Reliant.Photo
 
 open Elmish
+
 open Avalonia
+open Avalonia.Media.Imaging
 
 /// Messages that can change the image model.
 type ImageMessage =
 
-    /// Load the current image file, if possible.
+    /// Load image, if possible.
     | LoadImage
 
-    /// The current image file has (maybe) loaded.
-    | ImageLoaded of ImageResult
+    /// Display image.
+    | Display of Bitmap
+
+    /// Size of the displayed image has been set or changed.
+    | ImageSized of Size
 
     /// Browse to previous image in directory, if possible.
     | PreviousImage
@@ -18,11 +23,20 @@ type ImageMessage =
     /// Browse to next image in directory, if possible.
     | NextImage
 
-    /// The size of the displayed image has changed.
-    | ImageSized of Size
-
     /// The pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
+
+    /// Error occurred.
+    | HandleError of string
+
+module Cmd =
+
+    let ofAsyncResult task arg ofSuccess ofError =
+        Cmd.OfAsync.perform
+            task arg
+            (function
+                | Ok success -> ofSuccess success
+                | Error error -> ofError error)
 
 module ImageMessage =
 
@@ -31,44 +45,88 @@ module ImageMessage =
         ImageModel.init file,
         Cmd.ofMsg LoadImage
 
-    /// Starts loading the current image.
-    let private onLoadImage (model : ImageModel) =
-        let model =
-            { model with IsLoading = true }
-        let cmd =
-            Cmd.OfAsync.perform
-                (ImageFile.tryLoadImage None)
-                model.File
-                ImageLoaded
-        model, cmd
+    /// Starts loading an image.
+    let private onLoadImage = function
 
-    /// Updates displayed image size.
-    let private onImageSized imageSize model =
+            // browse succeeded, try to load image
+        | Browsed browsed as model ->
+            let cmd =
+                Cmd.ofAsyncResult
+                    (ImageFile.tryLoadImage None)
+                    browsed.File
+                    Display
+                    HandleError
+            model, cmd
+
+            // browse failed, can't load image
+        | Errored _ as model ->
+            model, Cmd.none
+
+        | _ -> failwith "Invalid state"
+
+    /// Finishes loading an image and starts displaying it.
+    let private onDisplayImage bitmap (model : ImageModel) =
         let model =
-            { model with ImageSizeOpt = Some imageSize }
+            Loaded {
+                Browsed = model.BrowsedImage
+                Bitmap = bitmap
+            }
+        model, Cmd.none
+
+    /// Finishes displaying an image.
+    let private onImageSized imageSize (model : ImageModel) =
+        let model =
+            Displayed {
+                Loaded = model.LoadedImage
+                ImageSize = imageSize
+            }
         model, Cmd.none
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign (pointerPos : Point) model =
         assert(abs sign = 1)
-        let zoomScaleOpt = ImageModel.getZoomScale model
-        match zoomScaleOpt, model.ImageSizeOpt with
-            | Some zoomScale, Some imageSize ->
-                let zoomScale =
-                    let factor = 1.1
-                    if sign >= 0 then zoomScale * factor
-                    else zoomScale / factor
-                let origin =
-                    let originX = pointerPos.X / imageSize.Width
-                    let originY = pointerPos.Y / imageSize.Height
-                    RelativePoint(originX, originY, RelativeUnit.Relative)
-                let model =
-                    { model with
-                        ZoomScaleOpt = Some zoomScale
-                        ZoomOrigin = origin }
-                model, Cmd.none
-            | None, _ -> failwith "Zoom scale not set"
-            | _, None -> failwith "Image size not set"
+
+        let displayed, scale, size =
+            match model with
+
+                    // variable zoom scale 
+                | Displayed displayed ->
+                    let scale =
+                        DisplayedImage.getImageScale displayed
+                    displayed, scale, displayed.ImageSize
+
+                    // fixed zoom scale
+                | Zoomed zoomed ->
+                    zoomed.Displayed, zoomed.Scale, zoomed.ImageSize
+
+                | _ -> failwith "Invalid state"
+
+        let scale =
+            let factor = 1.1
+            if sign >= 0 then scale * factor
+            else scale / factor
+
+        let origin =
+            let originX = pointerPos.X / size.Width
+            let originY = pointerPos.Y / size.Height
+            RelativePoint(originX, originY, RelativeUnit.Relative)
+
+        let model =
+            Zoomed {
+                Displayed = displayed
+                Scale = scale
+                Origin = origin
+            }
+        model, Cmd.none
+
+    /// Handles an error.
+    let private onHandleError error (model : ImageModel) =
+        let model =
+            Errored {
+                File = model.File
+                Message = error
+            }
+        model, Cmd.none
 
     /// Updates the given model based on the given message.
     let update message model =
@@ -79,11 +137,12 @@ module ImageMessage =
                 onLoadImage model
 
                 // finish loading an image
-            | ImageLoaded result ->
-                { model with
-                    IsLoading = false
-                    Result = result },
-                Cmd.none
+            | Display bitmap ->
+                onDisplayImage bitmap model
+
+                // update image size
+            | ImageSized imageSize ->
+                onImageSized imageSize model
 
                 // browse to previous image
             | PreviousImage  ->
@@ -95,10 +154,9 @@ module ImageMessage =
                 ImageModel.browse 1 model.File,
                 Cmd.ofMsg LoadImage
 
-                // update image size
-            | ImageSized imageSize ->
-                onImageSized imageSize model
-
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
+
+            | HandleError error ->
+                onHandleError error model

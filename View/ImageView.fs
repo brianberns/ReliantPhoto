@@ -11,7 +11,18 @@ open Avalonia.Media
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock zoomScaleOpt dispatch =
+    let private createToolbar dock model dispatch =
+
+        let zoomScaleOpt =
+            match model with
+                | Displayed displayed ->
+                    displayed
+                        |> DisplayedImage.getImageScale
+                        |> Some
+                | Zoomed zoomed ->
+                    Some zoomed.Scale
+                | _ -> None
+
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -43,38 +54,58 @@ module ImageView =
             ]
         ]
 
+    let private onPointerWheelChanged (args : PointerWheelEventArgs) =
+        let pointerPos = args.GetPosition(args.Source :?> Visual)
+        args.Handled <- true
+        (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
+            |> WheelZoom
+            |> MkImageMessage
+
+    let private onSizeChanged (args : SizeChangedEventArgs) =
+        args.Handled <- true
+        args.NewSize
+            |> ImageSized
+            |> MkImageMessage
+
     /// Creates a zoomable image.
-    let private createZoomableImage
-        bitmap imageSizeOpt zoomScaleOpt zoomOrigin dispatch =
+    let private createZoomableImage model dispatch =
         Border.create [
             Border.clipToBounds true
             Border.child (
                 Image.create [
 
-                    Image.source bitmap
+                    match model with
 
-                    match zoomScaleOpt with
-                        | Some zoomScale ->
-                            let imageSize = Option.get imageSizeOpt
-                            let zoomScale = zoomScale / (ImageModel.getImageScale bitmap imageSize)
+                        | Loaded loaded ->
+                            Image.source loaded.Bitmap
+                            Image.onPointerWheelChanged (
+                                onPointerWheelChanged >> dispatch)
+                            Image.onSizeChanged (
+                                onSizeChanged >> dispatch)
+
+                        | Displayed displayed ->
+                            Image.source displayed.Bitmap
+                            Image.onPointerWheelChanged (
+                                onPointerWheelChanged >> dispatch)
+                            Image.onSizeChanged (
+                                onSizeChanged >> dispatch)
+
+                        | Zoomed zoomed ->
+                            Image.source zoomed.Bitmap
+                            Image.onPointerWheelChanged (
+                                onPointerWheelChanged >> dispatch)
+                            Image.onSizeChanged (
+                                onSizeChanged >> dispatch)
+
+                            let zoomScale =
+                                let imageScale =
+                                    DisplayedImage.getImageScale zoomed.Displayed
+                                zoomed.Scale / imageScale
                             Image.renderTransform (
                                 ScaleTransform(zoomScale, zoomScale))
-                            Image.renderTransformOrigin zoomOrigin
-                        | None -> ()
+                            Image.renderTransformOrigin zoomed.Origin
 
-                    Image.onPointerWheelChanged (fun e ->
-                        let pointerPos = e.GetPosition(e.Source :?> Visual)
-                        e.Handled <- true
-                        (sign e.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
-                            |> WheelZoom
-                            |> MkImageMessage
-                            |> dispatch)
-
-                    Image.onSizeChanged (fun args ->
-                        args.NewSize
-                            |> ImageSized
-                            |> MkImageMessage
-                            |> dispatch)
+                        | _ -> ()
                 ]
             )
         ]
@@ -92,18 +123,18 @@ module ImageView =
         ]
 
     /// Creates a panel that can display images.
-    let private createImagePanel model dispatch =
+    let private createImagePanel
+        (model : ImageModel) dispatch =
         DockPanel.create [
 
-            if model.IsLoading then
+            if model.IsBrowsed then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
             DockPanel.children [
 
                     // toolbar
-                let zoomScaleOpt = ImageModel.getZoomScale model
-                createToolbar Dock.Top zoomScaleOpt dispatch
+                createToolbar Dock.Top model dispatch
 
                     // "previous image" button
                 createBrowsePanel
@@ -117,22 +148,18 @@ module ImageView =
                     model.HasNextImage
                     (fun _ -> dispatch (MkImageMessage NextImage))
 
-                    // image
-                match model.Result with
-                    | Ok bitmap ->
-                        createZoomableImage
-                            bitmap
-                            model.ImageSizeOpt
-                            model.ZoomScaleOpt
-                            model.ZoomOrigin
-                            dispatch
-                    | Error str ->
-                        createErrorMessage str
+                    // image?
+                match model with
+                    | Errored errored ->
+                        createErrorMessage errored.Message
+                    | _ ->
+                        createZoomableImage model dispatch
             ]
         ]
 
     /// Creates an invisible border that handles key bindings.
-    let private createKeyBindingBorder model dispatch child =
+    let private createKeyBindingBorder
+        (model : ImageModel) dispatch child =
         Border.create [
 
             Border.focusable true
