@@ -89,10 +89,6 @@ type LoadError =
         Message : string
     }
 
-    member this.File = this.Browsed.File
-    member this.HasPreviousImage = this.Browsed.HasPreviousImage
-    member this.HasNextImage = this.Browsed.HasNextImage
-
 type ImageModel =
 
     /// File has been browsed and is ready to be loaded.
