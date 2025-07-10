@@ -56,18 +56,26 @@ module ImageView =
             ]
         ]
 
-    let private onPointerWheelChanged (args : PointerWheelEventArgs) =
-        let pointerPos = args.GetPosition(args.Source :?> Visual)
-        args.Handled <- true
-        (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
-            |> WheelZoom
-            |> MkImageMessage
+    /// Attributes common to any loaded image.
+    let private loadedImageAttributes loaded dispatch =
+        [
+            Image.source loaded.Bitmap
 
-    let private onSizeChanged (args : SizeChangedEventArgs) =
-        args.Handled <- true
-        args.NewSize
-            |> ImageSized
-            |> MkImageMessage
+            Image.onPointerWheelChanged (fun args ->
+                let pointerPos = args.GetPosition(args.Source :?> Visual)
+                args.Handled <- true
+                (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
+                    |> WheelZoom
+                    |> MkImageMessage
+                    |> dispatch)
+
+            Image.onSizeChanged (fun args ->
+                args.Handled <- true
+                args.NewSize
+                    |> ImageSized
+                    |> MkImageMessage
+                    |> dispatch)
+        ]
 
     /// Creates a zoomable image.
     let private createZoomableImage model dispatch =
@@ -79,25 +87,16 @@ module ImageView =
                     match model with
 
                         | Loaded loaded ->
-                            Image.source loaded.Bitmap
-                            Image.onPointerWheelChanged (
-                                onPointerWheelChanged >> dispatch)
-                            Image.onSizeChanged (
-                                onSizeChanged >> dispatch)
+                            yield! loadedImageAttributes
+                                loaded dispatch
 
                         | Displayed displayed ->
-                            Image.source displayed.Bitmap
-                            Image.onPointerWheelChanged (
-                                onPointerWheelChanged >> dispatch)
-                            Image.onSizeChanged (
-                                onSizeChanged >> dispatch)
+                            yield! loadedImageAttributes
+                                displayed.Loaded dispatch
 
                         | Zoomed zoomed ->
-                            Image.source zoomed.Bitmap
-                            Image.onPointerWheelChanged (
-                                onPointerWheelChanged >> dispatch)
-                            Image.onSizeChanged (
-                                onSizeChanged >> dispatch)
+                            yield! loadedImageAttributes
+                                zoomed.Loaded dispatch
 
                             let zoomScale =
                                 let imageScale =
