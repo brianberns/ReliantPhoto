@@ -5,7 +5,7 @@ open Elmish
 open Avalonia
 open Avalonia.Media.Imaging
 
-/// Messages that can change the image model.
+/// Messages that can update the image model.
 type ImageMessage =
 
     /// Load image, if possible.
@@ -14,7 +14,7 @@ type ImageMessage =
     /// Display image.
     | Display of Bitmap
 
-    /// Size of the displayed image has been set or changed.
+    /// Size of the displayed image has been set or updated.
     | ImageSized of Size
 
     /// Browse to previous image in directory, if possible.
@@ -23,7 +23,7 @@ type ImageMessage =
     /// Browse to next image in directory, if possible.
     | NextImage
 
-    /// The pointer wheel position has changed.
+    /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
     /// Load error occurred.
@@ -31,6 +31,7 @@ type ImageMessage =
 
 module Cmd =
 
+    /// Creates a command that handles an async result.
     let ofAsyncResult task arg ofSuccess ofError =
         Cmd.OfAsync.perform
             task arg
@@ -76,7 +77,7 @@ module ImageMessage =
     /// Sets or updates image size for a displayed image.
     let private onImageSized imageSize (model : ImageModel) =
 
-        let create loaded =
+        let toDisplayed loaded =
             {
                 Loaded = loaded
                 ImageSize = imageSize
@@ -85,17 +86,22 @@ module ImageMessage =
         let model =
             match model with
                 | Loaded loaded ->
-                    Displayed (create loaded)
+                    Displayed (toDisplayed loaded)
                 | Displayed displayed ->
-                    Displayed (create displayed.Loaded)
+                    Displayed (toDisplayed displayed.Loaded)
                 | Zoomed zoomed ->
                     Zoomed {
                         zoomed with
                             Displayed =
-                                create zoomed.Loaded }
+                                toDisplayed zoomed.Loaded }
                 | _ -> failwith "Invalid state"
 
         model, Cmd.none
+
+    /// Browses to a file, if possible.
+    let private onBrowse incr (model : ImageModel) =
+        ImageModel.browse incr model.BrowsedImage.File,
+        Cmd.ofMsg LoadImage
 
     /// Updates zoom scale and origin.
     let private onWheelZoom
@@ -165,13 +171,11 @@ module ImageMessage =
 
                 // browse to previous image
             | PreviousImage  ->
-                ImageModel.browse -1 model.BrowsedImage.File,
-                Cmd.ofMsg LoadImage
+                onBrowse -1 model
 
                 // browse to next image
             | NextImage  ->
-                ImageModel.browse 1 model.BrowsedImage.File,
-                Cmd.ofMsg LoadImage
+                onBrowse 1 model
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
