@@ -106,6 +106,16 @@ module ImageMessage =
         ImageModel.browse incr model.BrowsedImage.File,
         Cmd.ofMsg LoadImage
 
+    /// Determines the lowest allowable zoom scale.
+    let private getZoomScaleFloor
+        (dpiScale : float) displayed imageScale =
+        let floorSize =
+            displayed.Loaded.Bitmap.Size / dpiScale
+        if floorSize.Width > displayed.ImageSize.Width then
+            assert(imageScale < 1.0)
+            imageScale   // large image: fill view
+        else 1.0         // small image: 100%
+
     /// Updates zoom scale and origin.
     let private onWheelZoom
         dpiScale sign (pointerPos : Point) (model : ImageModel) =
@@ -118,12 +128,7 @@ module ImageMessage =
 
             // determine the lowest allowable zoom scale
         let zoomScaleFloor =
-            let floorSize =
-                displayed.Loaded.Bitmap.Size / dpiScale
-            if floorSize.Width > displayed.ImageSize.Width then
-                assert(imageScale < 1.0)
-                imageScale   // large image: fill view
-            else 1.0         // small image: 100%
+            getZoomScaleFloor dpiScale displayed imageScale
 
             // update zoom scale
         let zoomScale =
