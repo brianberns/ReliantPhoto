@@ -62,7 +62,6 @@ module ImageView =
         dpiScale (bitmap : Bitmap) dispatch =
         [
             Image.source bitmap
-            Image.stretch Stretch.Uniform
             Image.maxWidth (bitmap.Size.Width / dpiScale)   // prevent initial zoom past 100%
             Image.maxHeight (bitmap.Size.Height / dpiScale)
 
