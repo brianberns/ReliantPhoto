@@ -133,29 +133,28 @@ module ImageMessage =
             if zoomScaleFloor > newScale then zoomScale   // don't jump suddenly
             else newScale
 
+    /// Updates zoom origin based on user input.
+    let private updateZoomOrigin (pointerPos : Point) displayed =
+        let imageSize = displayed.ImageSize
+        let originX = pointerPos.X / imageSize.Width
+        let originY = pointerPos.Y / imageSize.Height
+        RelativePoint(originX, originY, RelativeUnit.Relative)
+
     /// Updates zoom scale and origin.
     let private onWheelZoom
-        dpiScale sign (pointerPos : Point) (model : ImageModel) =
+        dpiScale sign pointerPos (model : ImageModel) =
 
-            // get image scale
+            // get image attributes
         let displayed = model.DisplayedImage
         let imageScale =
             DisplayedImage.getImageScale dpiScale displayed
 
-            // determine the lowest allowable zoom scale
-        let zoomScaleFloor =
-            getZoomScaleFloor dpiScale displayed imageScale
-
-            // update zoom scale
+            // update zoom scale and origin
         let zoomScale =
+            let zoomScaleFloor =
+                getZoomScaleFloor dpiScale displayed imageScale
             updateZoomScale sign imageScale zoomScaleFloor model
-
-            // update zoom origin
-        let zoomOrigin =
-            let imageSize = displayed.ImageSize
-            let originX = pointerPos.X / imageSize.Width
-            let originY = pointerPos.Y / imageSize.Height
-            RelativePoint(originX, originY, RelativeUnit.Relative)
+        let zoomOrigin = updateZoomOrigin pointerPos displayed
 
             // update model
         let model =
