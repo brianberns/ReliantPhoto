@@ -111,7 +111,7 @@ module ImageMessage =
         dpiScale sign (pointerPos : Point) model =
         assert(abs sign = 1)
 
-        let displayed, zoomScale =
+        let displayed, zoomScale, imageScale =
             match model with
 
                     // variable zoom scale 
@@ -119,19 +119,32 @@ module ImageMessage =
                     let zoomScale =
                         DisplayedImage.getImageScale
                             dpiScale displayed
-                    displayed, zoomScale
+                    displayed, zoomScale, zoomScale
 
                     // fixed zoom scale
                 | Zoomed zoomed ->
+                    let imageScale =
+                        DisplayedImage.getImageScale
+                            dpiScale zoomed.Displayed
                     zoomed.Displayed,
-                    zoomed.Scale
+                    zoomed.Scale,
+                    imageScale
 
                 | _ -> failwith "Invalid state"
 
+        let zoomScaleFloor =
+            let bitmap = displayed.Loaded.Bitmap
+            let floorSize = bitmap.Size / dpiScale
+            if floorSize.Width > displayed.ImageSize.Width then
+                imageScale
+            else 1.0
+
         let zoomScale =
             let factor = 1.1
-            if sign >= 0 then zoomScale * factor
-            else zoomScale / factor
+            let scale =
+                if sign >= 0 then zoomScale * factor
+                else zoomScale / factor
+            max zoomScaleFloor scale
 
         let zoomOrigin =
             let imageSize = displayed.ImageSize
