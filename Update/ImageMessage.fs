@@ -111,21 +111,20 @@ module ImageMessage =
         dpiScale sign (pointerPos : Point) model =
         assert(abs sign = 1)
 
-        let displayed, zoomScale, imageSize =
+        let displayed, zoomScale =
             match model with
 
                     // variable zoom scale 
                 | Displayed displayed ->
-                    let scale =
+                    let zoomScale =
                         DisplayedImage.getImageScale
                             dpiScale displayed
-                    displayed, scale, displayed.ImageSize
+                    displayed, zoomScale
 
                     // fixed zoom scale
                 | Zoomed zoomed ->
                     zoomed.Displayed,
-                    zoomed.Scale,
-                    zoomed.Displayed.ImageSize
+                    zoomed.Scale
 
                 | _ -> failwith "Invalid state"
 
@@ -135,6 +134,7 @@ module ImageMessage =
             else zoomScale / factor
 
         let zoomOrigin =
+            let imageSize = displayed.ImageSize
             let originX = pointerPos.X / imageSize.Width
             let originY = pointerPos.Y / imageSize.Height
             RelativePoint(originX, originY, RelativeUnit.Relative)
