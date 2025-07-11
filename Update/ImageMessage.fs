@@ -116,10 +116,26 @@ module ImageMessage =
             imageScale   // large image: fill view
         else 1.0         // small image: 100%
 
+    /// Updates zoom scale based on user input.
+    let private updateZoomScale
+        sign imageScale zoomScaleFloor model =
+        assert(abs sign = 1)
+
+        let zoomScale =
+            match model with
+                | Zoomed zoomed -> zoomed.Scale
+                | _ -> imageScale
+
+        let factor = 1.1
+        if sign >= 0 then zoomScale * factor
+        else
+            let newScale = zoomScale / factor
+            if zoomScaleFloor > newScale then zoomScale   // don't jump suddenly
+            else newScale
+
     /// Updates zoom scale and origin.
     let private onWheelZoom
         dpiScale sign (pointerPos : Point) (model : ImageModel) =
-        assert(abs sign = 1)
 
             // get image scale
         let displayed = model.DisplayedImage
@@ -132,16 +148,7 @@ module ImageMessage =
 
             // update zoom scale
         let zoomScale =
-            let zoomScale =
-                match model with
-                    | Zoomed zoomed -> zoomed.Scale
-                    | _ -> imageScale
-            let factor = 1.1
-            if sign >= 0 then zoomScale * factor
-            else
-                let newScale = zoomScale / factor
-                if zoomScaleFloor > newScale then zoomScale   // don't jump suddenly
-                else newScale
+            updateZoomScale sign imageScale zoomScaleFloor model
 
             // update zoom origin
         let zoomOrigin =
