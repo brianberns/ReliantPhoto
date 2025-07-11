@@ -111,14 +111,10 @@ module ImageMessage =
         dpiScale sign (pointerPos : Point) (model : ImageModel) =
         assert(abs sign = 1)
 
-            // get relevant image attributes
+            // get image scale
         let displayed = model.DisplayedImage
         let imageScale =
             DisplayedImage.getImageScale dpiScale displayed
-        let zoomScale =
-            match model with
-                | Zoomed zoomed -> zoomed.Scale
-                | _ -> imageScale
 
             // determine the lowest allowable zoom scale
         let zoomScaleFloor =
@@ -131,6 +127,10 @@ module ImageMessage =
 
             // update zoom scale
         let zoomScale =
+            let zoomScale =
+                match model with
+                    | Zoomed zoomed -> zoomed.Scale
+                    | _ -> imageScale
             let factor = 1.1
             if sign >= 0 then zoomScale * factor
             else
