@@ -111,6 +111,7 @@ module ImageMessage =
         dpiScale sign (pointerPos : Point) model =
         assert(abs sign = 1)
 
+            // get relevant image attributes
         let displayed, zoomScale, imageScale =
             match model with
 
@@ -132,13 +133,15 @@ module ImageMessage =
 
                 | _ -> failwith "Invalid state"
 
+            // compute the lowest allowable zoom scale
         let zoomScaleFloor =
             let bitmap = displayed.Loaded.Bitmap
             let floorSize = bitmap.Size / dpiScale
             if floorSize.Width > displayed.ImageSize.Width then
-                imageScale
-            else 1.0
+                imageScale   // large image floor: fill view
+            else 1.0         // small image fllor: 100%
 
+            // update zoom scale
         let zoomScale =
             let factor = 1.1
             let scale =
@@ -146,12 +149,14 @@ module ImageMessage =
                 else zoomScale / factor
             max zoomScaleFloor scale
 
+            // update zoom origin
         let zoomOrigin =
             let imageSize = displayed.ImageSize
             let originX = pointerPos.X / imageSize.Width
             let originY = pointerPos.Y / imageSize.Height
             RelativePoint(originX, originY, RelativeUnit.Relative)
 
+            // update model
         let model =
             Zoomed {
                 Displayed = displayed
