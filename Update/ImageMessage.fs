@@ -145,10 +145,11 @@ module ImageMessage =
             // update zoom scale
         let zoomScale =
             let factor = 1.1
-            let scale =
-                if sign >= 0 then zoomScale * factor
-                else zoomScale / factor
-            max zoomScaleFloor scale
+            if sign >= 0 then zoomScale * factor
+            else
+                let newScale = zoomScale / factor
+                if zoomScaleFloor > newScale then zoomScale   // don't jump suddenly
+                else newScale
 
             // update zoom origin
         let zoomOrigin =
