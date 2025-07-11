@@ -73,7 +73,8 @@ module ImageView =
                     |> dispatch)
 
             Image.onPointerWheelChanged (fun args ->
-                let pointerPos = args.GetPosition(args.Source :?> Visual)
+                let pointerPos =
+                    args.GetPosition(args.Source :?> Visual)
                 args.Handled <- true
                 (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
                     |> WheelZoom
@@ -87,6 +88,12 @@ module ImageView =
             Border.clipToBounds true
             Border.child (
                 Image.create [
+
+                        // ensure clean edges in image
+                    Image.init (fun image ->
+                        RenderOptions.SetBitmapInterpolationMode(
+                            image,
+                            BitmapInterpolationMode.None))
 
                     match model with
 
