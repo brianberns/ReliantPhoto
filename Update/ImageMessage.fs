@@ -108,30 +108,17 @@ module ImageMessage =
 
     /// Updates zoom scale and origin.
     let private onWheelZoom
-        dpiScale sign (pointerPos : Point) model =
+        dpiScale sign (pointerPos : Point) (model : ImageModel) =
         assert(abs sign = 1)
 
             // get relevant image attributes
-        let displayed, zoomScale, imageScale =
+        let displayed = model.DisplayedImage
+        let imageScale =
+            DisplayedImage.getImageScale dpiScale displayed
+        let zoomScale =
             match model with
-
-                    // variable zoom scale 
-                | Displayed displayed ->
-                    let zoomScale =
-                        DisplayedImage.getImageScale
-                            dpiScale displayed
-                    displayed, zoomScale, zoomScale
-
-                    // fixed zoom scale
-                | Zoomed zoomed ->
-                    let imageScale =
-                        DisplayedImage.getImageScale
-                            dpiScale zoomed.Displayed
-                    zoomed.Displayed,
-                    zoomed.Scale,
-                    imageScale
-
-                | _ -> failwith "Invalid state"
+                | Zoomed zoomed -> zoomed.Scale
+                | _ -> imageScale
 
             // determine the lowest allowable zoom scale
         let zoomScaleFloor =

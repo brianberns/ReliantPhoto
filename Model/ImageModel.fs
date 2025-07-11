@@ -123,6 +123,16 @@ type ImageModel =
             | LoadError errored -> errored.Browsed
             | BrowseError _ -> failwith "Invalid state"
 
+    /// Displayed image.
+    member this.DisplayedImage =
+        match this with
+            | Displayed displayed -> displayed
+            | Zoomed zoomed -> zoomed.Displayed
+            | LoadError _
+            | Browsed _
+            | Loaded _
+            | BrowseError _ -> failwith "Invalid state"
+
 module ImageModel =
 
     /// Compares files by name.
