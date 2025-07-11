@@ -133,13 +133,14 @@ module ImageMessage =
 
                 | _ -> failwith "Invalid state"
 
-            // compute the lowest allowable zoom scale
+            // determine the lowest allowable zoom scale
         let zoomScaleFloor =
-            let bitmap = displayed.Loaded.Bitmap
-            let floorSize = bitmap.Size / dpiScale
+            let floorSize =
+                displayed.Loaded.Bitmap.Size / dpiScale
             if floorSize.Width > displayed.ImageSize.Width then
-                imageScale   // large image floor: fill view
-            else 1.0         // small image fllor: 100%
+                assert(imageScale < 1.0)
+                imageScale   // large image: fill view
+            else 1.0         // small image: 100%
 
             // update zoom scale
         let zoomScale =
