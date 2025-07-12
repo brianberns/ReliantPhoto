@@ -33,11 +33,13 @@ type ContainedImage =
         ContainerSize : Size
     }
 
+    /// Browsed image lens.
     static member Browsed_ : Lens<_, _> =
         _.Browsed,
         fun browsed contained ->
             { contained with Browsed = browsed }
 
+    /// Container size lens.
     static member ContainerSize_ : Lens<_, _> =
         _.ContainerSize,
         fun containerSize contained ->
@@ -53,16 +55,19 @@ type LoadedImage =
         Bitmap : Bitmap
     }
 
+    /// Contained image lens.
     static member Contained_ : Lens<_, _> =
         _.Contained,
         fun contained loaded ->
             { loaded with Contained = contained }
 
+    /// Bitmap lens.
     static member Bitmap_ : Lens<_, _> =
         _.Bitmap,
         fun bitmap loaded ->
             { loaded with Bitmap = bitmap }
 
+    /// Browsed image lens.
     static member Browsed_ =
         LoadedImage.Contained_ >-> ContainedImage.Browsed_
 
@@ -81,14 +86,22 @@ type DisplayedImage =
         ImageScale : float
     }
 
+    /// Loaded image lens.
     static member Loaded_ : Lens<_, _> =
         _.Loaded,
         fun loaded displayed ->
             { displayed with Loaded = loaded }
 
+    static member ImageSize_ : Lens<_, _> =
+        _.ImageSize,
+        fun imageSIze displayed ->
+            { displayed with ImageSize = imageSIze }
+
+    /// Contained image lens.
     static member Contained_ =
         DisplayedImage.Loaded_ >-> LoadedImage.Contained_
 
+    /// Browsed image lens.
     static member Browsed_ =
         DisplayedImage.Contained_ >-> ContainedImage.Browsed_
 
@@ -106,17 +119,21 @@ type ZoomedImage =
         ZoomOrigin : RelativePoint
     }
 
+    /// Displayed image lens.
     static member Displayed_ : Lens<_, _> =
         _.Displayed,
         fun displayed zoomed ->
             { zoomed with Displayed = displayed }
 
+    /// Loaded image lens.
     static member Loaded_ =
         ZoomedImage.Displayed_ >-> DisplayedImage.Loaded_
 
+    /// Contained image lens.
     static member Contained_ =
         ZoomedImage.Loaded_ >-> LoadedImage.Contained_
 
+    /// Browsed image lens.
     static member Browsed_ =
         ZoomedImage.Contained_ >-> ContainedImage.Browsed_
 
@@ -140,6 +157,7 @@ type LoadError =
         Message : string
     }
 
+    /// Browsed image lens.
     static member Browsed_ : Lens<_, _> =
         _.Browsed,
         fun browsed contained ->
@@ -169,8 +187,9 @@ type ImageModel =
     /// Image could not be loaded.
     | LoadError of LoadError
 
-    /// Browsed image file.
+    /// Browsed image lens.
     static member Browsed_ : Lens<_, _> =
+
         (function
             | Browsed browsed -> browsed
             | Contained contained -> contained ^. ContainedImage.Browsed_
@@ -179,6 +198,7 @@ type ImageModel =
             | Zoomed zoomed -> zoomed ^. ZoomedImage.Browsed_
             | LoadError errored -> errored ^. LoadError.Browsed_
             | BrowseError _ -> failwith "Invalid state"),
+
         (fun browsed -> function
             | Browsed _ -> Browsed browsed
             | Contained contained ->
@@ -204,8 +224,9 @@ type ImageModel =
             | BrowseError _ ->
                 failwith "Invalid state")
 
-    /// Contained image.
+    /// Contained image lens.
     static member Contained_ : Lens<_, _> =
+
         (function
             | Contained contained -> contained
             | Loaded loaded -> loaded ^. LoadedImage.Contained_
@@ -214,6 +235,7 @@ type ImageModel =
             | Browsed _
             | BrowseError _
             | LoadError _ -> failwith "Invalid state"),
+
         (fun contained -> function
             | Contained _ -> Contained contained
             | Loaded loaded ->
@@ -232,8 +254,9 @@ type ImageModel =
             | BrowseError _
             | LoadError _ -> failwith "Invalid state")
 
-    /// Loaded image.
+    /// Loaded image lens.
     static member Loaded_ : Lens<_, _> =
+
         (function
             | Loaded loaded -> loaded
             | Displayed displayed -> displayed ^. DisplayedImage.Loaded_
@@ -242,6 +265,7 @@ type ImageModel =
             | Contained _
             | BrowseError _
             | LoadError _ -> failwith "Invalid state"),
+
         (fun loaded -> function
             | Loaded _ -> Loaded loaded
             | Displayed displayed ->
@@ -257,8 +281,9 @@ type ImageModel =
             | BrowseError _
             | LoadError _ -> failwith "Invalid state")
 
-    /// Displayed image.
+    /// Displayed image lens.
     static member Displayed_ : Lens<_, _> =
+
         (function
             | Displayed displayed -> displayed
             | Zoomed zoomed -> zoomed ^. ZoomedImage.Displayed_
@@ -267,6 +292,7 @@ type ImageModel =
             | Loaded _
             | BrowseError _
             | LoadError _ -> failwith "Invalid state"),
+
         (fun displayed -> function
             | Displayed _ -> Displayed displayed
             | Zoomed zoomed ->

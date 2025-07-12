@@ -96,31 +96,19 @@ module ImageMessage =
     let private onImageSized
         dpiScale imageSize (model : ImageModel) =
 
-        let display loaded =
-            let imageScale =
-                let vector =
-                    imageSize / loaded.Bitmap.Size
-                assert(abs (vector.X - vector.Y) < epsilon)
-                vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
-            {
-                Loaded = loaded
-                ImageSize = imageSize
-                ImageScale = imageScale
-            }
+        let loaded = model ^. ImageModel.Loaded_
+
+        let imageScale =
+            let vector =
+                imageSize / loaded.Bitmap.Size
+            assert(abs (vector.X - vector.Y) < epsilon)
+            vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
 
         let model =
-            match model with
-                | Loaded loaded ->
-                    Displayed (display loaded)
-                | Displayed displayed ->
-                    Displayed (display displayed.Loaded)
-                | Zoomed zoomed ->
-                    Zoomed {
-                        zoomed with
-                            Displayed =
-                                display zoomed.Loaded }
-                | _ -> failwith "Invalid state"
-
+            model
+                |> imageSize
+                ^= (ImageModel.Displayed_
+                    >-> DisplayedImage.ImageSize_)
         model, Cmd.none
 
     /// Browses to a file, if possible.
