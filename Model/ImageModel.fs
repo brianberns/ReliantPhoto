@@ -40,8 +40,8 @@ type DisplayedImage =
         /// the underlying bitmap size due to scaling.
         ImageSize : Size
 
-        /// Scale of displayed image size relative to the
-        /// underlying bitmap.
+        /// Scale of default layout image size relative to the
+        /// underlying bitmap. This is not affected by zooming.
         ImageScale : float
     }
 
