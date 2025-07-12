@@ -78,12 +78,20 @@ module ImageMessage =
         model, Cmd.none
 
     /// Sets or updates image size for a displayed image.
-    let private onImageSized imageSize (model : ImageModel) =
+    let private onImageSized
+        dpiScale imageSize (model : ImageModel) =
 
         let toDisplayed loaded =
+
+            let imageScale =
+                let vector = imageSize / loaded.Bitmap.Size
+                assert(abs (vector.X - vector.Y) < 0.001)
+                vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
+
             {
                 Loaded = loaded
                 ImageSize = imageSize
+                ImageScale = imageScale
             }
 
         let model =
@@ -146,8 +154,7 @@ module ImageMessage =
 
             // get image attributes
         let displayed = model.DisplayedImage
-        let imageScale =
-            DisplayedImage.getImageScale dpiScale displayed
+        let imageScale = displayed.ImageScale
 
             // update zoom scale and origin
         let zoomScale =
@@ -188,7 +195,7 @@ module ImageMessage =
 
                 // update image size
             | ImageSized imageSize ->
-                onImageSized imageSize model
+                onImageSized dpiScale imageSize model
 
                 // browse to previous image
             | PreviousImage  ->

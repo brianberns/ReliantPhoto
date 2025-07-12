@@ -17,9 +17,7 @@ module ImageView =
         let zoomScaleOpt =
             match model with
                 | Displayed displayed ->
-                    displayed
-                        |> DisplayedImage.getImageScale dpiScale
-                        |> Some
+                    Some displayed.ImageScale
                 | Zoomed zoomed ->
                     Some zoomed.Scale
                 | _ -> None
@@ -83,12 +81,9 @@ module ImageView =
         ]
 
     /// Attributes specific to a zoomed image.
-    let zoomAttributes dpiScale zoomed =
+    let zoomAttributes zoomed =
         let zoomScale =
-            let imageScale =
-                DisplayedImage.getImageScale
-                    dpiScale zoomed.Displayed
-            zoomed.Scale / imageScale
+            zoomed.Scale / zoomed.Displayed.ImageScale
         [
             Image.renderTransform (
                 ScaleTransform(zoomScale, zoomScale))
@@ -121,8 +116,7 @@ module ImageView =
                         | Zoomed zoomed ->
                             yield! imageAttributes
                                 dpiScale zoomed.Loaded.Bitmap dispatch
-                            yield! zoomAttributes
-                                dpiScale zoomed
+                            yield! zoomAttributes zoomed
 
                         | _ -> ()
                 ]

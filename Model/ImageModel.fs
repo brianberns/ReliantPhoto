@@ -39,20 +39,14 @@ type DisplayedImage =
         /// Displayed image size. This may be different from
         /// the underlying bitmap size due to scaling.
         ImageSize : Size
+
+        /// Scale of displayed image size relative to the
+        /// underlying bitmap.
+        ImageScale : float
     }
 
     /// Browsed image file.
     member this.Browsed = this.Loaded.Browsed
-
-module DisplayedImage =
-
-    /// Gets the scale of displayed image size relative to the
-    /// underlying bitmap.
-    let getImageScale dpiScale displayed =
-        let vector =
-            displayed.ImageSize / displayed.Loaded.Bitmap.Size
-        assert(abs (vector.X - vector.Y) < 0.001)
-        vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
 
 /// An image with a fixed zoom scale and origin.
 type ZoomedImage =
