@@ -77,6 +77,9 @@ module ImageMessage =
                 | _ -> failwith "Invalid state"
         model, Cmd.none
 
+    /// Acceptable rounding error.
+    let private epsilon = 0.001
+
     /// Sets or updates image size for a displayed image.
     let private onImageSized
         dpiScale imageSize (model : ImageModel) =
@@ -84,7 +87,7 @@ module ImageMessage =
         let toDisplayed loaded =
             let imageScale =
                 let vector = imageSize / loaded.Bitmap.Size
-                assert(abs (vector.X - vector.Y) < 0.001)
+                assert(abs (vector.X - vector.Y) < epsilon)
                 vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
             {
                 Loaded = loaded
@@ -136,7 +139,8 @@ module ImageMessage =
         if sign >= 0 then zoomScale * factor
         else
             let newScale = zoomScale / factor
-            if zoomScaleFloor > newScale then zoomScale   // don't jump suddenly
+            if zoomScaleFloor - newScale > epsilon then
+                zoomScale   // don't jump suddenly
             else newScale
 
     /// Updates zoom origin based on user input.
