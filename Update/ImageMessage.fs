@@ -5,6 +5,9 @@ open Elmish
 open Avalonia
 open Avalonia.Media.Imaging
 
+open Aether
+open Aether.Operators
+
 /// Messages that can update the image model.
 type ImageMessage =
 
@@ -50,42 +53,12 @@ module ImageMessage =
         Cmd.none
 
     /// Sets or updates container size for a loaded image.
-    let private onContainerSized
-        containerSize (model : ImageModel) =
-
-        let contain browsed =
-            {
-                Browsed = browsed
-                ContainerSize = containerSize
-            }
-
-        let updateContained loaded =
-            { loaded with
-                Contained =
-                    contain loaded.Browsed }
-
-        let updateDisplayed displayed =
-            { displayed with
-                Loaded =
-                    updateContained displayed.Loaded }
-
+    let private onContainerSized containerSize model =
         let model =
-            match model with
-                | Browsed browsed ->
-                    Contained (contain browsed)
-                | Contained contained ->
-                    Contained (contain contained.Browsed)
-                | Loaded loaded ->
-                    Loaded (updateContained loaded)
-                | Displayed displayed ->
-                    Displayed (updateDisplayed displayed)
-                | Zoomed zoomed ->
-                    Zoomed {
-                        zoomed with
-                            Displayed =
-                                updateDisplayed (zoomed.Displayed) }
-                | _ -> failwith "Invalid state"
-
+            model
+                |> containerSize
+                ^= (ImageModel.Contained_
+                    >-> ContainedImage.ContainerSize_)
         model, Cmd.none
 
     /// Starts loading an image.
@@ -108,15 +81,12 @@ module ImageMessage =
         | _ -> failwith "Invalid state"
 
     /// Finishes loading an image.
-    let private onBitmapLoaded bitmap (model : ImageModel) =
+    let private onBitmapLoaded bitmap model =
         let model =
-            match model with
-                | Contained contained ->
-                    Loaded {
-                        Contained = contained
-                        Bitmap = bitmap
-                    }
-                | _ -> failwith "Invalid state"
+            model
+                |> bitmap
+                ^= (ImageModel.Loaded_
+                    >-> LoadedImage.Bitmap_)
         model, Cmd.none
 
     /// Acceptable rounding error.
