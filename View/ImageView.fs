@@ -12,7 +12,7 @@ open Avalonia.Media.Imaging
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock dpiScale model dispatch =
+    let private createToolbar dock model dispatch =
 
         let zoomScaleOpt =
             match model with
@@ -147,8 +147,7 @@ module ImageView =
             DockPanel.children [
 
                     // toolbar
-                createToolbar
-                    Dock.Top dpiScale model dispatch
+                createToolbar Dock.Top model dispatch
 
                     // "previous image" button
                 createBrowsePanel

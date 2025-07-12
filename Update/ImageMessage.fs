@@ -82,12 +82,10 @@ module ImageMessage =
         dpiScale imageSize (model : ImageModel) =
 
         let toDisplayed loaded =
-
             let imageScale =
                 let vector = imageSize / loaded.Bitmap.Size
                 assert(abs (vector.X - vector.Y) < 0.001)
                 vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
-
             {
                 Loaded = loaded
                 ImageSize = imageSize
