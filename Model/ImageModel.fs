@@ -30,11 +30,24 @@ type LoadedImage =
         Bitmap : Bitmap
     }
 
-/// A displayed image from a loaded image file.
-type DisplayedImage =
+/// A loaded image inside a container.
+type ContainedImage =
     {
         /// Loaded image.
         Loaded : LoadedImage
+
+        /// Container size.
+        ContainerSize : Size
+    }
+
+    /// Browsed image file.
+    member this.Browsed = this.Loaded.Browsed
+
+/// A displayed image.
+type DisplayedImage =
+    {
+        /// Contained image.
+        Contained : ContainedImage
 
         /// Displayed image size. This may be different from
         /// the underlying bitmap size due to scaling.
@@ -46,7 +59,10 @@ type DisplayedImage =
     }
 
     /// Browsed image file.
-    member this.Browsed = this.Loaded.Browsed
+    member this.Browsed = this.Contained.Browsed
+
+    /// Loaded image.
+    member this.Loaded = this.Contained.Loaded
 
 /// An image with a fixed zoom scale and origin.
 type ZoomedImage =
@@ -67,6 +83,9 @@ type ZoomedImage =
 
     /// Loaded image.
     member this.Loaded = this.Displayed.Loaded
+
+    /// Contained image.
+    member this.Contained = this.Displayed.Contained
 
 /// An image file that could not be browsed.
 type BrowseError =
@@ -93,8 +112,12 @@ type ImageModel =
     /// File has been browsed and is ready to be loaded.
     | Browsed of BrowsedImage
 
-    /// Bitmap has been loaded and is ready to be displayed.
+    /// Bitmap has been loaded and is ready to be added to a
+    /// container.
     | Loaded of LoadedImage
+
+    /// Image has been added to a container.
+    | Contained of ContainedImage
 
     /// Image has been displayed and has variable zoom scale.
     | Displayed of DisplayedImage
@@ -113,9 +136,21 @@ type ImageModel =
         match this with
             | Browsed browsed -> browsed
             | Loaded loaded -> loaded.Browsed
+            | Contained contained -> contained.Browsed
             | Displayed displayed -> displayed.Browsed
             | Zoomed zoomed -> zoomed.Browsed
             | LoadError errored -> errored.Browsed
+            | BrowseError _ -> failwith "Invalid state"
+
+    /// Contained image.
+    member this.ContainedImage =
+        match this with
+            | Contained contained -> contained
+            | Displayed displayed -> displayed.Contained
+            | Zoomed zoomed -> zoomed.Contained
+            | LoadError _
+            | Browsed _
+            | Loaded _
             | BrowseError _ -> failwith "Invalid state"
 
     /// Displayed image.
@@ -126,6 +161,7 @@ type ImageModel =
             | LoadError _
             | Browsed _
             | Loaded _
+            | Contained _
             | BrowseError _ -> failwith "Invalid state"
 
 module ImageModel =

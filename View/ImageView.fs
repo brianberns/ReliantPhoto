@@ -96,6 +96,14 @@ module ImageView =
     let private createZoomableImage dpiScale model dispatch =
         Border.create [
             Border.clipToBounds true
+
+            Border.onSizeChanged (fun args ->
+                args.Handled <- true
+                args.NewSize
+                    |> ContainerSized
+                    |> MkImageMessage
+                    |> dispatch)
+
             Border.child (
                 Image.create [
 

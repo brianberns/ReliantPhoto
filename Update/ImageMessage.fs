@@ -14,6 +14,9 @@ type ImageMessage =
     /// Display image.
     | Display of Bitmap
 
+    /// Size of the container has been set or updated.
+    | ContainerSized of Size
+
     /// Size of the displayed image has been set or updated.
     | ImageSized of Size
 
@@ -80,32 +83,64 @@ module ImageMessage =
     /// Acceptable rounding error.
     let private epsilon = 0.001
 
+    /// Sets or updates container size for a loaded image.
+    let private onContainerSized containerSize (model : ImageModel) =
+
+        let contain loaded =
+            {
+                Loaded = loaded
+                ContainerSize = containerSize
+            }
+
+        let update displayed =
+            { displayed with
+                Contained =
+                    contain displayed.Loaded }
+
+        let model =
+            match model with
+                | Loaded loaded ->
+                    Contained (contain loaded)
+                | Contained contained ->
+                    Contained (contain contained.Loaded)
+                | Displayed displayed ->
+                    Displayed (update displayed)
+                | Zoomed zoomed ->
+                    Zoomed {
+                        zoomed with
+                            Displayed =
+                                update (zoomed.Displayed) }
+                | _ -> failwith "Invalid state"
+
+        model, Cmd.none
+
     /// Sets or updates image size for a displayed image.
     let private onImageSized
         dpiScale imageSize (model : ImageModel) =
 
-        let toDisplayed loaded =
+        let display contained =
             let imageScale =
-                let vector = imageSize / loaded.Bitmap.Size
+                let vector =
+                    imageSize / contained.Loaded.Bitmap.Size
                 assert(abs (vector.X - vector.Y) < epsilon)
                 vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
             {
-                Loaded = loaded
+                Contained = contained
                 ImageSize = imageSize
                 ImageScale = imageScale
             }
 
         let model =
             match model with
-                | Loaded loaded ->
-                    Displayed (toDisplayed loaded)
+                | Contained contained ->
+                    Displayed (display contained)
                 | Displayed displayed ->
-                    Displayed (toDisplayed displayed.Loaded)
+                    Displayed (display displayed.Contained)
                 | Zoomed zoomed ->
                     Zoomed {
                         zoomed with
                             Displayed =
-                                toDisplayed zoomed.Loaded }
+                                display zoomed.Contained }
                 | _ -> failwith "Invalid state"
 
         model, Cmd.none
@@ -117,7 +152,9 @@ module ImageMessage =
 
     /// Determines the lowest allowable zoom scale.
     let private getZoomScaleFloor
-        (dpiScale : float) displayed imageScale =
+        (dpiScale : float)
+        (displayed : DisplayedImage)
+        imageScale =
         if displayed.Loaded.Bitmap.Size.Width
             > displayed.ImageSize.Width * dpiScale then
             assert(imageScale < 1.0)
@@ -193,6 +230,10 @@ module ImageMessage =
                 // finish loading an image
             | Display bitmap ->
                 onDisplayImage bitmap model
+
+                // update container size
+            | ContainerSized containerSize ->
+                 onContainerSized containerSize model
 
                 // update image size
             | ImageSized imageSize ->
