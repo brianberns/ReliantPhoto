@@ -82,6 +82,8 @@ module ImageView =
 
     /// Attributes specific to a zoomed image.
     let zoomAttributes zoomed =
+
+            // compute transform necessary from Avalonia's default layout
         let zoomScale =
             zoomed.ZoomScale / zoomed.Displayed.ImageScale
         [

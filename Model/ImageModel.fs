@@ -54,7 +54,8 @@ type ZoomedImage =
         /// Displayed image.
         Displayed : DisplayedImage
 
-        /// Fixed zoom scale.
+        /// Fixed zoom scale. This will be 1.0 for an image
+        /// displayed at 1:1 size.
         ZoomScale : float
 
         /// Point at which to center zoom.
