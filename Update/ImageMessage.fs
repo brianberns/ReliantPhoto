@@ -11,11 +11,11 @@ type ImageMessage =
     /// Load image, if possible.
     | LoadImage
 
-    /// Display image.
-    | Display of Bitmap
-
     /// Size of the container has been set or updated.
     | ContainerSized of Size
+
+    /// Bitmap has been loaded.
+    | BitmapLoaded of Bitmap
 
     /// Size of the displayed image has been set or updated.
     | ImageSized of Size
@@ -47,7 +47,46 @@ module ImageMessage =
     /// Browses to the given file.
     let init file =
         ImageModel.init file,
-        Cmd.ofMsg LoadImage
+        Cmd.none
+
+    /// Sets or updates container size for a loaded image.
+    let private onContainerSized
+        containerSize (model : ImageModel) =
+
+        let contain browsed =
+            {
+                Browsed = browsed
+                ContainerSize = containerSize
+            }
+
+        let updateContained loaded =
+            { loaded with
+                Contained =
+                    contain loaded.Browsed }
+
+        let updateDisplayed displayed =
+            { displayed with
+                Loaded =
+                    updateContained displayed.Loaded }
+
+        let model =
+            match model with
+                | Browsed browsed ->
+                    Contained (contain browsed)
+                | Contained contained ->
+                    Contained (contain contained.Browsed)
+                | Loaded loaded ->
+                    Loaded (updateContained loaded)
+                | Displayed displayed ->
+                    Displayed (updateDisplayed displayed)
+                | Zoomed zoomed ->
+                    Zoomed {
+                        zoomed with
+                            Displayed =
+                                updateDisplayed (zoomed.Displayed) }
+                | _ -> failwith "Invalid state"
+
+        model, Cmd.none
 
     /// Starts loading an image.
     let private onLoadImage = function
@@ -58,7 +97,7 @@ module ImageMessage =
                 Cmd.ofAsyncResult
                     (ImageFile.tryLoadImage None)
                     browsed.File
-                    Display
+                    BitmapLoaded
                     HandleLoadError
             model, cmd
 
@@ -68,13 +107,13 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
-    /// Finishes loading an image and starts displaying it.
-    let private onDisplayImage bitmap (model : ImageModel) =
+    /// Finishes loading an image.
+    let private onBitmapLoaded bitmap (model : ImageModel) =
         let model =
             match model with
-                | Browsed browsed ->
+                | Contained contained ->
                     Loaded {
-                        Browsed = browsed
+                        Contained = contained
                         Bitmap = bitmap
                     }
                 | _ -> failwith "Invalid state"
@@ -83,64 +122,33 @@ module ImageMessage =
     /// Acceptable rounding error.
     let private epsilon = 0.001
 
-    /// Sets or updates container size for a loaded image.
-    let private onContainerSized containerSize (model : ImageModel) =
-
-        let contain loaded =
-            {
-                Loaded = loaded
-                ContainerSize = containerSize
-            }
-
-        let update displayed =
-            { displayed with
-                Contained =
-                    contain displayed.Loaded }
-
-        let model =
-            match model with
-                | Loaded loaded ->
-                    Contained (contain loaded)
-                | Contained contained ->
-                    Contained (contain contained.Loaded)
-                | Displayed displayed ->
-                    Displayed (update displayed)
-                | Zoomed zoomed ->
-                    Zoomed {
-                        zoomed with
-                            Displayed =
-                                update (zoomed.Displayed) }
-                | _ -> failwith "Invalid state"
-
-        model, Cmd.none
-
     /// Sets or updates image size for a displayed image.
     let private onImageSized
         dpiScale imageSize (model : ImageModel) =
 
-        let display contained =
+        let display loaded =
             let imageScale =
                 let vector =
-                    imageSize / contained.Loaded.Bitmap.Size
+                    imageSize / loaded.Bitmap.Size
                 assert(abs (vector.X - vector.Y) < epsilon)
                 vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
             {
-                Contained = contained
+                Loaded = loaded
                 ImageSize = imageSize
                 ImageScale = imageScale
             }
 
         let model =
             match model with
-                | Contained contained ->
-                    Displayed (display contained)
+                | Loaded loaded ->
+                    Displayed (display loaded)
                 | Displayed displayed ->
-                    Displayed (display displayed.Contained)
+                    Displayed (display displayed.Loaded)
                 | Zoomed zoomed ->
                     Zoomed {
                         zoomed with
                             Displayed =
-                                display zoomed.Contained }
+                                display zoomed.Loaded }
                 | _ -> failwith "Invalid state"
 
         model, Cmd.none
@@ -228,8 +236,8 @@ module ImageMessage =
                 onLoadImage model
 
                 // finish loading an image
-            | Display bitmap ->
-                onDisplayImage bitmap model
+            | BitmapLoaded bitmap ->
+                onBitmapLoaded bitmap model
 
                 // update container size
             | ContainerSized containerSize ->

@@ -20,34 +20,34 @@ type BrowsedImage =
         HasNextImage : bool
     }
 
-/// A bitmap loaded from an image file.
-type LoadedImage =
+/// A browsed image inside a container.
+type ContainedImage =
     {
         /// Browsed image file.
         Browsed : BrowsedImage
-
-        /// Loaded bitmap.
-        Bitmap : Bitmap
-    }
-
-/// A loaded image inside a container.
-type ContainedImage =
-    {
-        /// Loaded image.
-        Loaded : LoadedImage
 
         /// Container size.
         ContainerSize : Size
     }
 
+/// A bitmap loaded in a container but not yet displayed.
+type LoadedImage =
+    {
+        /// Contained image.
+        Contained : ContainedImage
+
+        /// Loaded bitmap.
+        Bitmap : Bitmap
+    }
+
     /// Browsed image file.
-    member this.Browsed = this.Loaded.Browsed
+    member this.Browsed = this.Contained.Browsed
 
 /// A displayed image.
 type DisplayedImage =
     {
-        /// Contained image.
-        Contained : ContainedImage
+        /// Loaded image.
+        Loaded : LoadedImage
 
         /// Displayed image size. This may be different from
         /// the underlying bitmap size due to scaling.
@@ -59,10 +59,10 @@ type DisplayedImage =
     }
 
     /// Browsed image file.
-    member this.Browsed = this.Contained.Browsed
+    member this.Browsed = this.Loaded.Browsed
 
-    /// Loaded image.
-    member this.Loaded = this.Contained.Loaded
+    /// Contained image.
+    member this.Contained = this.Loaded.Contained
 
 /// An image with a fixed zoom scale and origin.
 type ZoomedImage =
@@ -81,11 +81,11 @@ type ZoomedImage =
     /// Browsed image file.
     member this.Browsed = this.Displayed.Browsed
 
-    /// Loaded image.
-    member this.Loaded = this.Displayed.Loaded
-
     /// Contained image.
     member this.Contained = this.Displayed.Contained
+
+    /// Loaded image.
+    member this.Loaded = this.Displayed.Loaded
 
 /// An image file that could not be browsed.
 type BrowseError =
@@ -112,12 +112,12 @@ type ImageModel =
     /// File has been browsed and is ready to be loaded.
     | Browsed of BrowsedImage
 
+    /// Image has been added to a container.
+    | Contained of ContainedImage
+
     /// Bitmap has been loaded and is ready to be added to a
     /// container.
     | Loaded of LoadedImage
-
-    /// Image has been added to a container.
-    | Contained of ContainedImage
 
     /// Image has been displayed and has variable zoom scale.
     | Displayed of DisplayedImage
@@ -135,8 +135,8 @@ type ImageModel =
     member this.BrowsedImage =
         match this with
             | Browsed browsed -> browsed
-            | Loaded loaded -> loaded.Browsed
             | Contained contained -> contained.Browsed
+            | Loaded loaded -> loaded.Browsed
             | Displayed displayed -> displayed.Browsed
             | Zoomed zoomed -> zoomed.Browsed
             | LoadError errored -> errored.Browsed
