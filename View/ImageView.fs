@@ -19,7 +19,7 @@ module ImageView =
                 | Displayed displayed ->
                     Some displayed.ImageScale
                 | Zoomed zoomed ->
-                    Some zoomed.Scale
+                    Some zoomed.ZoomScale
                 | _ -> None
 
         StackPanel.create [
@@ -83,11 +83,11 @@ module ImageView =
     /// Attributes specific to a zoomed image.
     let zoomAttributes zoomed =
         let zoomScale =
-            zoomed.Scale / zoomed.Displayed.ImageScale
+            zoomed.ZoomScale / zoomed.Displayed.ImageScale
         [
             Image.renderTransform (
                 ScaleTransform(zoomScale, zoomScale))
-            Image.renderTransformOrigin zoomed.Origin
+            Image.renderTransformOrigin zoomed.ZoomOrigin
         ]
 
     /// Creates a zoomable image.

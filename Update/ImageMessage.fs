@@ -131,7 +131,7 @@ module ImageMessage =
 
         let zoomScale =
             match model with
-                | Zoomed zoomed -> zoomed.Scale
+                | Zoomed zoomed -> zoomed.ZoomScale
                 | _ -> imageScale
 
         let factor = 1.1
@@ -168,8 +168,8 @@ module ImageMessage =
         let model =
             Zoomed {
                 Displayed = displayed
-                Scale = zoomScale
-                Origin = zoomOrigin
+                ZoomScale = zoomScale
+                ZoomOrigin = zoomOrigin
             }
         model, Cmd.none
 

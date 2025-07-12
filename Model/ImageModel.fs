@@ -55,10 +55,10 @@ type ZoomedImage =
         Displayed : DisplayedImage
 
         /// Fixed zoom scale.
-        Scale : float
+        ZoomScale : float
 
         /// Point at which to center zoom.
-        Origin : RelativePoint
+        ZoomOrigin : RelativePoint
     }
 
     /// Browsed image file.
