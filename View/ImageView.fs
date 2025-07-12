@@ -82,6 +82,19 @@ module ImageView =
                     |> dispatch)
         ]
 
+    /// Attributes specific to a zoomed image.
+    let zoomAttributes dpiScale zoomed =
+        let zoomScale =
+            let imageScale =
+                DisplayedImage.getImageScale
+                    dpiScale zoomed.Displayed
+            zoomed.Scale / imageScale
+        [
+            Image.renderTransform (
+                ScaleTransform(zoomScale, zoomScale))
+            Image.renderTransformOrigin zoomed.Origin
+        ]
+
     /// Creates a zoomable image.
     let private createZoomableImage dpiScale model dispatch =
         Border.create [
@@ -108,15 +121,8 @@ module ImageView =
                         | Zoomed zoomed ->
                             yield! imageAttributes
                                 dpiScale zoomed.Loaded.Bitmap dispatch
-
-                            let zoomScale =
-                                let imageScale =
-                                    DisplayedImage.getImageScale
-                                        dpiScale zoomed.Displayed
-                                zoomed.Scale / imageScale
-                            Image.renderTransform (
-                                ScaleTransform(zoomScale, zoomScale))
-                            Image.renderTransformOrigin zoomed.Origin
+                            yield! zoomAttributes
+                                dpiScale zoomed
 
                         | _ -> ()
                 ]
