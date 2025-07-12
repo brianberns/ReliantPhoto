@@ -118,9 +118,8 @@ module ImageMessage =
     /// Determines the lowest allowable zoom scale.
     let private getZoomScaleFloor
         (dpiScale : float) displayed imageScale =
-        let floorSize =
-            displayed.Loaded.Bitmap.Size / dpiScale
-        if floorSize.Width > displayed.ImageSize.Width then
+        if displayed.Loaded.Bitmap.Size.Width
+            > displayed.ImageSize.Width * dpiScale then
             assert(imageScale < 1.0)
             imageScale   // large image: fill view
         else 1.0         // small image: 100%
