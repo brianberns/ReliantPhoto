@@ -102,7 +102,7 @@ module ImageView =
             Border.child (
                 Image.create [
 
-                        // ensure clean edges in image
+                        // ensure clean edges in image (make sure this is present the first time through, even when there are no other attributes)
                     Image.init (fun image ->
                         RenderOptions.SetBitmapInterpolationMode(
                             image,
