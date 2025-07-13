@@ -67,10 +67,11 @@ module Window =
                 | Some imgModel ->
 
                         // side effects
-                    let browsed = imgModel ^. ImageModel.Browsed_
-                    let name = browsed.File.Name
-                    if name <> window.Title then
-                        window.Title <- name
+                    if not imgModel.IsBrowseError then
+                        let browsed = imgModel ^. ImageModel.Browsed_
+                        let name = browsed.File.Name
+                        if name <> window.Title then
+                            window.Title <- name
 
                         // Elmish subscription
                     yield! Sub.none

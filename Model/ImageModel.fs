@@ -200,8 +200,8 @@ type ImageModel =
                 zoomed
                     |> browsed ^= ZoomedImage.Browsed_
                     |> Zoomed
-            | LoadError error ->
-                error
+            | LoadError errored ->
+                errored
                     |> browsed ^= LoadError.Browsed_
                     |> LoadError
             | BrowseError _ ->

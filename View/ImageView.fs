@@ -154,7 +154,7 @@ module ImageView =
         dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
 
-            if model.IsBrowsed then
+            if model.IsBrowsed || model.IsContained then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
@@ -163,23 +163,27 @@ module ImageView =
                     // toolbar
                 createToolbar Dock.Top model dispatch
 
-                    // "previous image" button
-                let browsed = model ^. ImageModel.Browsed_
-                createBrowsePanel
-                    Dock.Left "◀"
-                    browsed.HasPreviousImage
-                    PreviousImage
-                    dispatch
+                if not model.IsBrowseError then
+                    let browsed = model ^. ImageModel.Browsed_
 
-                    // "next image" button
-                createBrowsePanel
-                    Dock.Right "▶"
-                    browsed.HasNextImage
-                    NextImage
-                    dispatch
+                        // "previous image" button
+                    createBrowsePanel
+                        Dock.Left "◀"
+                        browsed.HasPreviousImage
+                        PreviousImage
+                        dispatch
+
+                        // "next image" button
+                    createBrowsePanel
+                        Dock.Right "▶"
+                        browsed.HasNextImage
+                        NextImage
+                        dispatch
 
                     // image?
                 match model with
+                    | BrowseError errored ->
+                        createErrorMessage errored.Message
                     | LoadError errored ->
                         createErrorMessage errored.Message
                     | _ ->
@@ -196,23 +200,24 @@ module ImageView =
             Border.focusable true
             Border.background "Transparent"
 
-            Border.keyBindings [
-                let browsed = model ^. ImageModel.Browsed_
-                if browsed.HasPreviousImage then
-                    for key in [ Key.Left; Key.PageUp ] do
-                        KeyBinding.create [
-                            KeyBinding.key key
-                            KeyBinding.execute (fun _ ->
-                                dispatch (MkImageMessage PreviousImage))
-                        ]
-                if browsed.HasNextImage then
-                    for key in [ Key.Right; Key.PageDown ] do
-                        KeyBinding.create [
-                            KeyBinding.key key
-                            KeyBinding.execute (fun _ ->
-                                dispatch (MkImageMessage NextImage))
-                        ]
-            ]
+            if not model.IsBrowseError then
+                Border.keyBindings [
+                    let browsed = model ^. ImageModel.Browsed_
+                    if browsed.HasPreviousImage then
+                        for key in [ Key.Left; Key.PageUp ] do
+                            KeyBinding.create [
+                                KeyBinding.key key
+                                KeyBinding.execute (fun _ ->
+                                    dispatch (MkImageMessage PreviousImage))
+                            ]
+                    if browsed.HasNextImage then
+                        for key in [ Key.Right; Key.PageDown ] do
+                            KeyBinding.create [
+                                KeyBinding.key key
+                                KeyBinding.execute (fun _ ->
+                                    dispatch (MkImageMessage NextImage))
+                            ]
+                ]
 
             Border.onLoaded (fun e ->
                 let border = e.Source :?> Border   // grab focus
