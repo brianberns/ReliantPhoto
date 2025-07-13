@@ -199,7 +199,7 @@ module ImageMessage =
     let private onHandleLoadError error model =
         let model =
             LoadError {
-                Browsed = model ^. ImageModel.Browsed_
+                Contained = model ^. ImageModel.Contained_
                 Message = error
             }
         model, Cmd.none

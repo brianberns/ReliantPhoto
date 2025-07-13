@@ -133,18 +133,22 @@ type BrowseError =
 /// An image file that could not be loaded.
 type LoadError =
     {
-        /// Browsed image file.
-        Browsed : BrowsedImage
+        /// Contained image file.
+        Contained : ContainedImage
 
         /// Error message.
         Message : string
     }
 
+    /// Contained image lens.
+    static member Contained_ : Lens<_, _> =
+        _.Contained,
+        fun contained errored ->
+            { errored with Contained = contained }
+
     /// Browsed image lens.
     static member Browsed_ : Lens<_, _> =
-        _.Browsed,
-        fun browsed contained ->
-            { contained with Browsed = browsed }
+        LoadError.Contained_ >-> ContainedImage.Browsed_
 
 type ImageModel =
 
@@ -237,9 +241,10 @@ type ImageModel =
                 Some (displayed ^. DisplayedImage.Contained_)
             | Zoomed zoomed ->
                 Some (zoomed ^. ZoomedImage.Contained_)
+            | LoadError errored ->
+                Some (errored ^. LoadError.Contained_)
             | Browsed _
-            | BrowseError _
-            | LoadError _ -> None),
+            | BrowseError _ -> None),
 
         (fun contained -> function
             | Contained _ -> Contained contained
