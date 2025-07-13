@@ -5,7 +5,6 @@ open Elmish
 open Avalonia
 open Avalonia.Media.Imaging
 
-open Aether
 open Aether.Operators
 
 /// Messages that can update the image model.
@@ -56,8 +55,7 @@ module ImageMessage =
     let private onContainerSized containerSize model =
         let model =
             model
-                |> containerSize
-                ^= (ImageModel.Contained_
+                |> containerSize ^= (ImageModel.Contained_
                     >-> ContainedImage.ContainerSize_)
         model, Cmd.none
 
@@ -84,8 +82,7 @@ module ImageMessage =
     let private onBitmapLoaded bitmap model =
         let model =
             model
-                |> bitmap
-                ^= (ImageModel.Loaded_
+                |> bitmap ^= (ImageModel.Loaded_
                     >-> LoadedImage.Bitmap_)
         model, Cmd.none
 
@@ -93,12 +90,10 @@ module ImageMessage =
     let private epsilon = 0.001
 
     /// Sets or updates image size for a displayed image.
-    let private onImageSized
-        dpiScale imageSize (model : ImageModel) =
-
-        let loaded = model ^. ImageModel.Loaded_
+    let private onImageSized dpiScale imageSize model =
 
         let imageScale =
+            let loaded = model ^. ImageModel.Loaded_
             let vector =
                 imageSize / loaded.Bitmap.Size
             assert(abs (vector.X - vector.Y) < epsilon)
@@ -106,14 +101,16 @@ module ImageMessage =
 
         let model =
             model
-                |> imageSize
-                ^= (ImageModel.Displayed_
+                |> imageSize ^= (ImageModel.Displayed_
                     >-> DisplayedImage.ImageSize_)
+                |> imageScale ^= (ImageModel.Displayed_
+                    >-> DisplayedImage.ImageScale_)
         model, Cmd.none
 
     /// Browses to a file, if possible.
-    let private onBrowse incr (model : ImageModel) =
-        ImageModel.browse incr model.BrowsedImage.File,
+    let private onBrowse incr model =
+        let browsed = model ^. ImageModel.Browsed_
+        ImageModel.browse incr browsed.File,
         Cmd.ofMsg LoadImage
 
     /// Determines the lowest allowable zoom scale.
@@ -156,11 +153,9 @@ module ImageMessage =
     let private onWheelZoom
         dpiScale sign pointerPos (model : ImageModel) =
 
-            // get image attributes
-        let displayed = model.DisplayedImage
-        let imageScale = displayed.ImageScale
-
             // update zoom scale and origin
+        let displayed = model ^. ImageModel.Displayed_
+        let imageScale = displayed.ImageScale
         let zoomScale =
             let zoomScaleFloor =
                 getZoomScaleFloor dpiScale displayed imageScale
@@ -180,7 +175,7 @@ module ImageMessage =
     let private onHandleLoadError error (model : ImageModel) =
         let model =
             LoadError {
-                Browsed = model.BrowsedImage
+                Browsed = model ^. ImageModel.Browsed_
                 Message = error
             }
         model, Cmd.none

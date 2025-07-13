@@ -10,6 +10,8 @@ open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
 
+open Aether.Operators
+
 module Window =
 
     /// Current directory.
@@ -65,7 +67,8 @@ module Window =
                 | Some imgModel ->
 
                         // side effects
-                    let name = imgModel.BrowsedImage.File.Name
+                    let browsed = imgModel ^. ImageModel.Browsed_
+                    let name = browsed.File.Name
                     if name <> window.Title then
                         window.Title <- name
 

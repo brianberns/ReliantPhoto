@@ -9,6 +9,8 @@ open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Media.Imaging
 
+open Aether.Operators
+
 module ImageView =
 
     /// Creates a toolbar.
@@ -124,8 +126,11 @@ module ImageView =
                                 dpiScale displayed.Loaded.Bitmap dispatch
 
                         | Zoomed zoomed ->
+                            let bitmap =
+                                zoomed ^. (ZoomedImage.Loaded_
+                                    >-> LoadedImage.Bitmap_)
                             yield! imageAttributes
-                                dpiScale zoomed.Loaded.Bitmap dispatch
+                                dpiScale bitmap dispatch
                             yield! zoomAttributes zoomed
 
                         | _ -> ()
@@ -160,16 +165,17 @@ module ImageView =
                 createToolbar Dock.Top model dispatch
 
                     // "previous image" button
+                let browsed = model ^. ImageModel.Browsed_
                 createBrowsePanel
                     Dock.Left "◀"
-                    model.BrowsedImage.HasPreviousImage
+                    browsed.HasPreviousImage
                     PreviousImage
                     dispatch
 
                     // "next image" button
                 createBrowsePanel
                     Dock.Right "▶"
-                    model.BrowsedImage.HasNextImage
+                    browsed.HasNextImage
                     NextImage
                     dispatch
 
@@ -192,14 +198,15 @@ module ImageView =
             Border.background "Transparent"
 
             Border.keyBindings [
-                if model.BrowsedImage.HasPreviousImage then
+                let browsed = model ^. ImageModel.Browsed_
+                if browsed.HasPreviousImage then
                     for key in [ Key.Left; Key.PageUp ] do
                         KeyBinding.create [
                             KeyBinding.key key
                             KeyBinding.execute (fun _ ->
                                 dispatch (MkImageMessage PreviousImage))
                         ]
-                if model.BrowsedImage.HasNextImage then
+                if browsed.HasNextImage then
                     for key in [ Key.Right; Key.PageDown ] do
                         KeyBinding.create [
                             KeyBinding.key key

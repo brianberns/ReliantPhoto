@@ -92,10 +92,17 @@ type DisplayedImage =
         fun loaded displayed ->
             { displayed with Loaded = loaded }
 
+    /// Image size lens.
     static member ImageSize_ : Lens<_, _> =
         _.ImageSize,
-        fun imageSIze displayed ->
-            { displayed with ImageSize = imageSIze }
+        fun imageSize displayed ->
+            { displayed with ImageSize = imageSize }
+
+    /// Image scale lens.
+    static member ImageScale_ : Lens<_, _> =
+        _.ImageScale,
+        fun imageScale displayed ->
+            { displayed with ImageScale = imageScale }
 
     /// Contained image lens.
     static member Contained_ =
