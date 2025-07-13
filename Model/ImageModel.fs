@@ -39,12 +39,6 @@ type ContainedImage =
         fun browsed contained ->
             { contained with Browsed = browsed }
 
-    /// Container size lens.
-    static member ContainerSize_ : Lens<_, _> =
-        _.ContainerSize,
-        fun containerSize contained ->
-            { contained with ContainerSize = containerSize }
-
 /// A bitmap loaded in a container but not yet displayed.
 type LoadedImage =
     {
@@ -60,12 +54,6 @@ type LoadedImage =
         _.Contained,
         fun contained loaded ->
             { loaded with Contained = contained }
-
-    /// Bitmap lens.
-    static member Bitmap_ : Lens<_, _> =
-        _.Bitmap,
-        fun bitmap loaded ->
-            { loaded with Bitmap = bitmap }
 
     /// Browsed image lens.
     static member Browsed_ =
@@ -91,18 +79,6 @@ type DisplayedImage =
         _.Loaded,
         fun loaded displayed ->
             { displayed with Loaded = loaded }
-
-    /// Image size lens.
-    static member ImageSize_ : Lens<_, _> =
-        _.ImageSize,
-        fun imageSize displayed ->
-            { displayed with ImageSize = imageSize }
-
-    /// Image scale lens.
-    static member ImageScale_ : Lens<_, _> =
-        _.ImageScale,
-        fun imageScale displayed ->
-            { displayed with ImageScale = imageScale }
 
     /// Contained image lens.
     static member Contained_ =

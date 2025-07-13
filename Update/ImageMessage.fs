@@ -51,12 +51,21 @@ module ImageMessage =
         ImageModel.init file,
         Cmd.none
 
-    /// Sets or updates container size for a loaded image.
+    /// Sets or updates container size for a browsed image.
     let private onContainerSized containerSize model =
+
+        let contained =
+            {
+                Browsed = model ^. ImageModel.Browsed_
+                ContainerSize = containerSize
+            }
+
         let model =
-            model
-                |> containerSize ^= (ImageModel.Contained_
-                    >-> ContainedImage.ContainerSize_)
+            match model with
+                | Browsed _ -> Contained contained
+                | _ ->
+                    model
+                        |> contained ^= ImageModel.Contained_
         model, Cmd.none
 
     /// Starts loading an image.
@@ -78,12 +87,16 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
-    /// Finishes loading an image.
+    /// Sets bitmap for a contained image.
     let private onBitmapLoaded bitmap model =
         let model =
-            model
-                |> bitmap ^= (ImageModel.Loaded_
-                    >-> LoadedImage.Bitmap_)
+            match model with
+                | Contained contained ->
+                    Loaded {
+                        Contained = contained
+                        Bitmap = bitmap
+                    }
+                | _ -> failwith "Invalid state"
         model, Cmd.none
 
     /// Acceptable rounding error.
@@ -92,19 +105,24 @@ module ImageMessage =
     /// Sets or updates image size for a displayed image.
     let private onImageSized dpiScale imageSize model =
 
-        let imageScale =
+        let displayed =
             let loaded = model ^. ImageModel.Loaded_
             let vector =
                 imageSize / loaded.Bitmap.Size
             assert(abs (vector.X - vector.Y) < epsilon)
-            vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
+            let imageScale = vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
+            {
+                Loaded = loaded
+                ImageSize = imageSize
+                ImageScale = imageScale
+            }
 
         let model =
-            model
-                |> imageSize ^= (ImageModel.Displayed_
-                    >-> DisplayedImage.ImageSize_)
-                |> imageScale ^= (ImageModel.Displayed_
-                    >-> DisplayedImage.ImageScale_)
+            match model with
+                | Loaded _ -> Displayed displayed
+                | _ ->
+                    model
+                        |> displayed ^= ImageModel.Displayed_
         model, Cmd.none
 
     /// Browses to a file, if possible.

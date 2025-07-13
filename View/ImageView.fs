@@ -126,11 +126,10 @@ module ImageView =
                                 dpiScale displayed.Loaded.Bitmap dispatch
 
                         | Zoomed zoomed ->
-                            let bitmap =
-                                zoomed ^. (ZoomedImage.Loaded_
-                                    >-> LoadedImage.Bitmap_)
+                            let loaded =
+                                zoomed ^. ZoomedImage.Loaded_
                             yield! imageAttributes
-                                dpiScale bitmap dispatch
+                                dpiScale loaded.Bitmap dispatch
                             yield! zoomAttributes zoomed
 
                         | _ -> ()
