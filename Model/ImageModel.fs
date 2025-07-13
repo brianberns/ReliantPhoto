@@ -170,17 +170,22 @@ type ImageModel =
     /// Image could not be loaded.
     | LoadError of LoadError
 
-    /// Browsed image lens.
-    static member Browsed_ : Lens<_, _> =
+    /// Browsed image prism.
+    static member TryBrowsed_ : Prism<_, _> =
 
         (function
-            | Browsed browsed -> browsed
-            | Contained contained -> contained ^. ContainedImage.Browsed_
-            | Loaded loaded -> loaded ^. LoadedImage.Browsed_
-            | Displayed displayed -> displayed ^. DisplayedImage.Browsed_
-            | Zoomed zoomed -> zoomed ^. ZoomedImage.Browsed_
-            | LoadError errored -> errored ^. LoadError.Browsed_
-            | BrowseError _ -> failwith "Invalid state"),
+            | Browsed browsed -> Some browsed
+            | Contained contained ->
+                Some (contained ^. ContainedImage.Browsed_)
+            | Loaded loaded ->
+                Some (loaded ^. LoadedImage.Browsed_)
+            | Displayed displayed ->
+                Some (displayed ^. DisplayedImage.Browsed_)
+            | Zoomed zoomed ->
+                Some (zoomed ^. ZoomedImage.Browsed_)
+            | LoadError errored ->
+                Some (errored ^. LoadError.Browsed_)
+            | BrowseError _ -> None),
 
         (fun browsed -> function
             | Browsed _ -> Browsed browsed
@@ -204,20 +209,37 @@ type ImageModel =
                 errored
                     |> browsed ^= LoadError.Browsed_
                     |> LoadError
-            | BrowseError _ ->
-                failwith "Invalid state")
+            | BrowseError _ as model -> model)
 
-    /// Contained image lens.
-    static member Contained_ : Lens<_, _> =
+    /// Browsed image lens.
+    static member Browsed_ : Lens<_, _> =
+
+        (fun model ->
+            match model ^. ImageModel.TryBrowsed_ with
+                | Some browsed -> browsed
+                | None -> failwith "Invalid state"),
+
+        (fun browsed model ->
+            assert(
+                model ^. ImageModel.TryBrowsed_
+                    |> Option.isSome)
+            browsed ^= ImageModel.TryBrowsed_
+                <| model)
+
+    /// Contained image prism.
+    static member TryContained_ : Prism<_, _> =
 
         (function
-            | Contained contained -> contained
-            | Loaded loaded -> loaded ^. LoadedImage.Contained_
-            | Displayed displayed -> displayed ^. DisplayedImage.Contained_
-            | Zoomed zoomed -> zoomed ^. ZoomedImage.Contained_
+            | Contained contained -> Some contained
+            | Loaded loaded ->
+                Some (loaded ^. LoadedImage.Contained_)
+            | Displayed displayed ->
+                Some (displayed ^. DisplayedImage.Contained_)
+            | Zoomed zoomed ->
+                Some (zoomed ^. ZoomedImage.Contained_)
             | Browsed _
             | BrowseError _
-            | LoadError _ -> failwith "Invalid state"),
+            | LoadError _ -> None),
 
         (fun contained -> function
             | Contained _ -> Contained contained
@@ -235,19 +257,36 @@ type ImageModel =
                     |> Zoomed
             | Browsed _
             | BrowseError _
-            | LoadError _ -> failwith "Invalid state")
+            | LoadError _ as model -> model)
 
-    /// Loaded image lens.
-    static member Loaded_ : Lens<_, _> =
+    /// Contained image lens.
+    static member Contained_ : Lens<_, _> =
+
+        (fun model ->
+            match model ^. ImageModel.TryContained_ with
+                | Some contained -> contained
+                | None -> failwith "Invalid state"),
+
+        (fun contained model ->
+            assert(
+                model ^. ImageModel.TryContained_
+                    |> Option.isSome)
+            contained ^= ImageModel.TryContained_
+                <| model)
+
+    /// Loaded image prism.
+    static member TryLoaded_ : Prism<_, _> =
 
         (function
-            | Loaded loaded -> loaded
-            | Displayed displayed -> displayed ^. DisplayedImage.Loaded_
-            | Zoomed zoomed -> zoomed ^. ZoomedImage.Loaded_
+            | Loaded loaded -> Some loaded
+            | Displayed displayed ->
+                Some (displayed ^. DisplayedImage.Loaded_)
+            | Zoomed zoomed ->
+                Some (zoomed ^. ZoomedImage.Loaded_)
             | Browsed _
             | Contained _
             | BrowseError _
-            | LoadError _ -> failwith "Invalid state"),
+            | LoadError _ -> None),
 
         (fun loaded -> function
             | Loaded _ -> Loaded loaded
@@ -262,19 +301,35 @@ type ImageModel =
             | Browsed _
             | Contained _
             | BrowseError _
-            | LoadError _ -> failwith "Invalid state")
+            | LoadError _ as model -> model)
 
-    /// Displayed image lens.
-    static member Displayed_ : Lens<_, _> =
+    /// Loaded image lens.
+    static member Loaded_ : Lens<_, _> =
+
+        (fun model ->
+            match model ^. ImageModel.TryLoaded_ with
+                | Some loaded -> loaded
+                | None -> failwith "Invalid state"),
+
+        (fun loaded model ->
+            assert(
+                model ^. ImageModel.TryLoaded_
+                    |> Option.isSome)
+            loaded ^= ImageModel.TryLoaded_
+                <| model)
+
+    /// Displayed image prism.
+    static member TryDisplayed_ : Prism<_, _> =
 
         (function
-            | Displayed displayed -> displayed
-            | Zoomed zoomed -> zoomed ^. ZoomedImage.Displayed_
+            | Displayed displayed -> Some displayed
+            | Zoomed zoomed ->
+                Some (zoomed ^. ZoomedImage.Displayed_)
             | Browsed _
             | Contained _
             | Loaded _
             | BrowseError _
-            | LoadError _ -> failwith "Invalid state"),
+            | LoadError _ -> None),
 
         (fun displayed -> function
             | Displayed _ -> Displayed displayed
@@ -286,7 +341,22 @@ type ImageModel =
             | Contained _
             | Loaded _
             | BrowseError _
-            | LoadError _ -> failwith "Invalid state")
+            | LoadError _ as model -> model)
+
+    /// Displayed image lens.
+    static member Displayed_ : Lens<_, _> =
+
+        (fun model ->
+            match model ^. ImageModel.TryDisplayed_ with
+                | Some displayed -> displayed
+                | None -> failwith "Invalid state"),
+
+        (fun displayed model ->
+            assert(
+                model ^. ImageModel.TryDisplayed_
+                    |> Option.isSome)
+            displayed ^= ImageModel.TryDisplayed_
+                <| model)
 
 module ImageModel =
 
