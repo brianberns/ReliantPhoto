@@ -69,16 +69,17 @@ module ImageMessage =
         model, Cmd.none
 
     /// Starts loading an image.
-    let private onLoadImage (model : ImageModel) =
-        assert(model.IsBrowsed || model.IsContained)
-        let cmd =
-            let browsed = model ^. ImageModel.Browsed_
-            Cmd.ofAsyncResult
-                (ImageFile.tryLoadImage None)
-                browsed.File
-                BitmapLoaded
-                HandleLoadError
-        model, cmd
+    let private onLoadImage model =
+        match model ^. ImageModel.TryBrowsed_ with
+            | Some browsed ->
+                let cmd =
+                    Cmd.ofAsyncResult
+                        (ImageFile.tryLoadImage None)
+                        browsed.File
+                        BitmapLoaded
+                        HandleLoadError
+                model, cmd
+            | None -> failwith "Invalid state"
 
     /// Sets bitmap for a contained image.
     let private onBitmapLoaded bitmap model =
@@ -174,8 +175,7 @@ module ImageMessage =
         RelativePoint(originX, originY, RelativeUnit.Relative)
 
     /// Updates zoom scale and origin.
-    let private onWheelZoom
-        dpiScale sign pointerPos (model : ImageModel) =
+    let private onWheelZoom dpiScale sign pointerPos model =
 
             // update zoom scale and origin
         let displayed = model ^. ImageModel.Displayed_
@@ -196,7 +196,7 @@ module ImageMessage =
         model, Cmd.none
 
     /// Handles a load error.
-    let private onHandleLoadError error (model : ImageModel) =
+    let private onHandleLoadError error model =
         let model =
             LoadError {
                 Browsed = model ^. ImageModel.Browsed_

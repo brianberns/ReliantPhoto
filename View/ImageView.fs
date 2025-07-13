@@ -154,10 +154,11 @@ module ImageView =
         dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
 
-            let isLoaded =
-                model ^. ImageModel.TryLoaded_
-                    |> Option.isNone
-            if isLoaded then
+            let isWaiting =
+                model.IsBrowsed
+                    || model.IsContained
+                    || model.IsLoaded
+            if isWaiting then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
