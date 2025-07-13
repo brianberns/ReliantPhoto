@@ -51,9 +51,14 @@ module Message =
 
     /// Switches to image mode.
     let private onSwitchToImage file model =
-        { model with
-            ImageModelOpt = Some (ImageModel.init file) },
-        Cmd.ofMsg (MkImageMessage LoadImage)
+        let imgModel = ImageModel.init file
+        let model = 
+            { model with
+                ImageModelOpt = Some imgModel }
+        let cmd =
+            if imgModel.IsBrowseError then Cmd.none
+            else Cmd.ofMsg (MkImageMessage LoadImage)
+        model, cmd
 
     /// Switches to directory mode.
     let private onSwitchToDirectory model =
