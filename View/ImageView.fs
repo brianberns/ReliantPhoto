@@ -154,7 +154,10 @@ module ImageView =
         dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
 
-            if model.IsBrowsed || model.IsContained then
+            let isLoaded =
+                model ^. ImageModel.TryLoaded_
+                    |> Option.isNone
+            if isLoaded then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
@@ -163,22 +166,25 @@ module ImageView =
                     // toolbar
                 createToolbar Dock.Top model dispatch
 
-                if not model.IsBrowseError then
-                    let browsed = model ^. ImageModel.Browsed_
+                    // browse buttons?
+                match model ^. ImageModel.TryBrowsed_ with
+                    | Some browsed ->
 
-                        // "previous image" button
-                    createBrowsePanel
-                        Dock.Left "◀"
-                        browsed.HasPreviousImage
-                        PreviousImage
-                        dispatch
+                            // "previous image" button
+                        createBrowsePanel
+                            Dock.Left "◀"
+                            browsed.HasPreviousImage
+                            PreviousImage
+                            dispatch
 
-                        // "next image" button
-                    createBrowsePanel
-                        Dock.Right "▶"
-                        browsed.HasNextImage
-                        NextImage
-                        dispatch
+                            // "next image" button
+                        createBrowsePanel
+                            Dock.Right "▶"
+                            browsed.HasNextImage
+                            NextImage
+                            dispatch
+
+                    | None -> ()
 
                     // image?
                 match model with
