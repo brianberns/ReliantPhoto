@@ -18,7 +18,8 @@ type Message =
     /// Switch from image mode to directory mode.
     | SwitchToDirectory
 
-    /// User has selected an imageto load.
+    /// User has selected an image to load from the file
+    /// system.
     | ImageSelected of FileInfo
 
 module Message =
@@ -34,37 +35,42 @@ module Message =
             ]
         model, cmd
 
+    /// Handles a directory-mode message.
+    let private onDirectoryMessage dirMsg model =
+        let dirModel, dirCmd =
+            DirectoryMessage.update dirMsg model.DirectoryModel
+        { model with DirectoryModel = dirModel },
+        Cmd.map MkDirectoryMessage dirCmd
+
+    /// Handles an image-mode message.
+    let private onImageMessage dpiScale imgMsg imgModel model =
+        let imgModel, imgCmd =
+            ImageMessage.update dpiScale imgMsg imgModel
+        { model with ImageModelOpt = Some imgModel },
+        Cmd.map MkImageMessage imgCmd
+
+    /// Switches to image mode.
+    let private onSwitchToImage file model =
+        { model with
+            ImageModelOpt = Some (ImageModel.init file) },
+        Cmd.ofMsg (MkImageMessage LoadImage)
+
+    /// Switches to directory mode.
+    let private onSwitchToDirectory model =
+        { model with ImageModelOpt = None },
+        Cmd.none
+
     /// Updates the given model based on the given message.
     let update dpiScale message model =
         match message, model.ImageModelOpt with
-
-                // process directory-mode message
             | MkDirectoryMessage dirMsg, _ ->
-                let dirModel, dirCmd =
-                    DirectoryMessage.update dirMsg model.DirectoryModel
-                { model with DirectoryModel = dirModel },
-                Cmd.map MkDirectoryMessage dirCmd
-
-                // process image-mode message
+                onDirectoryMessage dirMsg model
             | MkImageMessage imgMsg, Some imgModel ->
-                let imgModel, imgCmd =
-                    ImageMessage.update dpiScale imgMsg imgModel
-                { model with ImageModelOpt = Some imgModel },
-                Cmd.map MkImageMessage imgCmd
-
-                // switch to image mode
+                onImageMessage dpiScale imgMsg imgModel model
             | SwitchToImage file, None ->
-                { model with
-                    ImageModelOpt = Some (ImageModel.init file) },
-                Cmd.ofMsg (MkImageMessage LoadImage)
-
-                // switch to directory mode
+                onSwitchToImage file model
             | SwitchToDirectory, Some _ ->
-                { model with ImageModelOpt = None },
-                Cmd.none
-
-                // image selected
+                onSwitchToDirectory model
             | ImageSelected file, _ ->
                 init file
-
             | _ -> failwith $"Invalid message {message} for model {model}"
