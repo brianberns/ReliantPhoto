@@ -69,23 +69,16 @@ module ImageMessage =
         model, Cmd.none
 
     /// Starts loading an image.
-    let private onLoadImage = function
-
-            // browse succeeded, try to load image
-        | Browsed browsed as model ->
-            let cmd =
-                Cmd.ofAsyncResult
-                    (ImageFile.tryLoadImage None)
-                    browsed.File
-                    BitmapLoaded
-                    HandleLoadError
-            model, cmd
-
-            // browse failed, can't load image
-        | BrowseError _ as model ->
-            model, Cmd.none
-
-        | _ -> failwith "Invalid state"
+    let private onLoadImage (model : ImageModel) =
+        assert(model.IsBrowsed || model.IsContained)
+        let cmd =
+            let browsed = model ^. ImageModel.Browsed_
+            Cmd.ofAsyncResult
+                (ImageFile.tryLoadImage None)
+                browsed.File
+                BitmapLoaded
+                HandleLoadError
+        model, cmd
 
     /// Sets bitmap for a contained image.
     let private onBitmapLoaded bitmap model =
@@ -127,9 +120,22 @@ module ImageMessage =
 
     /// Browses to a file, if possible.
     let private onBrowse incr model =
-        let browsed = model ^. ImageModel.Browsed_
-        ImageModel.browse incr browsed.File,
-        Cmd.ofMsg LoadImage
+        let contained = model ^. ImageModel.Contained_
+        let file = contained.Browsed.File
+        match ImageModel.browse incr file with
+
+                // browse succeeded, keep container size
+            | Browsed browsed ->
+                Contained {
+                    contained with
+                        Browsed = browsed },
+                Cmd.ofMsg LoadImage
+
+                // browse failed
+            | BrowseError _ as model ->
+                model, Cmd.none
+
+            | _ -> failwith "Invalid state"
 
     /// Determines the lowest allowable zoom scale.
     let private getZoomScaleFloor
