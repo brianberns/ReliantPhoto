@@ -54,8 +54,7 @@ module Window =
                 // ... side effects
             let dirModel = model.DirectoryModel
             directory <- dirModel.Directory
-            if dirModel.Directory.FullName <> window.Title then
-                window.Title <- dirModel.Directory.FullName
+            window.Title <- dirModel.Directory.FullName
 
                 // ... Elmish subscription
             yield! dirModel
@@ -69,9 +68,7 @@ module Window =
                         // side effects
                     match imgModel ^. ImageModel.TryBrowsed_ with
                         | Some browsed ->
-                            let name = browsed.File.Name
-                            if name <> window.Title then
-                                window.Title <- name
+                            window.Title <- browsed.File.Name
                         | None -> ()
 
                         // Elmish subscription
