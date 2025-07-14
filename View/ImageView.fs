@@ -91,22 +91,21 @@ module ImageView =
         [
             Image.renderTransform (
                 ScaleTransform(zoomScale, zoomScale))
-            Image.renderTransformOrigin zoomed.ZoomOrigin
         ]
 
     /// Creates a zoomable image.
     let private createZoomableImage dpiScale model dispatch =
-        Border.create [
-            Border.clipToBounds true
+        Canvas.create [
+            Canvas.clipToBounds true
 
-            Border.onSizeChanged (fun args ->
+            Canvas.onSizeChanged (fun args ->
                 args.Handled <- true
                 args.NewSize
                     |> ContainerSized
                     |> MkImageMessage
                     |> dispatch)
 
-            Border.child (
+            Canvas.children [
                 Image.create [
 
                         // ensure clean edges in image (make sure this is present the first time through, even when there are no other attributes)
@@ -134,7 +133,7 @@ module ImageView =
 
                         | _ -> ()
                 ]
-            )
+            ]
         ]
 
     /// Creates an error message.
