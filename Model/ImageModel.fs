@@ -363,6 +363,12 @@ type ImageModel =
             displayed ^= ImageModel.TryDisplayed_
                 <| model)
 
+    /// Image file.
+    member this.File =
+        match this with
+            | BrowseError errored -> errored.File
+            | _ -> (this ^. ImageModel.Browsed_).File
+
 module ImageModel =
 
     /// Compares files by name.

@@ -66,10 +66,7 @@ module Window =
                 | Some imgModel ->
 
                         // side effects
-                    match imgModel ^. ImageModel.TryBrowsed_ with
-                        | Some browsed ->
-                            window.Title <- browsed.File.Name
-                        | None -> ()
+                    window.Title <- imgModel.File.Name
 
                         // Elmish subscription
                     yield! Sub.none
