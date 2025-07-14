@@ -103,29 +103,6 @@ module ImageMessage =
     /// Acceptable rounding error.
     let private epsilon = 0.001
 
-    /// Sets or updates image size for a displayed image.
-    let private onImageSized dpiScale imageSize model =
-
-        let displayed =
-            let loaded = model ^. ImageModel.Loaded_
-            let vector =
-                imageSize / loaded.Bitmap.Size
-            assert(abs (vector.X - vector.Y) < epsilon)
-            let imageScale = vector.X * dpiScale   // e.g. Avalonia thinks image is at 100%, but OS actually shows it at 125%
-            {
-                Loaded = loaded
-                ImageSize = imageSize
-                ImageScale = imageScale
-            }
-
-        let model =
-            match model with
-                | Loaded _ -> Displayed displayed
-                | _ ->
-                    model
-                        |> displayed ^= ImageModel.Displayed_
-        model, Cmd.none
-
     /// Browses to a file, if possible.
     let private onBrowse incr model =
 
@@ -220,17 +197,13 @@ module ImageMessage =
             | LoadImage ->
                 onLoadImage model
 
-                // finish loading an image
-            | BitmapLoaded bitmap ->
-                onBitmapLoaded bitmap model
-
                 // update container size
             | ContainerSized containerSize ->
                  onContainerSized containerSize model
 
-                // update image size
-            | ImageSized imageSize ->
-                onImageSized dpiScale imageSize model
+                // finish loading an image
+            | BitmapLoaded bitmap ->
+                onBitmapLoaded bitmap model
 
                 // browse to previous image
             | PreviousImage  ->

@@ -65,14 +65,12 @@ type DisplayedImage =
         /// Loaded image.
         Loaded : LoadedImage
 
-        /// Displayed image size. This may be different from
-        /// the underlying bitmap size due to scaling, but is
-        /// not affected by zooming.
-        ImageSize : Size
+        /// Zoom scale. This will be 1.0 for an image displayed
+        /// at 1:1 size.
+        ZoomScale : float
 
-        /// Scale of default layout image size relative to the
-        /// underlying bitmap. This is not affected by zooming.
-        ImageScale : float
+        /// Point at which zoom request originates.
+        ZoomOrigin : RelativePoint
     }
 
     /// Loaded image lens.
@@ -88,38 +86,6 @@ type DisplayedImage =
     /// Browsed image lens.
     static member Browsed_ =
         DisplayedImage.Contained_ >-> ContainedImage.Browsed_
-
-/// An image with a fixed zoom scale and origin.
-type ZoomedImage =
-    {
-        /// Displayed image.
-        Displayed : DisplayedImage
-
-        /// Fixed zoom scale. This will be 1.0 for an image
-        /// displayed at 1:1 size.
-        ZoomScale : float
-
-        /// Point at which zoom originates.
-        ZoomOrigin : RelativePoint
-    }
-
-    /// Displayed image lens.
-    static member Displayed_ : Lens<_, _> =
-        _.Displayed,
-        fun displayed zoomed ->
-            { zoomed with Displayed = displayed }
-
-    /// Loaded image lens.
-    static member Loaded_ =
-        ZoomedImage.Displayed_ >-> DisplayedImage.Loaded_
-
-    /// Contained image lens.
-    static member Contained_ =
-        ZoomedImage.Loaded_ >-> LoadedImage.Contained_
-
-    /// Browsed image lens.
-    static member Browsed_ =
-        ZoomedImage.Contained_ >-> ContainedImage.Browsed_
 
 /// An image file that could not be browsed.
 type BrowseError =
@@ -156,18 +122,14 @@ type ImageModel =
     /// File has been browsed and is ready to be loaded.
     | Browsed of BrowsedImage
 
-    /// Image has been added to a container.
+    /// Container is ready for image.
     | Contained of ContainedImage
 
-    /// Bitmap has been loaded and is ready to be added to a
-    /// container.
+    /// Bitmap has been loaded.
     | Loaded of LoadedImage
 
-    /// Image has been displayed and has variable zoom scale.
+    /// Image has been displayed.
     | Displayed of DisplayedImage
-
-    /// Image has been zoomed to a specific scale.
-    | Zoomed of ZoomedImage
 
     /// File could not be browsed.
     | BrowseError of BrowseError
@@ -186,8 +148,6 @@ type ImageModel =
                 Some (loaded ^. LoadedImage.Browsed_)
             | Displayed displayed ->
                 Some (displayed ^. DisplayedImage.Browsed_)
-            | Zoomed zoomed ->
-                Some (zoomed ^. ZoomedImage.Browsed_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Browsed_)
             | BrowseError _ -> None),
@@ -206,10 +166,6 @@ type ImageModel =
                 displayed
                     |> browsed ^= DisplayedImage.Browsed_
                     |> Displayed
-            | Zoomed zoomed ->
-                zoomed
-                    |> browsed ^= ZoomedImage.Browsed_
-                    |> Zoomed
             | LoadError errored ->
                 errored
                     |> browsed ^= LoadError.Browsed_
@@ -240,8 +196,6 @@ type ImageModel =
                 Some (loaded ^. LoadedImage.Contained_)
             | Displayed displayed ->
                 Some (displayed ^. DisplayedImage.Contained_)
-            | Zoomed zoomed ->
-                Some (zoomed ^. ZoomedImage.Contained_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Contained_)
             | Browsed _
@@ -257,10 +211,6 @@ type ImageModel =
                 displayed
                     |> contained ^= DisplayedImage.Contained_
                     |> Displayed
-            | Zoomed zoomed ->
-                zoomed
-                    |> contained ^= ZoomedImage.Contained_
-                    |> Zoomed
             | Browsed _
             | BrowseError _
             | LoadError _ as model -> model)
@@ -287,8 +237,6 @@ type ImageModel =
             | Loaded loaded -> Some loaded
             | Displayed displayed ->
                 Some (displayed ^. DisplayedImage.Loaded_)
-            | Zoomed zoomed ->
-                Some (zoomed ^. ZoomedImage.Loaded_)
             | Browsed _
             | Contained _
             | BrowseError _
@@ -300,10 +248,6 @@ type ImageModel =
                 displayed
                     |> loaded ^= DisplayedImage.Loaded_
                     |> Displayed
-            | Zoomed zoomed ->
-                zoomed
-                    |> loaded ^= ZoomedImage.Loaded_
-                    |> Zoomed
             | Browsed _
             | Contained _
             | BrowseError _
@@ -322,46 +266,6 @@ type ImageModel =
                 model ^. ImageModel.TryLoaded_
                     |> Option.isSome)
             loaded ^= ImageModel.TryLoaded_
-                <| model)
-
-    /// Displayed image prism.
-    static member TryDisplayed_ : Prism<_, _> =
-
-        (function
-            | Displayed displayed -> Some displayed
-            | Zoomed zoomed ->
-                Some (zoomed ^. ZoomedImage.Displayed_)
-            | Browsed _
-            | Contained _
-            | Loaded _
-            | BrowseError _
-            | LoadError _ -> None),
-
-        (fun displayed -> function
-            | Displayed _ -> Displayed displayed
-            | Zoomed zoomed ->
-                zoomed
-                    |> displayed ^= ZoomedImage.Displayed_
-                    |> Zoomed
-            | Browsed _
-            | Contained _
-            | Loaded _
-            | BrowseError _
-            | LoadError _ as model -> model)
-
-    /// Displayed image lens.
-    static member Displayed_ : Lens<_, _> =
-
-        (fun model ->
-            match model ^. ImageModel.TryDisplayed_ with
-                | Some displayed -> displayed
-                | None -> failwith "Invalid state"),
-
-        (fun displayed model ->
-            assert(
-                model ^. ImageModel.TryDisplayed_
-                    |> Option.isSome)
-            displayed ^= ImageModel.TryDisplayed_
                 <| model)
 
     /// Image file.

@@ -19,9 +19,7 @@ module ImageView =
         let zoomScaleOpt =
             match model with
                 | Displayed displayed ->
-                    Some displayed.ImageScale
-                | Zoomed zoomed ->
-                    Some zoomed.ZoomScale
+                    Some displayed.ZoomScale
                 | _ -> None
 
         StackPanel.create [
@@ -82,15 +80,11 @@ module ImageView =
                     |> dispatch)
         ]
 
-    /// Attributes specific to a zoomed image.
-    let zoomAttributes zoomed =
-
-            // compute transform necessary from Avalonia's default layout
-        let zoomScale =
-            zoomed.ZoomScale / zoomed.Displayed.ImageScale
+    /// Attributes specific to a displayed image.
+    let displayAttributes zoomed =
         [
             Image.renderTransform (
-                ScaleTransform(zoomScale, zoomScale))
+                ScaleTransform(zoomed.ZoomScale, zoomed.ZoomScale))
         ]
 
     /// Creates a zoomable image.
@@ -121,15 +115,10 @@ module ImageView =
                                 dpiScale loaded.Bitmap dispatch
 
                         | Displayed displayed ->
-                            yield! imageAttributes
-                                dpiScale displayed.Loaded.Bitmap dispatch
-
-                        | Zoomed zoomed ->
-                            let loaded =
-                                zoomed ^. ZoomedImage.Loaded_
+                            let loaded = displayed.Loaded
                             yield! imageAttributes
                                 dpiScale loaded.Bitmap dispatch
-                            yield! zoomAttributes zoomed
+                            yield! displayAttributes displayed
 
                         | _ -> ()
                 ]
