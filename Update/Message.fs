@@ -24,14 +24,21 @@ type Message =
 
 module Message =
 
+    /// Determines initial image model command.
+    let private initImageCommand (imgModel : ImageModel) =
+        if imgModel.IsBrowseError then Cmd.none
+        else Cmd.ofMsg (MkImageMessage LoadImage)
+
     /// Browses to the given image or directory.
     let init arg =
         let model = Model.init arg
         let cmd =
             Cmd.batch [
                 Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
-                if model.ImageModelOpt.IsSome then
-                    Cmd.ofMsg (MkImageMessage LoadImage)
+                match model.ImageModelOpt with
+                    | Some imgModel ->
+                        initImageCommand imgModel
+                    | None -> ()
             ]
         model, cmd
 
@@ -55,10 +62,7 @@ module Message =
         let model =
             { model with
                 ImageModelOpt = Some imgModel }
-        let cmd =
-            if imgModel.IsBrowseError then Cmd.none
-            else Cmd.ofMsg (MkImageMessage LoadImage)
-        model, cmd
+        model, initImageCommand imgModel
 
     /// Switches to directory mode.
     let private onSwitchToDirectory model =
