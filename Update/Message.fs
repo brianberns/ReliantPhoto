@@ -52,7 +52,7 @@ module Message =
     /// Switches to image mode.
     let private onSwitchToImage file model =
         let imgModel = ImageModel.init file
-        let model = 
+        let model =
             { model with
                 ImageModelOpt = Some imgModel }
         let cmd =
