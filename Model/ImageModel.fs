@@ -66,7 +66,8 @@ type DisplayedImage =
         Loaded : LoadedImage
 
         /// Displayed image size. This may be different from
-        /// the underlying bitmap size due to scaling.
+        /// the underlying bitmap size due to scaling, but is
+        /// not affected by zooming.
         ImageSize : Size
 
         /// Scale of default layout image size relative to the
@@ -98,7 +99,7 @@ type ZoomedImage =
         /// displayed at 1:1 size.
         ZoomScale : float
 
-        /// Point at which to center zoom.
+        /// Point at which zoom originates.
         ZoomOrigin : RelativePoint
     }
 
