@@ -128,19 +128,20 @@ module ImageMessage =
 
     /// Browses to a file, if possible.
     let private onBrowse incr model =
+
+            // browse to file
         let contained = model ^. ImageModel.Contained_
-        let file = contained.Browsed.File
-        let model = ImageModel.browse incr file
+        let model =
+            contained.Browsed.File
+                |> ImageModel.browse incr
+
+            // keep container size if browse succeeded
         let model =
             match model ^. ImageModel.TryBrowsed_ with
-
-                    // browse succeeded, keep container size
                 | Some browsed ->
                     Contained {
                         contained with
                             Browsed = browsed }
-
-                    // browse failed
                 | None -> model
 
         model, Cmd.ofMsg LoadImage
