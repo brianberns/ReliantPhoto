@@ -68,18 +68,25 @@ module ImageMessage =
                         |> contained ^= ImageModel.Contained_
         model, Cmd.none
 
-    /// Starts loading an image.
+    /// Starts loading an image, if possible.
     let private onLoadImage model =
-        match model ^. ImageModel.TryBrowsed_ with
-            | Some browsed ->
-                let cmd =
+        let cmd =
+            match model ^. ImageModel.TryBrowsed_ with
+
+                    // browse succeeded, try to load image asynchronously
+                | Some browsed ->
                     Cmd.ofAsyncResult
                         (ImageFile.tryLoadImage None)
                         browsed.File
                         BitmapLoaded
                         HandleLoadError
-                model, cmd
-            | None -> failwith "Invalid state"
+
+                    // browse failed
+                | None when model.IsBrowseError ->
+                    Cmd.none
+
+                | _ -> failwith "Invalid state"
+        model, cmd
 
     /// Sets bitmap for a contained image.
     let private onBitmapLoaded bitmap model =
@@ -123,20 +130,20 @@ module ImageMessage =
     let private onBrowse incr model =
         let contained = model ^. ImageModel.Contained_
         let file = contained.Browsed.File
-        match ImageModel.browse incr file with
+        let model = ImageModel.browse incr file
+        let model =
+            match model ^. ImageModel.TryBrowsed_ with
 
-                // browse succeeded, keep container size
-            | Browsed browsed ->
-                Contained {
-                    contained with
-                        Browsed = browsed },
-                Cmd.ofMsg LoadImage
+                    // browse succeeded, keep container size
+                | Some browsed ->
+                    Contained {
+                        contained with
+                            Browsed = browsed }
 
-                // browse failed
-            | BrowseError _ as model ->
-                model, Cmd.none
+                    // browse failed
+                | None -> model
 
-            | _ -> failwith "Invalid state"
+        model, Cmd.ofMsg LoadImage
 
     /// Determines the lowest allowable zoom scale.
     let private getZoomScaleFloor
