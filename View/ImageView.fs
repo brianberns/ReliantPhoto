@@ -64,13 +64,12 @@ module ImageView =
                 match model with
                     | Loaded loaded ->
 
-                        let size = loaded.Bitmap.Size * loaded.ZoomScale
-
                         Image.source loaded.Bitmap
 
                         Canvas.left 0.0
                         Canvas.top 0.0
 
+                        let size = loaded.Bitmap.Size * loaded.ZoomScale
                         Image.width size.Width
                         Image.height size.Height
 
@@ -78,6 +77,7 @@ module ImageView =
             ]
 
         Canvas.create [
+            Canvas.children [ image ]
             Canvas.clipToBounds true
             Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
@@ -95,10 +95,6 @@ module ImageView =
                     |> WheelZoom
                     |> MkImageMessage
                     |> dispatch)
-
-            Canvas.children [
-                image
-            ]
         ]
 
     /// Creates an error message.
