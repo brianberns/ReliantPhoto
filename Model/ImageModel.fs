@@ -39,7 +39,7 @@ type ContainedImage =
         fun browsed contained ->
             { contained with Browsed = browsed }
 
-/// A bitmap loaded in a container but not yet displayed.
+/// A bitmap loaded in a container.
 type LoadedImage =
     {
         /// Contained image.
@@ -47,6 +47,13 @@ type LoadedImage =
 
         /// Loaded bitmap.
         Bitmap : Bitmap
+
+        /// Zoom scale. This will be 1.0 for an image displayed
+        /// at 1:1 size.
+        ZoomScale : float
+
+        /// Point at which zoom request originates.
+        ZoomOrigin : RelativePoint
     }
 
     /// Contained image lens.
@@ -58,34 +65,6 @@ type LoadedImage =
     /// Browsed image lens.
     static member Browsed_ =
         LoadedImage.Contained_ >-> ContainedImage.Browsed_
-
-/// A displayed image.
-type DisplayedImage =
-    {
-        /// Loaded image.
-        Loaded : LoadedImage
-
-        /// Zoom scale. This will be 1.0 for an image displayed
-        /// at 1:1 size.
-        ZoomScale : float
-
-        /// Point at which zoom request originates.
-        ZoomOrigin : RelativePoint
-    }
-
-    /// Loaded image lens.
-    static member Loaded_ : Lens<_, _> =
-        _.Loaded,
-        fun loaded displayed ->
-            { displayed with Loaded = loaded }
-
-    /// Contained image lens.
-    static member Contained_ =
-        DisplayedImage.Loaded_ >-> LoadedImage.Contained_
-
-    /// Browsed image lens.
-    static member Browsed_ =
-        DisplayedImage.Contained_ >-> ContainedImage.Browsed_
 
 /// An image file that could not be browsed.
 type BrowseError =
@@ -128,9 +107,6 @@ type ImageModel =
     /// Bitmap has been loaded.
     | Loaded of LoadedImage
 
-    /// Image has been displayed.
-    | Displayed of DisplayedImage
-
     /// File could not be browsed.
     | BrowseError of BrowseError
 
@@ -146,8 +122,6 @@ type ImageModel =
                 Some (contained ^. ContainedImage.Browsed_)
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Browsed_)
-            | Displayed displayed ->
-                Some (displayed ^. DisplayedImage.Browsed_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Browsed_)
             | BrowseError _ -> None),
@@ -162,10 +136,6 @@ type ImageModel =
                 loaded
                     |> browsed ^= LoadedImage.Browsed_
                     |> Loaded
-            | Displayed displayed ->
-                displayed
-                    |> browsed ^= DisplayedImage.Browsed_
-                    |> Displayed
             | LoadError errored ->
                 errored
                     |> browsed ^= LoadError.Browsed_
@@ -194,8 +164,6 @@ type ImageModel =
             | Contained contained -> Some contained
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Contained_)
-            | Displayed displayed ->
-                Some (displayed ^. DisplayedImage.Contained_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Contained_)
             | Browsed _
@@ -207,10 +175,6 @@ type ImageModel =
                 loaded
                     |> contained ^= LoadedImage.Contained_
                     |> Loaded
-            | Displayed displayed ->
-                displayed
-                    |> contained ^= DisplayedImage.Contained_
-                    |> Displayed
             | Browsed _
             | BrowseError _
             | LoadError _ as model -> model)
@@ -228,44 +192,6 @@ type ImageModel =
                 model ^. ImageModel.TryContained_
                     |> Option.isSome)
             contained ^= ImageModel.TryContained_
-                <| model)
-
-    /// Loaded image prism.
-    static member TryLoaded_ : Prism<_, _> =
-
-        (function
-            | Loaded loaded -> Some loaded
-            | Displayed displayed ->
-                Some (displayed ^. DisplayedImage.Loaded_)
-            | Browsed _
-            | Contained _
-            | BrowseError _
-            | LoadError _ -> None),
-
-        (fun loaded -> function
-            | Loaded _ -> Loaded loaded
-            | Displayed displayed ->
-                displayed
-                    |> loaded ^= DisplayedImage.Loaded_
-                    |> Displayed
-            | Browsed _
-            | Contained _
-            | BrowseError _
-            | LoadError _ as model -> model)
-
-    /// Loaded image lens.
-    static member Loaded_ : Lens<_, _> =
-
-        (fun model ->
-            match model ^. ImageModel.TryLoaded_ with
-                | Some loaded -> loaded
-                | None -> failwith "Invalid state"),
-
-        (fun loaded model ->
-            assert(
-                model ^. ImageModel.TryLoaded_
-                    |> Option.isSome)
-            loaded ^= ImageModel.TryLoaded_
                 <| model)
 
     /// Image file.

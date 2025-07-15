@@ -15,13 +15,6 @@ module ImageView =
 
     /// Creates a toolbar.
     let private createToolbar dock model dispatch =
-
-        let zoomScaleOpt =
-            match model with
-                | Displayed displayed ->
-                    Some displayed.ZoomScale
-                | _ -> None
-
         StackPanel.create [
             StackPanel.dock dock
             StackPanel.orientation Orientation.Horizontal
@@ -34,10 +27,11 @@ module ImageView =
                     FileSystemView.onSelectImage dispatch)
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
-                    match zoomScaleOpt with
-                        | Some zoomScale ->
-                            TextBlock.text $"%0.1f{zoomScale * 100.0}%%"
-                        | None -> ()
+                    match model with
+                        | Loaded loaded ->
+                            let pct = loaded.ZoomScale * 100.0
+                            TextBlock.text $"%0.1f{pct}%%"
+                        | _ -> ()
                 ]
             ]
         ]
@@ -70,11 +64,11 @@ module ImageView =
                     |> dispatch)
         ]
 
-    /// Attributes specific to a displayed image.
-    let displayAttributes zoomed =
+    /// Attributes specific to a loaded image.
+    let loadAttributes loaded =
         [
             Image.renderTransform (
-                ScaleTransform(zoomed.ZoomScale, zoomed.ZoomScale))
+                ScaleTransform(loaded.ZoomScale, loaded.ZoomScale))
         ]
 
     /// Creates a zoomable image.
@@ -102,10 +96,7 @@ module ImageView =
 
                         | Loaded loaded ->
                             yield! imageAttributes loaded.Bitmap dispatch
-
-                        | Displayed displayed ->
-                            yield! imageAttributes displayed.Loaded.Bitmap dispatch
-                            yield! displayAttributes displayed
+                            yield! loadAttributes loaded
 
                         | _ -> ()
                 ]
@@ -128,12 +119,8 @@ module ImageView =
     let private createImagePanel
         dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
-
-            let isWaiting =
-                model.IsBrowsed
-                    || model.IsContained
-                    || model.IsLoaded
-            if isWaiting then
+                
+            if model.IsBrowsed || model.IsContained then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
