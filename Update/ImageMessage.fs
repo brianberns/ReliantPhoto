@@ -137,20 +137,26 @@ module ImageMessage =
     let private epsilon = 0.001
 
     /// Updates zoom scale based on user input.
-    let private updateZoomScale sign zoomScaleFloor loaded =
-        assert(abs sign = 1)
+    let private updateZoomScale zoomSign zoomScaleFloor loaded =
+        assert(abs zoomSign = 1)
 
         let factor = 1.1
         let zoomScale = loaded.ZoomScale
-        if sign >= 0 then zoomScale * factor
-        else
-            let newScale = zoomScale / factor
+
+        let newScale =
+            if zoomSign >= 0 then zoomScale * factor
+            else zoomScale / factor
             (*
             if zoomScaleFloor - newScale > epsilon then
                 zoomScale   // don't jump suddenly
             else newScale
             *)
-            newScale
+
+            // snap to 1.0?
+        if newScale > 1.0 && zoomScale < 1.0
+            || newScale < 1.0 && zoomScale > 1.0 then
+            1.0
+        else newScale
 
     /// Updates zoom origin based on user input.
     (*
