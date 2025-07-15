@@ -79,14 +79,17 @@ module ImageMessage =
         model, Cmd.none
 
     /// Sets bitmap for a contained image.
-    let private onBitmapLoaded (bitmap : Bitmap) model =
+    let private onBitmapLoaded
+        (dpiScale : float) (bitmap : Bitmap) model =
         let model =
             match model with
                 | Contained contained ->
 
-                    let ratio =
-                        contained.ContainerSize / bitmap.Size
-                    let zoomScale = min ratio.X ratio.Y
+                    let zoomScale =
+                        let ratio =
+                            (contained.ContainerSize * dpiScale)
+                                / bitmap.Size
+                        min ratio.X ratio.Y
 
                     Loaded {
                         Contained = contained
@@ -205,7 +208,7 @@ module ImageMessage =
 
                 // finish loading an image
             | BitmapLoaded bitmap ->
-                onBitmapLoaded bitmap model
+                onBitmapLoaded dpiScale bitmap model
 
                 // browse to previous image
             | PreviousImage  ->

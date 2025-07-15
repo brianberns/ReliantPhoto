@@ -50,7 +50,8 @@ module ImageView =
         ]
 
     /// Creates a zoomable image.
-    let private createZoomableImage dpiScale model dispatch =
+    let private createZoomableImage
+        (dpiScale : float) model dispatch =
 
         let image =
             Image.create [
@@ -69,7 +70,10 @@ module ImageView =
                         Canvas.left 0.0
                         Canvas.top 0.0
 
-                        let size = loaded.Bitmap.Size * loaded.ZoomScale
+                        let size =
+                            loaded.Bitmap.Size
+                                * loaded.ZoomScale
+                                / dpiScale
                         Image.width size.Width
                         Image.height size.Height
 
@@ -89,7 +93,8 @@ module ImageView =
                     |> dispatch)
 
             Canvas.onPointerWheelChanged (fun args ->
-                let pointerPos = args.GetPosition(args.Source :?> Visual)
+                let pointerPos =
+                    args.GetPosition(args.Source :?> Visual)
                 args.Handled <- true
                 (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
                     |> WheelZoom
