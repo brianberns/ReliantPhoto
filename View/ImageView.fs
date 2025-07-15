@@ -56,19 +56,9 @@ module ImageView =
         ]
 
     /// Attributes common to any image.
-    let private imageAttributes
-        dpiScale (bitmap : Bitmap) dispatch =
+    let private imageAttributes (bitmap : Bitmap) dispatch =
         [
             Image.source bitmap
-            Image.maxWidth (bitmap.Size.Width / dpiScale)   // prevent initial zoom past 100%
-            Image.maxHeight (bitmap.Size.Height / dpiScale)
-
-            Image.onSizeChanged (fun args ->
-                args.Handled <- true
-                args.NewSize
-                    |> ImageSized
-                    |> MkImageMessage
-                    |> dispatch)
 
             Image.onPointerWheelChanged (fun args ->
                 let pointerPos =
@@ -111,13 +101,10 @@ module ImageView =
                     match model with
 
                         | Loaded loaded ->
-                            yield! imageAttributes
-                                dpiScale loaded.Bitmap dispatch
+                            yield! imageAttributes loaded.Bitmap dispatch
 
                         | Displayed displayed ->
-                            let loaded = displayed.Loaded
-                            yield! imageAttributes
-                                dpiScale loaded.Bitmap dispatch
+                            yield! imageAttributes displayed.Loaded.Bitmap dispatch
                             yield! displayAttributes displayed
 
                         | _ -> ()

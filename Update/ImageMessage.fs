@@ -13,14 +13,11 @@ type ImageMessage =
     /// Load image, if possible.
     | LoadImage
 
-    /// Size of the container has been set or updated.
+    /// Size of the image container has been set or updated.
     | ContainerSized of Size
 
     /// Bitmap has been loaded.
     | BitmapLoaded of Bitmap
-
-    /// Size of the displayed image has been set or updated.
-    | ImageSized of Size
 
     /// Browse to previous image in directory, if possible.
     | PreviousImage
@@ -69,23 +66,16 @@ module ImageMessage =
         model, Cmd.none
 
     /// Starts loading an image, if possible.
-    let private onLoadImage model =
+    let private onLoadImage (model : ImageModel) =
         let cmd =
-            match model ^. ImageModel.TryBrowsed_ with
-
-                    // browse succeeded, try to load image asynchronously
-                | Some browsed ->
-                    Cmd.ofAsyncResult
-                        (ImageFile.tryLoadImage None)
-                        browsed.File
-                        BitmapLoaded
-                        HandleLoadError
-
-                    // browse failed
-                | None when model.IsBrowseError ->
-                    Cmd.none
-
-                | _ -> failwith "Invalid state"
+            if model.IsBrowseError then Cmd.none   // browse failed
+            else
+                let browsed = model ^. ImageModel.Browsed_
+                Cmd.ofAsyncResult
+                    (ImageFile.tryLoadImage None)
+                    browsed.File
+                    BitmapLoaded
+                    HandleLoadError
         model, cmd
 
     /// Sets bitmap for a contained image.
@@ -124,6 +114,7 @@ module ImageMessage =
         model, Cmd.ofMsg LoadImage
 
     /// Determines the lowest allowable zoom scale.
+    (*
     let private getZoomScaleFloor
         (dpiScale : float)
         (displayed : DisplayedImage)
@@ -133,52 +124,56 @@ module ImageMessage =
             assert(imageScale < 1.0)
             imageScale   // large image: fill view
         else 1.0         // small image: 100%
+    *)
 
     /// Updates zoom scale based on user input.
-    let private updateZoomScale
-        sign imageScale zoomScaleFloor model =
+    let private updateZoomScale sign zoomScaleFloor displayed =
         assert(abs sign = 1)
 
-        let zoomScale =
-            match model with
-                | Zoomed zoomed -> zoomed.ZoomScale
-                | _ -> imageScale
-
         let factor = 1.1
+        let zoomScale = displayed.ZoomScale
         if sign >= 0 then zoomScale * factor
         else
             let newScale = zoomScale / factor
+            (*
             if zoomScaleFloor - newScale > epsilon then
                 zoomScale   // don't jump suddenly
             else newScale
+            *)
+            newScale
 
     /// Updates zoom origin based on user input.
+    (*
     let private updateZoomOrigin (pointerPos : Point) displayed =
         let imageSize = displayed.ImageSize
         let originX = pointerPos.X / imageSize.Width
         let originY = pointerPos.Y / imageSize.Height
         RelativePoint(originX, originY, RelativeUnit.Relative)
+    *)
 
     /// Updates zoom scale and origin.
-    let private onWheelZoom dpiScale sign pointerPos model =
+    let private onWheelZoom dpiScale sign pointerPos = function
 
-            // update zoom scale and origin
-        let displayed = model ^. ImageModel.Displayed_
-        let imageScale = displayed.ImageScale
-        let zoomScale =
-            let zoomScaleFloor =
-                getZoomScaleFloor dpiScale displayed imageScale
-            updateZoomScale sign imageScale zoomScaleFloor model
-        let zoomOrigin = updateZoomOrigin pointerPos displayed
+        | Displayed displayed ->
 
-            // update model
-        let model =
-            Zoomed {
-                Displayed = displayed
-                ZoomScale = zoomScale
-                ZoomOrigin = zoomOrigin
-            }
-        model, Cmd.none
+                // update zoom scale and origin
+            // let imageScale = displayed.ImageScale
+            let zoomScale =
+                let zoomScaleFloor = 0.0
+                    // getZoomScaleFloor dpiScale displayed imageScale
+                updateZoomScale sign zoomScaleFloor displayed
+            let zoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative) // updateZoomOrigin pointerPos displayed
+
+                // update model
+            let model =
+                Displayed {
+                    displayed with
+                        ZoomScale = zoomScale
+                        ZoomOrigin = zoomOrigin
+                }
+            model, Cmd.none
+
+        | _ -> failwith "Invalid state"
 
     /// Handles a load error.
     let private onHandleLoadError error model =
