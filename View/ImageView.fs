@@ -49,32 +49,29 @@ module ImageView =
             ]
         ]
 
-    /// Attributes common to any image.
-    let private imageAttributes (bitmap : Bitmap) dispatch =
-        [
-            Image.source bitmap
-
-            Image.onPointerWheelChanged (fun args ->
-                let pointerPos =
-                    args.GetPosition(args.Source :?> Visual)
-                args.Handled <- true
-                (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
-                    |> WheelZoom
-                    |> MkImageMessage
-                    |> dispatch)
-        ]
-
-    /// Attributes specific to a loaded image.
-    let loadAttributes loaded =
-        [
-            Image.renderTransform (
-                ScaleTransform(loaded.ZoomScale, loaded.ZoomScale))
-        ]
-
     /// Creates a zoomable image.
     let private createZoomableImage dpiScale model dispatch =
+
+        let image =
+            Image.create [
+
+                    // ensure clean edges in image (make sure this is present the first time through, even when there are no other attributes)
+                Image.init (fun image ->
+                    RenderOptions.SetBitmapInterpolationMode(
+                        image,
+                        BitmapInterpolationMode.None))
+
+                match model with
+                    | Loaded loaded ->
+                        Image.source loaded.Bitmap
+                        Image.renderTransform (
+                            ScaleTransform(loaded.ZoomScale, loaded.ZoomScale))
+                    | _ -> ()
+            ]
+
         Canvas.create [
             Canvas.clipToBounds true
+            Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
             Canvas.onSizeChanged (fun args ->
                 args.Handled <- true
@@ -83,23 +80,16 @@ module ImageView =
                     |> MkImageMessage
                     |> dispatch)
 
+            Canvas.onPointerWheelChanged (fun args ->
+                let pointerPos = args.GetPosition(args.Source :?> Visual)
+                args.Handled <- true
+                (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
+                    |> WheelZoom
+                    |> MkImageMessage
+                    |> dispatch)
+
             Canvas.children [
-                Image.create [
-
-                        // ensure clean edges in image (make sure this is present the first time through, even when there are no other attributes)
-                    Image.init (fun image ->
-                        RenderOptions.SetBitmapInterpolationMode(
-                            image,
-                            BitmapInterpolationMode.None))
-
-                    match model with
-
-                        | Loaded loaded ->
-                            yield! imageAttributes loaded.Bitmap dispatch
-                            yield! loadAttributes loaded
-
-                        | _ -> ()
-                ]
+                image
             ]
         ]
 
