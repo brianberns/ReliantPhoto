@@ -65,17 +65,22 @@ module ImageView =
                 match model with
                     | Loaded loaded ->
 
-                        Image.source loaded.Bitmap
+                        let bitmap = loaded.Bitmap
+                        Image.source bitmap
 
-                        Canvas.left 0.0
-                        Canvas.top 0.0
-
-                        let size =
-                            loaded.Bitmap.Size
-                                * loaded.ZoomScale
+                        let imageSize =
+                            (bitmap.Size * loaded.ZoomScale)
                                 / dpiScale
-                        Image.width size.Width
-                        Image.height size.Height
+                        Image.width imageSize.Width
+                        Image.height imageSize.Height
+
+                            // center image in container if necessary
+                        let containerSize = loaded.Contained.ContainerSize
+                        let margin = containerSize - imageSize
+                        if margin.Width > 0.0 then
+                            Canvas.left (margin.Width / 2.0)
+                        if margin.Height > 0.0 then
+                            Canvas.top (margin.Height / 2.0)
 
                     | _ -> ()
             ]
