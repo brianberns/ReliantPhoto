@@ -48,6 +48,19 @@ module ImageMessage =
         ImageModel.init file,
         Cmd.none
 
+    /// Starts loading an image, if possible.
+    let private onLoadImage (model : ImageModel) =
+        let cmd =
+            if model.IsBrowseError then Cmd.none   // browse failed
+            else
+                let browsed = model ^. ImageModel.Browsed_
+                Cmd.ofAsyncResult
+                    (ImageFile.tryLoadImage None)
+                    browsed.File
+                    BitmapLoaded
+                    HandleLoadError
+        model, cmd
+
     /// Sets or updates container size for a browsed image.
     let private onContainerSized containerSize model =
 
@@ -65,19 +78,6 @@ module ImageMessage =
                         |> contained ^= ImageModel.Contained_
         model, Cmd.none
 
-    /// Starts loading an image, if possible.
-    let private onLoadImage (model : ImageModel) =
-        let cmd =
-            if model.IsBrowseError then Cmd.none   // browse failed
-            else
-                let browsed = model ^. ImageModel.Browsed_
-                Cmd.ofAsyncResult
-                    (ImageFile.tryLoadImage None)
-                    browsed.File
-                    BitmapLoaded
-                    HandleLoadError
-        model, cmd
-
     /// Sets bitmap for a contained image.
     let private onBitmapLoaded bitmap model =
         let model =
@@ -91,9 +91,6 @@ module ImageMessage =
                     }
                 | _ -> failwith "Invalid state"
         model, Cmd.none
-
-    /// Acceptable rounding error.
-    let private epsilon = 0.001
 
     /// Browses to a file, if possible.
     let private onBrowse incr model =
@@ -127,6 +124,9 @@ module ImageMessage =
             imageScale   // large image: fill view
         else 1.0         // small image: 100%
     *)
+
+    /// Acceptable rounding error.
+    let private epsilon = 0.001
 
     /// Updates zoom scale based on user input.
     let private updateZoomScale sign zoomScaleFloor loaded =
