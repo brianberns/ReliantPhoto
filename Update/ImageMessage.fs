@@ -79,14 +79,19 @@ module ImageMessage =
         model, Cmd.none
 
     /// Sets bitmap for a contained image.
-    let private onBitmapLoaded bitmap model =
+    let private onBitmapLoaded (bitmap : Bitmap) model =
         let model =
             match model with
                 | Contained contained ->
+
+                    let ratio =
+                        contained.ContainerSize / bitmap.Size
+                    let zoomScale = min ratio.X ratio.Y
+
                     Loaded {
                         Contained = contained
                         Bitmap = bitmap
-                        ZoomScale = 1.0
+                        ZoomScale = zoomScale
                         ZoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative)
                     }
                 | _ -> failwith "Invalid state"

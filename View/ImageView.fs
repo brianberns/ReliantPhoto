@@ -63,9 +63,17 @@ module ImageView =
 
                 match model with
                     | Loaded loaded ->
+
+                        let size = loaded.Bitmap.Size * loaded.ZoomScale
+
                         Image.source loaded.Bitmap
-                        Image.renderTransform (
-                            ScaleTransform(loaded.ZoomScale, loaded.ZoomScale))
+
+                        Canvas.left 0.0
+                        Canvas.top 0.0
+
+                        Image.width size.Width
+                        Image.height size.Height
+
                     | _ -> ()
             ]
 
