@@ -61,9 +61,18 @@ module ImageMessage =
                     HandleLoadError
         model, cmd
 
-    /// Sets or updates container size for a browsed image.
-    let private onContainerSized containerSize model =
+    /// Default zoom scale for the given bitmap in the given container.
+    let private getDefaultZoomScale
+        (dpiScale : float) (bitmap : Bitmap) contained =
+        let ratio =
+            (contained.ContainerSize * dpiScale)
+                / bitmap.Size
+        Array.min [| ratio.X; ratio.Y; 1.0 |]
 
+    /// Sets or updates container size.
+    let private onContainerSized dpiScale containerSize model =
+
+            // image now has a container, if it didn't previously
         let contained =
             {
                 Browsed = model ^. ImageModel.Browsed_
@@ -73,18 +82,19 @@ module ImageMessage =
         let model =
             match model with
                 | Browsed _ -> Contained contained
-                | _ ->
+                | Contained _ ->
                     model
                         |> contained ^= ImageModel.Contained_
+                | Loaded loaded ->
+                    let zoomScale =
+                        getDefaultZoomScale dpiScale loaded.Bitmap contained
+                    Loaded {
+                        loaded with
+                            Contained = contained
+                            ZoomScale = zoomScale }
+                | _ -> failwith "Invalid state"
+                    
         model, Cmd.none
-
-    /// Default zoom scale for the given bitmap in the given container.
-    let private getDefaultZoomScale
-        (dpiScale : float) (bitmap : Bitmap) contained =
-        let ratio =
-            (contained.ContainerSize * dpiScale)
-                / bitmap.Size
-        Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Sets bitmap for a contained image.
     let private onBitmapLoaded dpiScale bitmap model =
@@ -199,7 +209,7 @@ module ImageMessage =
 
                 // update container size
             | ContainerSized containerSize ->
-                 onContainerSized containerSize model
+                 onContainerSized dpiScale containerSize model
 
                 // finish loading an image
             | BitmapLoaded bitmap ->
