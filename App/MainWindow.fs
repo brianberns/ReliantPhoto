@@ -10,8 +10,6 @@ open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
 
-open Aether.Operators
-
 module Window =
 
     /// Current directory.
