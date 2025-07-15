@@ -78,19 +78,21 @@ module ImageMessage =
                         |> contained ^= ImageModel.Contained_
         model, Cmd.none
 
+    /// Default zoom scale for the given bitmap in the given container.
+    let private getDefaultZoomScale
+        (dpiScale : float) (bitmap : Bitmap) contained =
+        let ratio =
+            (contained.ContainerSize * dpiScale)
+                / bitmap.Size
+        Array.min [| ratio.X; ratio.Y; 1.0 |]
+
     /// Sets bitmap for a contained image.
-    let private onBitmapLoaded
-        (dpiScale : float) (bitmap : Bitmap) model =
+    let private onBitmapLoaded dpiScale bitmap model =
         let model =
             match model with
                 | Contained contained ->
-
                     let zoomScale =
-                        let ratio =
-                            (contained.ContainerSize * dpiScale)
-                                / bitmap.Size
-                        min ratio.X ratio.Y
-
+                        getDefaultZoomScale dpiScale bitmap contained
                     Loaded {
                         Contained = contained
                         Bitmap = bitmap
@@ -120,19 +122,6 @@ module ImageMessage =
 
         model, Cmd.ofMsg LoadImage
 
-    /// Determines the lowest allowable zoom scale.
-    (*
-    let private getZoomScaleFloor
-        (dpiScale : float)
-        (displayed : DisplayedImage)
-        imageScale =
-        if displayed.Loaded.Bitmap.Size.Width
-            > displayed.ImageSize.Width * dpiScale then
-            assert(imageScale < 1.0)
-            imageScale   // large image: fill view
-        else 1.0         // small image: 100%
-    *)
-
     /// Acceptable rounding error.
     let private epsilon = 0.001
 
@@ -145,12 +134,11 @@ module ImageMessage =
 
         let newScale =
             if zoomSign >= 0 then zoomScale * factor
-            else zoomScale / factor
-            (*
-            if zoomScaleFloor - newScale > epsilon then
-                zoomScale   // don't jump suddenly
-            else newScale
-            *)
+            else
+                let newScale = zoomScale / factor
+                if zoomScaleFloor - newScale > epsilon then
+                    zoomScale   // don't jump suddenly
+                else newScale
 
             // snap to 1.0?
         if newScale > 1.0 && zoomScale < 1.0
@@ -175,8 +163,9 @@ module ImageMessage =
                 // update zoom scale and origin
             // let imageScale = displayed.ImageScale
             let zoomScale =
-                let zoomScaleFloor = 0.0
-                    // getZoomScaleFloor dpiScale displayed imageScale
+                let zoomScaleFloor =
+                    getDefaultZoomScale
+                        dpiScale loaded.Bitmap loaded.Contained
                 updateZoomScale sign zoomScaleFloor loaded
             let zoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative) // updateZoomOrigin pointerPos displayed
 
