@@ -2,29 +2,36 @@
 
 open System.IO
 
+/// Model mode.
+[<RequireQualifiedAccess>]
+type Mode = Directory | Image
+
 /// Top-level model.
 type Model =
     {
         /// Directory model.
         DirectoryModel : DirectoryModel
 
-        /// Image model, if in image mode.
-        ImageModelOpt : Option<ImageModel>
+        /// Image model.
+        ImageModel : ImageModel
+
+        /// Current mode.
+        Mode : Mode
     }
 
 module Model =
 
     /// Initializes model for the given entity.
-    let init (entity : FileSystemInfo) =
-        match entity with
-            | :? DirectoryInfo as dir ->
-                {
-                    DirectoryModel = DirectoryModel.init dir
-                    ImageModelOpt = None
-                }
-            | :? FileInfo as file ->
-                {
-                    DirectoryModel = DirectoryModel.init file.Directory
-                    ImageModelOpt = Some (ImageModel.init file)
-                }
-            | _ -> failwith "Unexpected file system entity"
+    let init = function
+        | Choice1Of2 dir ->
+            {
+                DirectoryModel = DirectoryModel.init dir
+                ImageModel = ImageModel.init ()
+                Mode = Mode.Directory
+            }
+        | Choice2Of2 (file : FileInfo) ->
+            {
+                DirectoryModel = DirectoryModel.init file.Directory
+                ImageModel = ImageModel.init ()
+                Mode = Mode.Image
+            }

@@ -266,4 +266,4 @@ module ImageModel =
                 })
 
     /// Initial model.
-    let init = Uninitialized
+    let init () = Uninitialized
