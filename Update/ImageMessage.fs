@@ -58,14 +58,14 @@ module ImageMessage =
         model, Cmd.none
 
     /// Browses to and starts loading a file, if possible.
-    let private browse inited incr file =
-        let model = ImageModel.browse inited incr file
+    let private browse inited incr fromFile =
+        let model = ImageModel.browse inited incr fromFile
         let cmd =
             match model with
-                | Browsed _ ->
+                | Browsed browsed ->
                     Cmd.ofAsyncResult
                         (ImageFile.tryLoadImage None)
-                        file
+                        browsed.File
                         ImageLoaded
                         HandleLoadError
                 | BrowseError _ -> Cmd.none
