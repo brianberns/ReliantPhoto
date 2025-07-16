@@ -82,16 +82,22 @@ module Message =
 
     /// Opens the given file in its directory.
     let private onImageSelected (file : FileInfo) model =
+
+            // initialize chosen directory
         let dirModel, dirCmd =
             DirectoryMessage.init file.Directory
-        let model, cmd =
+
+            // switch to chosen image in that directory
+        let model, switchCmd =
             { model with
                 DirectoryModel = dirModel }
                 |> onSwitchToImage file
+
+            // assemble top-level model and command
         model,
         Cmd.batch [
             Cmd.map MkDirectoryMessage dirCmd
-            cmd
+            switchCmd
         ]
 
     /// Updates the given model based on the given message.
