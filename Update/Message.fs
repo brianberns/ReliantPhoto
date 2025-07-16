@@ -24,7 +24,8 @@ type Message =
 
 module Message =
 
-    /// Creates a command to load an image from the given file.
+    /// Creates a command to load an image from the given
+    /// file.
     let private loadImageCommand file =
         Cmd.OfAsync.perform
             async.Return   // give image view a chance to initialize first
@@ -49,14 +50,16 @@ module Message =
     /// Handles a directory-mode message.
     let private onDirectoryMessage dirMsg model =
         let dirModel, dirCmd =
-            DirectoryMessage.update dirMsg model.DirectoryModel
+            DirectoryMessage.update
+                dirMsg model.DirectoryModel
         { model with DirectoryModel = dirModel },
         Cmd.map MkDirectoryMessage dirCmd
 
     /// Handles an image-mode message.
     let private onImageMessage dpiScale imgMsg model =
         let imgModel, imgCmd =
-            ImageMessage.update dpiScale imgMsg model.ImageModel
+            ImageMessage.update
+                dpiScale imgMsg model.ImageModel
         { model with ImageModel = imgModel },
         Cmd.map MkImageMessage imgCmd
 
