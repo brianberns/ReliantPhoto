@@ -49,46 +49,41 @@ module ImageView =
             ]
         ]
 
+    /// Creates an image.
+    let private createImage (dpiScale : float) loaded =
+        Image.create [
+
+            let bitmap = loaded.Bitmap
+            Image.source bitmap
+
+                // ensure clean edges in image
+            Image.init (fun image ->
+                RenderOptions.SetBitmapInterpolationMode(
+                    image,
+                    BitmapInterpolationMode.None))
+
+                // determine image size
+            let imageSize =
+                (bitmap.Size * loaded.ZoomScale)
+                    / dpiScale
+            Image.width imageSize.Width
+            Image.height imageSize.Height
+
+                // determine image position (center image in container if necessary)
+            let containerSize =
+                loaded.Browsed.Initialized.ContainerSize
+            let margin = containerSize - imageSize
+            if margin.Width > 0.0 then
+                Canvas.left (margin.Width / 2.0)
+            if margin.Height > 0.0 then
+                Canvas.top (margin.Height / 2.0)
+        ]
+
+
     /// Creates a zoomable image.
-    let private createZoomableImage
-        (dpiScale : float) model dispatch =
-
-        let image =
-            Image.create [
-
-                    // ensure clean edges in image (make sure this is present the first time through, even when there are no other attributes)
-                Image.init (fun image ->
-                    RenderOptions.SetBitmapInterpolationMode(
-                        image,
-                        BitmapInterpolationMode.None))
-
-                match model with
-                    | Loaded loaded ->
-
-                        let bitmap = loaded.Bitmap
-                        Image.source bitmap
-
-                        let imageSize =
-                            (bitmap.Size * loaded.ZoomScale)
-                                / dpiScale
-                        Image.width imageSize.Width
-                        Image.height imageSize.Height
-
-                            // center image in container if necessary
-                        let containerSize = loaded.Contained.ContainerSize
-                        let margin = containerSize - imageSize
-                        if margin.Width > 0.0 then
-                            Canvas.left (margin.Width / 2.0)
-                        if margin.Height > 0.0 then
-                            Canvas.top (margin.Height / 2.0)
-
-                    | _ -> ()
-            ]
+    let private createZoomableImage dpiScale model dispatch =
 
         Canvas.create [
-            Canvas.children [ image ]
-            Canvas.clipToBounds true
-            Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
             Canvas.onSizeChanged (fun args ->
                 args.Handled <- true
@@ -97,14 +92,24 @@ module ImageView =
                     |> MkImageMessage
                     |> dispatch)
 
-            Canvas.onPointerWheelChanged (fun args ->
-                let pointerPos =
-                    args.GetPosition(args.Source :?> Visual)
-                args.Handled <- true
-                (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
-                    |> WheelZoom
-                    |> MkImageMessage
-                    |> dispatch)
+            match model with
+                | Loaded loaded ->
+
+                    let image = createImage dpiScale loaded
+                    Canvas.children [ image ]
+                    Canvas.clipToBounds true
+                    Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
+
+                    Canvas.onPointerWheelChanged (fun args ->
+                        let pointerPos =
+                            args.GetPosition(args.Source :?> Visual)
+                        args.Handled <- true
+                        (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
+                            |> WheelZoom
+                            |> MkImageMessage
+                            |> dispatch)
+
+                | _ -> failwith "Invalid state"
         ]
 
     /// Creates an error message.
@@ -123,8 +128,10 @@ module ImageView =
     let private createImagePanel
         dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
-                
-            if model.IsBrowsed || model.IsContained then
+
+            if model.IsUninitialized
+                || model.IsInitialized
+                || model.IsBrowsed then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
