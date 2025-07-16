@@ -83,4 +83,3 @@ module Message =
                 onSwitchToDirectory model
             | ImageSelected file ->
                 init (Choice2Of2 file)
-            | _ -> failwith $"Invalid message {message} for model {model}"
