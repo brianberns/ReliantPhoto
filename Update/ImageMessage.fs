@@ -74,8 +74,7 @@ module ImageMessage =
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Sets or updates container size.
-    let private
-        onContainerSized dpiScale containerSize model =
+    let private onContainerSized dpiScale containerSize model =
         let inited =
             { ContainerSize = containerSize }
         let model =
