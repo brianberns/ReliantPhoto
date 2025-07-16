@@ -52,8 +52,8 @@ type LoadedImage =
         /// at 1:1 size.
         ZoomScale : float
 
-        /// Point at which zoom request originates.
-        ZoomOrigin : RelativePoint
+        /// Point at which zoom request originates, if any.
+        ZoomOriginOpt : Option<Point>
     }
 
     /// Browsed image lens.

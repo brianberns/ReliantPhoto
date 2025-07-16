@@ -133,7 +133,7 @@ module ImageMessage =
                         Browsed = browsed
                         Bitmap = bitmap
                         ZoomScale = zoomScale
-                        ZoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative)
+                        ZoomOriginOpt = None
                     }
                 | _ -> failwith "Invalid state"
         model, Cmd.none
@@ -167,21 +167,13 @@ module ImageMessage =
             1.0
         else newScale
 
-    /// Updates zoom origin based on user input.
-    (*
-    let private updateZoomOrigin (pointerPos : Point) displayed =
-        let imageSize = displayed.ImageSize
-        let originX = pointerPos.X / imageSize.Width
-        let originY = pointerPos.Y / imageSize.Height
-        RelativePoint(originX, originY, RelativeUnit.Relative)
-    *)
-
     /// Updates zoom scale and origin.
-    let private onWheelZoom dpiScale sign pointerPos = function
+    let private onWheelZoom
+        dpiScale sign (pointerPos : Point) = function
 
         | Loaded loaded ->
 
-                // update zoom scale and origin
+                // update zoom scale
             let zoomScale =
                 let zoomScaleFloor =
                     let containerSize =
@@ -189,14 +181,13 @@ module ImageMessage =
                     getDefaultZoomScale
                         dpiScale containerSize loaded.Bitmap
                 updateZoomScale sign zoomScaleFloor loaded
-            let zoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative) // updateZoomOrigin pointerPos displayed
 
                 // update model
             let model =
                 Loaded {
                     loaded with
                         ZoomScale = zoomScale
-                        ZoomOrigin = zoomOrigin
+                        ZoomOriginOpt = Some pointerPos
                 }
             model, Cmd.none
 
