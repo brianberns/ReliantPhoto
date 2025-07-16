@@ -33,8 +33,15 @@ module Message =
             (LoadImage >> MkImageMessage)
 
     /// Initializes model.
-    let init (directory, fileOpt) =
-        let model = Model.init directory
+    let init arg =
+
+        let dir, fileOpt =
+            match arg with
+                | Choice1Of2 dir -> dir, None
+                | Choice2Of2 (file : FileInfo) ->
+                    file.Directory, Some file
+
+        let model = Model.init dir
         let cmd =
             Cmd.batch [
 
