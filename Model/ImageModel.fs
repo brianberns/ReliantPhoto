@@ -264,3 +264,6 @@ module ImageModel =
                     File = fromFile
                     Message = "Could not browse file"
                 })
+
+    /// Initial model.
+    let init = Uninitialized

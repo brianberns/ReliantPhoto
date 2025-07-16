@@ -43,10 +43,21 @@ module Cmd =
 
 module ImageMessage =
 
-    /// Browses to the given file.
-    let init file =
-        ImageModel.init file,
-        Cmd.none
+    /// Initial model.
+    let init =
+        ImageModel.init, Cmd.none
+
+    /// Sets or updates container size.
+    let private onContainerSized containerSize model =
+        let inited =
+            { ContainerSize = containerSize }
+        let model =
+            match model with
+                | Uninitialized -> Initialized inited
+                | _ ->
+                    model
+                        |> inited ^= ImageModel.Initialized_
+        model, Cmd.none
 
     /// Starts loading an image, if possible.
     let private onLoadImage (model : ImageModel) =
@@ -68,33 +79,6 @@ module ImageMessage =
             (contained.ContainerSize * dpiScale)
                 / bitmap.Size
         Array.min [| ratio.X; ratio.Y; 1.0 |]
-
-    /// Sets or updates container size.
-    let private onContainerSized dpiScale containerSize model =
-
-            // image now has a container, if it didn't previously
-        let contained =
-            {
-                Browsed = model ^. ImageModel.Browsed_
-                ContainerSize = containerSize
-            }
-
-        let model =
-            match model with
-                | Browsed _ -> Contained contained
-                | Contained _ ->
-                    model
-                        |> contained ^= ImageModel.Contained_
-                | Loaded loaded ->
-                    let zoomScale =
-                        getDefaultZoomScale dpiScale loaded.Bitmap contained
-                    Loaded {
-                        loaded with
-                            Contained = contained
-                            ZoomScale = zoomScale }
-                | _ -> failwith "Invalid state"
-                    
-        model, Cmd.none
 
     /// Sets bitmap for a contained image.
     let private onBitmapLoaded dpiScale bitmap model =
@@ -203,13 +187,13 @@ module ImageMessage =
     let update dpiScale message model =
         match message with
 
+                // set/update container size
+            | ContainerSized containerSize ->
+                 onContainerSized containerSize model
+
                 // start loading an image
             | LoadImage ->
                 onLoadImage model
-
-                // update container size
-            | ContainerSized containerSize ->
-                 onContainerSized dpiScale containerSize model
 
                 // finish loading an image
             | BitmapLoaded bitmap ->
