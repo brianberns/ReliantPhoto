@@ -49,6 +49,34 @@ module ImageView =
             ]
         ]
 
+    /// Creates browse panels, with or without buttons.
+    let private createBrowsePanels model dispatch =
+
+            // browse buttons?
+        let hasPrev, hasNext =
+            model ^. ImageModel.TryBrowsed_
+                |> Option.map (fun browsed ->
+                    browsed.HasPreviousImage,
+                    browsed.HasNextImage)
+                |> Option.defaultValue (false, false)
+
+        [
+                // "previous image" button
+            createBrowsePanel
+                Dock.Left "◀"
+                hasPrev
+                PreviousImage
+                dispatch
+                :> IView
+
+                // "next image" button
+            createBrowsePanel
+                Dock.Right "▶"
+                hasNext
+                NextImage
+                dispatch
+        ]
+
     /// Creates an image.
     let private createImage (dpiScale : float) loaded =
         Image.create [
@@ -140,27 +168,10 @@ module ImageView =
                     // toolbar
                 createToolbar Dock.Top model dispatch
 
-                    // browse buttons?
-                match model ^. ImageModel.TryBrowsed_ with
-                    | Some browsed ->
+                    // prev/next browse panels
+                yield! createBrowsePanels model dispatch
 
-                            // "previous image" button
-                        createBrowsePanel
-                            Dock.Left "◀"
-                            browsed.HasPreviousImage
-                            PreviousImage
-                            dispatch
-
-                            // "next image" button
-                        createBrowsePanel
-                            Dock.Right "▶"
-                            browsed.HasNextImage
-                            NextImage
-                            dispatch
-
-                    | None -> ()
-
-                    // image?
+                    // image or error message
                 match model with
                     | BrowseError errored ->
                         createErrorMessage errored.Message
