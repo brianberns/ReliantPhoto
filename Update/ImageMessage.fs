@@ -65,13 +65,36 @@ module ImageMessage =
                 |> Option.defaultValue Cmd.none
         model, cmd
 
+    /// Default zoom scale for the given bitmap in the given container.
+    let private getDefaultZoomScale
+        (dpiScale : float)
+        (containerSize : Size)
+        (bitmap : Bitmap) =
+        let ratio = (containerSize * dpiScale) / bitmap.Size
+        Array.min [| ratio.X; ratio.Y; 1.0 |]
+
     /// Sets or updates container size.
-    let private onContainerSized containerSize model =
+    let private
+        onContainerSized dpiScale containerSize model =
         let inited =
             { ContainerSize = containerSize }
         let model =
             match model with
+
+                    // set container size
                 | Uninitialized -> Initialized inited
+
+                    // update container size and corresponding zoom scale
+                | Loaded loaded ->
+                    let zoomScale =
+                        getDefaultZoomScale
+                            dpiScale containerSize loaded.Bitmap
+                    Loaded {
+                        loaded with
+                            ZoomScale = zoomScale }
+                        |> inited ^= ImageModel.Initialized_
+
+                    // just update container size
                 | _ ->
                     model
                         |> inited ^= ImageModel.Initialized_
@@ -96,14 +119,6 @@ module ImageMessage =
     let private onLoadImage file model =
         let inited = model ^. ImageModel.Initialized_
         browse inited 0 file
-
-    /// Default zoom scale for the given bitmap in the given container.
-    let private getDefaultZoomScale
-        (dpiScale : float)
-        (containerSize : Size)
-        (bitmap : Bitmap) =
-        let ratio = (containerSize * dpiScale) / bitmap.Size
-        Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Sets image's bitmap.
     let private onImageLoaded dpiScale bitmap model =
@@ -205,7 +220,7 @@ module ImageMessage =
 
                 // set/update container size
             | ContainerSized containerSize ->
-                 onContainerSized containerSize model
+                 onContainerSized dpiScale containerSize model
 
                 // start loading an image
             | LoadImage file ->
