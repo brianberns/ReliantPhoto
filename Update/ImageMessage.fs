@@ -45,6 +45,26 @@ module Cmd =
 
 module ImageMessage =
 
+    /// Creates a command to load an image from the given
+    /// file. This is an asynchronous command in order to
+    /// allow the image view to create a container before
+    /// loading its first image.
+    let loadImageCommand file =
+        Cmd.OfAsync.perform
+            async.Return
+            file
+            LoadImage
+
+    /// Initializes model to start loading the given file, if
+    /// specified.
+    let init fileOpt =
+        let model = ImageModel.init ()
+        let cmd =
+            fileOpt
+                |> Option.map loadImageCommand
+                |> Option.defaultValue Cmd.none
+        model, cmd
+
     /// Sets or updates container size.
     let private onContainerSized containerSize model =
         let inited =

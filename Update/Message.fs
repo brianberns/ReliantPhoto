@@ -24,35 +24,31 @@ type Message =
 
 module Message =
 
-    /// Creates a command to load an image from the given
-    /// file. This is an asynchronous command in order to
-    /// allow the image view to initialize before loading
-    /// its first image.
-    let private loadImageCommand file =
-        Cmd.OfAsync.perform
-            async.Return
-            file
-            (LoadImage >> MkImageMessage)
-
     /// Initializes model.
     let init arg =
 
+            // extract arguments
         let dir, fileOpt =
             match arg with
                 | Choice1Of2 dir -> dir, None
                 | Choice2Of2 (file : FileInfo) ->
                     file.Directory, Some file
 
-        let model = Model.init dir
+            // initialize sub-models
+        let dirModel, dirCmd = DirectoryMessage.init dir
+        let imgModel, imgCmd = ImageMessage.init fileOpt
+
+            // build top-level model and command
+        let model =
+            {
+                DirectoryModel = dirModel
+                ImageModel = imgModel
+                Mode = Mode.Directory
+            }
         let cmd =
             Cmd.batch [
-
-                Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
-
-                match fileOpt with
-                    | Some file ->
-                        loadImageCommand file
-                    | None -> ()
+                Cmd.map MkDirectoryMessage dirCmd
+                Cmd.map MkImageMessage imgCmd
             ]
         model, cmd
 
@@ -75,7 +71,9 @@ module Message =
     /// Switches to image mode.
     let private onSwitchToImage file model =
         { model with Mode = Mode.Image },
-        loadImageCommand file
+        file
+            |> ImageMessage.loadImageCommand
+            |> Cmd.map MkImageMessage
 
     /// Switches to directory mode.
     let private onSwitchToDirectory model =
@@ -84,11 +82,17 @@ module Message =
 
     /// Opens the given file in its directory.
     let private onImageSelected (file : FileInfo) model =
-        let model =
+        let dirModel, dirCmd =
+            DirectoryMessage.init file.Directory
+        let model, cmd =
             { model with
-                DirectoryModel =
-                    DirectoryModel.init file.Directory }
-        onSwitchToImage file model
+                DirectoryModel = dirModel }
+                |> onSwitchToImage file
+        model,
+        Cmd.batch [
+            Cmd.map MkDirectoryMessage dirCmd
+            cmd
+        ]
 
     /// Updates the given model based on the given message.
     let update dpiScale message model =

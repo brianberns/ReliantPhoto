@@ -20,7 +20,7 @@ type DirectoryMessage =
 
 module DirectoryMessage =
 
-    /// Browses to the given directory.
+    /// Initializes model to start loading the given directory.
     let init dir =
         DirectoryModel.init dir,
         Cmd.ofMsg LoadDirectory
