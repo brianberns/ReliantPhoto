@@ -62,7 +62,10 @@ module Message =
     /// Switches to image mode.
     let private onSwitchToImage file model =
         { model with Mode = Mode.Image },
-        loadImageCommand file
+        Cmd.OfAsync.perform
+            (fun () -> async { return file })   // give image view a chance to initialize first
+            ()
+            (LoadImage >> MkImageMessage)
 
     /// Switches to directory mode.
     let private onSwitchToDirectory model =
