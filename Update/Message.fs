@@ -24,11 +24,12 @@ type Message =
 
 module Message =
 
+    /// Creates a command to load an image from the given file.
     let private loadImageCommand file =
-        file
-            |> LoadImage
-            |> MkImageMessage
-            |> Cmd.ofMsg
+        Cmd.OfAsync.perform
+            (fun () -> async { return file })   // give image view a chance to initialize first
+            ()
+            (LoadImage >> MkImageMessage)
 
     /// Browses to the given directory or image.
     let init entity =
@@ -62,10 +63,7 @@ module Message =
     /// Switches to image mode.
     let private onSwitchToImage file model =
         { model with Mode = Mode.Image },
-        Cmd.OfAsync.perform
-            (fun () -> async { return file })   // give image view a chance to initialize first
-            ()
-            (LoadImage >> MkImageMessage)
+        loadImageCommand file
 
     /// Switches to directory mode.
     let private onSwitchToDirectory model =
