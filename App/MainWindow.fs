@@ -60,16 +60,13 @@ module Window =
                 |> Sub.map "directory" MkDirectoryMessage
 
                 // image subscriptions
-            match model.ImageModelOpt with
-                | Some imgModel ->
+            if model.Mode = Mode.Image then
 
-                        // side effects
-                    window.Title <- imgModel.File.Name
+                    // side effects
+                window.Title <- model.ImageModel.File.Name
 
-                        // Elmish subscription
-                    yield! Sub.none
-
-                | None -> ()
+                    // Elmish subscription
+                yield! Sub.none
         ]
 
     /// Gets initial file or directory.

@@ -12,18 +12,19 @@ module View =
 
                     // directory view
                 Border.create [
-                    Border.isVisible
-                        model.ImageModelOpt.IsNone
+                    Border.isVisible (model.Mode = Mode.Directory)
                     Border.child (
                         DirectoryView.view
                             model.DirectoryModel dispatch
                     )
                 ]
                     // image view
-                match model.ImageModelOpt with
-                    | None -> ()
-                    | Some imgModel ->
+                Border.create [
+                    Border.isVisible (model.Mode = Mode.Image)
+                    Border.child (
                         ImageView.view
-                            dpiScale imgModel dispatch
+                            dpiScale model.ImageModel dispatch
+                    )
+                ]
             ]
         ]
