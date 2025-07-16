@@ -32,18 +32,18 @@ module Message =
             file
             (LoadImage >> MkImageMessage)
 
-    /// Browses to the given directory or image.
-    let init entity =
-        let model = Model.init entity
+    /// Initializes model.
+    let init (directory, fileOpt) =
+        let model = Model.init directory
         let cmd =
             Cmd.batch [
 
                 Cmd.ofMsg (MkDirectoryMessage LoadDirectory)
 
-                match entity with
-                    | Choice1Of2 _ -> ()
-                    | Choice2Of2 file ->
+                match fileOpt with
+                    | Some file ->
                         loadImageCommand file
+                    | None -> ()
             ]
         model, cmd
 
@@ -73,6 +73,14 @@ module Message =
         { model with Mode = Mode.Directory },
         Cmd.none
 
+    /// Opens the given file in its directory.
+    let private onImageSelected (file : FileInfo) model =
+        let model =
+            { model with
+                DirectoryModel =
+                    DirectoryModel.init file.Directory }
+        onSwitchToImage file model
+
     /// Updates the given model based on the given message.
     let update dpiScale message model =
         match message with
@@ -85,4 +93,4 @@ module Message =
             | SwitchToDirectory ->
                 onSwitchToDirectory model
             | ImageSelected file ->
-                init (Choice2Of2 file)
+                onImageSelected file model

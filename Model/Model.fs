@@ -21,17 +21,10 @@ type Model =
 
 module Model =
 
-    /// Initializes model for the given entity.
-    let init = function
-        | Choice1Of2 dir ->
-            {
-                DirectoryModel = DirectoryModel.init dir
-                ImageModel = ImageModel.init ()
-                Mode = Mode.Directory
-            }
-        | Choice2Of2 (file : FileInfo) ->
-            {
-                DirectoryModel = DirectoryModel.init file.Directory
-                ImageModel = ImageModel.init ()
-                Mode = Mode.Image
-            }
+    /// Initializes model for the given directory.
+    let init directory =
+        {
+            DirectoryModel = DirectoryModel.init directory
+            ImageModel = ImageModel.init ()
+            Mode = Mode.Directory
+        }

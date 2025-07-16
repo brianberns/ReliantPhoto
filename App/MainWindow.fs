@@ -71,14 +71,13 @@ module Window =
                 yield! Sub.none
         ]
 
-    /// Gets initial file or directory.
+    /// Gets initial directory and file.
     let getInitialArg (args : _[]) =
         if args.Length = 0 then
-            Choice1Of2 directory
+            directory, None
         else
-            args[0]
-                |> FileInfo
-                |> Choice2Of2
+            let file = FileInfo args[0]
+            file.Directory, Some file
 
     /// Starts the Elmish MVU loop.
     let run window arg =
