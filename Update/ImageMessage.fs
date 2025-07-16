@@ -1,5 +1,7 @@
 ﻿namespace Reliant.Photo
 
+open System.IO
+
 open Elmish
 
 open Avalonia
@@ -10,14 +12,14 @@ open Aether.Operators
 /// Messages that can update the image model.
 type ImageMessage =
 
-    /// Load image, if possible.
-    | LoadImage
-
     /// Size of the image container has been set or updated.
     | ContainerSized of Size
 
-    /// Bitmap has been loaded.
-    | BitmapLoaded of Bitmap
+    /// Load image from file, if possible.
+    | LoadImage of FileInfo
+
+    /// Image has been loaded.
+    | ImageLoaded of Bitmap
 
     /// Browse to previous image in directory, if possible.
     | PreviousImage
@@ -59,36 +61,46 @@ module ImageMessage =
                         |> inited ^= ImageModel.Initialized_
         model, Cmd.none
 
-    /// Starts loading an image, if possible.
-    let private onLoadImage (model : ImageModel) =
+    /// Browses to and starts loading a file, if possible.
+    let private browse inited incr file =
+        let model = ImageModel.browse inited incr file
         let cmd =
-            if model.IsBrowseError then Cmd.none   // browse failed
-            else
-                let browsed = model ^. ImageModel.Browsed_
-                Cmd.ofAsyncResult
-                    (ImageFile.tryLoadImage None)
-                    browsed.File
-                    BitmapLoaded
-                    HandleLoadError
+            match model with
+                | Browsed _ ->
+                    Cmd.ofAsyncResult
+                        (ImageFile.tryLoadImage None)
+                        file
+                        ImageLoaded
+                        HandleLoadError
+                | BrowseError _ -> Cmd.none
+                | _ -> failwith "Invalid state"
         model, cmd
+
+    /// Starts loading an image from the given file.
+    let private onLoadImage file model =
+        let inited = model ^. ImageModel.Initialized_
+        browse inited 0 file
 
     /// Default zoom scale for the given bitmap in the given container.
     let private getDefaultZoomScale
-        (dpiScale : float) (bitmap : Bitmap) contained =
-        let ratio =
-            (contained.ContainerSize * dpiScale)
-                / bitmap.Size
+        (dpiScale : float)
+        (containerSize : Size)
+        (bitmap : Bitmap) =
+        let ratio = (containerSize * dpiScale) / bitmap.Size
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
-    /// Sets bitmap for a contained image.
-    let private onBitmapLoaded dpiScale bitmap model =
+    /// Sets image's bitmap.
+    let private onImageLoaded dpiScale bitmap model =
         let model =
             match model with
-                | Contained contained ->
+                | Browsed browsed ->
                     let zoomScale =
-                        getDefaultZoomScale dpiScale bitmap contained
+                        let containerSize =
+                            browsed.Initialized.ContainerSize
+                        getDefaultZoomScale
+                            dpiScale containerSize bitmap
                     Loaded {
-                        Contained = contained
+                        Browsed = browsed
                         Bitmap = bitmap
                         ZoomScale = zoomScale
                         ZoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative)
@@ -98,23 +110,8 @@ module ImageMessage =
 
     /// Browses to a file, if possible.
     let private onBrowse incr model =
-
-            // browse to file
-        let contained = model ^. ImageModel.Contained_
-        let model =
-            contained.Browsed.File
-                |> ImageModel.browse incr
-
-            // keep container size if browse succeeded
-        let model =
-            match model ^. ImageModel.TryBrowsed_ with
-                | Some browsed ->
-                    Contained {
-                        contained with
-                            Browsed = browsed }
-                | None -> model
-
-        model, Cmd.ofMsg LoadImage
+        let inited = model ^. ImageModel.Initialized_
+        browse inited incr model.File
 
     /// Acceptable rounding error.
     let private epsilon = 0.001
@@ -155,11 +152,12 @@ module ImageMessage =
         | Loaded loaded ->
 
                 // update zoom scale and origin
-            // let imageScale = displayed.ImageScale
             let zoomScale =
                 let zoomScaleFloor =
+                    let containerSize =
+                        loaded.Browsed.Initialized.ContainerSize
                     getDefaultZoomScale
-                        dpiScale loaded.Bitmap loaded.Contained
+                        dpiScale containerSize loaded.Bitmap
                 updateZoomScale sign zoomScaleFloor loaded
             let zoomOrigin = RelativePoint(0.5, 0.5, RelativeUnit.Relative) // updateZoomOrigin pointerPos displayed
 
@@ -175,13 +173,15 @@ module ImageMessage =
         | _ -> failwith "Invalid state"
 
     /// Handles a load error.
-    let private onHandleLoadError error model =
-        let model =
-            LoadError {
-                Contained = model ^. ImageModel.Contained_
-                Message = error
-            }
-        model, Cmd.none
+    let private onHandleLoadError error = function
+        | Browsed browsed ->
+            let model =
+                LoadError {
+                    Browsed = browsed
+                    Message = error
+                }
+            model, Cmd.none
+        | _ -> failwith "Invalid state"
 
     /// Updates the given model based on the given message.
     let update dpiScale message model =
@@ -192,12 +192,12 @@ module ImageMessage =
                  onContainerSized containerSize model
 
                 // start loading an image
-            | LoadImage ->
-                onLoadImage model
+            | LoadImage file ->
+                onLoadImage file model
 
                 // finish loading an image
-            | BitmapLoaded bitmap ->
-                onBitmapLoaded dpiScale bitmap model
+            | ImageLoaded bitmap ->
+                onImageLoaded dpiScale bitmap model
 
                 // browse to previous image
             | PreviousImage  ->
