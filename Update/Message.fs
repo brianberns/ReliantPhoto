@@ -25,10 +25,12 @@ type Message =
 module Message =
 
     /// Creates a command to load an image from the given
-    /// file.
+    /// file. This is an asynchronous command in order to
+    /// allow the image view to initialize before loading
+    /// its first image.
     let private loadImageCommand file =
         Cmd.OfAsync.perform
-            async.Return   // give image view a chance to initialize first
+            async.Return
             file
             (LoadImage >> MkImageMessage)
 
