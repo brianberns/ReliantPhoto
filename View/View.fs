@@ -12,7 +12,7 @@ module View =
 
                     // directory view
                 Border.create [
-                    Control.isVisible
+                    Border.isVisible
                         model.ImageModelOpt.IsNone
                     Border.child (
                         DirectoryView.view
