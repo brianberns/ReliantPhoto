@@ -45,10 +45,6 @@ module Cmd =
 
 module ImageMessage =
 
-    /// Initial model and command.
-    let init () =
-        ImageModel.init (), Cmd.none
-
     /// Sets or updates container size.
     let private onContainerSized containerSize model =
         let inited =

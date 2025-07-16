@@ -61,13 +61,8 @@ module Message =
 
     /// Switches to image mode.
     let private onSwitchToImage file model =
-        let model =
-            { model with
-                ImageModel = ImageModel.init ()
-                Mode = Mode.Image }
-        let cmd =
-            loadImageCommand file
-        model, cmd
+        { model with Mode = Mode.Image },
+        loadImageCommand file
 
     /// Switches to directory mode.
     let private onSwitchToDirectory model =
