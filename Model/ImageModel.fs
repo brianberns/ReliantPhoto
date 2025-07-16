@@ -39,7 +39,7 @@ type BrowsedImage =
         fun inited browsed ->
             { browsed with Initialized = inited }
 
-/// A bitmap loaded in a container.
+/// A loaded image.
 type LoadedImage =
     {
         /// Browsed image.
@@ -104,10 +104,10 @@ type ImageModel =
     /// Initialized container.
     | Initialized of InitializedContainer
 
-    /// File has been browsed and is ready to be loaded.
+    /// Browsed file.
     | Browsed of BrowsedImage
 
-    /// Bitmap has been loaded.
+    /// Loaded image.
     | Loaded of LoadedImage
 
     /// File could not be browsed.
@@ -156,11 +156,8 @@ type ImageModel =
                 | None -> failwith "Invalid state"),
 
         (fun inited model ->
-            assert(
-                model ^. ImageModel.TryInitialized_
-                    |> Option.isSome)
-            inited ^= ImageModel.TryInitialized_
-                <| model)
+            model
+                |> inited ^= ImageModel.TryInitialized_)
 
     /// Browsed image prism.
     static member TryBrowsed_ : Prism<_, _> =
@@ -198,11 +195,8 @@ type ImageModel =
                 | None -> failwith "Invalid state"),
 
         (fun browsed model ->
-            assert(
-                model ^. ImageModel.TryBrowsed_
-                    |> Option.isSome)
-            browsed ^= ImageModel.TryBrowsed_
-                <| model)
+            model
+                |> browsed ^= ImageModel.TryBrowsed_)
 
     /// Image file.
     member this.File =
