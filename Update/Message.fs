@@ -27,8 +27,8 @@ module Message =
     /// Creates a command to load an image from the given file.
     let private loadImageCommand file =
         Cmd.OfAsync.perform
-            (fun () -> async { return file })   // give image view a chance to initialize first
-            ()
+            async.Return   // give image view a chance to initialize first
+            file
             (LoadImage >> MkImageMessage)
 
     /// Browses to the given directory or image.
