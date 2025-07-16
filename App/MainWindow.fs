@@ -63,7 +63,8 @@ module Window =
             if model.Mode = Mode.Image then
 
                     // side effects
-                window.Title <- model.ImageModel.File.Name
+                if not model.ImageModel.IsUninitialized then
+                    window.Title <- model.ImageModel.File.Name
 
                     // Elmish subscription
                 yield! Sub.none

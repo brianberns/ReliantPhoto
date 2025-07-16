@@ -109,7 +109,7 @@ module ImageView =
                             |> MkImageMessage
                             |> dispatch)
 
-                | _ -> failwith "Invalid state"
+                | _ -> ()
         ]
 
     /// Creates an error message.
@@ -180,24 +180,25 @@ module ImageView =
             Border.focusable true
             Border.background "Transparent"
 
-            if not model.IsBrowseError then
-                Border.keyBindings [
-                    let browsed = model ^. ImageModel.Browsed_
-                    if browsed.HasPreviousImage then
-                        for key in [ Key.Left; Key.PageUp ] do
-                            KeyBinding.create [
-                                KeyBinding.key key
-                                KeyBinding.execute (fun _ ->
-                                    dispatch (MkImageMessage PreviousImage))
-                            ]
-                    if browsed.HasNextImage then
-                        for key in [ Key.Right; Key.PageDown ] do
-                            KeyBinding.create [
-                                KeyBinding.key key
-                                KeyBinding.execute (fun _ ->
-                                    dispatch (MkImageMessage NextImage))
-                            ]
-                ]
+            match model ^. ImageModel.TryBrowsed_ with
+                | Some browsed ->
+                    Border.keyBindings [
+                        if browsed.HasPreviousImage then
+                            for key in [ Key.Left; Key.PageUp ] do
+                                KeyBinding.create [
+                                    KeyBinding.key key
+                                    KeyBinding.execute (fun _ ->
+                                        dispatch (MkImageMessage PreviousImage))
+                                ]
+                        if browsed.HasNextImage then
+                            for key in [ Key.Right; Key.PageDown ] do
+                                KeyBinding.create [
+                                    KeyBinding.key key
+                                    KeyBinding.execute (fun _ ->
+                                        dispatch (MkImageMessage NextImage))
+                                ]
+                    ]
+                | None -> ()
 
             Border.onLoaded (fun e ->
                 let border = e.Source :?> Border   // grab focus
