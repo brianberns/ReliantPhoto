@@ -92,21 +92,20 @@ module ImageView =
 
                 // determine image size
             let imageSize =
-                (bitmap.Size * loaded.ZoomScale)
-                    / dpiScale
+                bitmap.PixelSize.ToSize(dpiScale)
+                    * loaded.ZoomScale
             Image.width imageSize.Width
             Image.height imageSize.Height
 
                 // determine image position (center image in container if necessary)
             let containerSize =
                 loaded.Browsed.Initialized.ContainerSize
-            let margin = containerSize - imageSize
+            let margin = (containerSize - imageSize) / 2.0
             if margin.Width > 0.0 then
-                Canvas.left (margin.Width / 2.0)
+                Canvas.left margin.Width
             if margin.Height > 0.0 then
-                Canvas.top (margin.Height / 2.0)
+                Canvas.top margin.Height
         ]
-
 
     /// Creates a zoomable image.
     let private createZoomableImage dpiScale model dispatch =
