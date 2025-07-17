@@ -70,7 +70,8 @@ module ImageMessage =
         (dpiScale : float)
         (containerSize : Size)
         (bitmap : Bitmap) =
-        let ratio = (containerSize * dpiScale) / bitmap.Size
+        let ratio =
+            containerSize / bitmap.PixelSize.ToSize(dpiScale)
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Sets or updates container size.
