@@ -74,6 +74,27 @@ module ImageMessage =
             containerSize / bitmap.PixelSize.ToSize(dpiScale)
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
+    /// Updates image offset and zoom scale.
+    let private updateImageLayout
+        (dpiScale : float) containerSize loaded =
+
+        let offset =
+            let imageSize =
+                loaded.Bitmap.PixelSize.ToSize(dpiScale)
+                    * loaded.ZoomScale
+            let offsetSize =
+                (loaded.Browsed.Initialized.ContainerSize - imageSize)
+                    / 2.0
+            Point(offsetSize.Width, offsetSize.Height)
+
+        let zoomScale =
+            getDefaultZoomScale
+                dpiScale containerSize loaded.Bitmap
+
+        { loaded with
+            Offset = offset
+            ZoomScale = zoomScale }
+
     /// Sets or updates container size.
     let private onContainerSized dpiScale containerSize model =
         let inited =
@@ -84,14 +105,10 @@ module ImageMessage =
                     // set container size
                 | Uninitialized -> Initialized inited
 
-                    // update container size and corresponding zoom scale
+                    // update container size and image layout
                 | Loaded loaded ->
-                    let zoomScale =
-                        getDefaultZoomScale
-                            dpiScale containerSize loaded.Bitmap
-                    Loaded {
-                        loaded with
-                            ZoomScale = zoomScale }
+                    updateImageLayout dpiScale containerSize loaded
+                        |> Loaded
                         |> inited ^= ImageModel.Initialized_
 
                     // just update container size
@@ -133,8 +150,8 @@ module ImageMessage =
                     Loaded {
                         Browsed = browsed
                         Bitmap = bitmap
+                        Offset = Point(0, 0)
                         ZoomScale = zoomScale
-                        ZoomOriginOpt = None
                     }
                 | _ -> failwith "Invalid state"
         model, Cmd.none
@@ -148,13 +165,21 @@ module ImageMessage =
     let private epsilon = 0.001
 
     /// Updates zoom scale based on user input.
-    let private updateZoomScale zoomSign zoomScaleFloor loaded =
+    let private updateZoomScale
+        dpiScale zoomSign (loaded : LoadedImage) =
         assert(abs zoomSign = 1)
 
-        let factor = 1.1
-        let zoomScale = loaded.ZoomScale
+            // get minimum allowable zoom scale
+        let zoomScaleFloor =
+            let containerSize =
+                loaded.Browsed.Initialized.ContainerSize
+            getDefaultZoomScale
+                dpiScale containerSize loaded.Bitmap
 
+            // compute new zoom scale
+        let zoomScale = loaded.ZoomScale
         let newScale =
+            let factor = 1.1
             if zoomSign >= 0 then zoomScale * factor
             else
                 let newScale = zoomScale / factor
@@ -168,27 +193,57 @@ module ImageMessage =
             1.0
         else newScale
 
+    let private updateImageOffset
+        (dpiScale : float) (pointerPos : Point) newZoomScale loaded =
+
+            // ensure the point under the cursor stays stationary
+        let newOffset =
+            pointerPos
+                - (pointerPos - loaded.Offset)
+                    * (newZoomScale / loaded.ZoomScale)
+
+            // calculate new image size
+        let imageSize =
+            loaded.Bitmap.PixelSize.ToSize(dpiScale) * newZoomScale
+
+        // If a dimension of the image is smaller than the canvas, center it on that axis.
+        // Otherwise, use the offset calculated from the zoom origin.
+        let containerSize = loaded.Browsed.Initialized.ContainerSize
+        let offsetX =
+            if imageSize.Width < containerSize.Width then
+                (containerSize.Width - imageSize.Width) / 2.0
+            else
+                // Clamp the X offset to keep the image within the horizontal bounds
+                max (containerSize.Width - imageSize.Width) (min 0.0 newOffset.X)
+        let offsetY =
+            if imageSize.Height < containerSize.Height then
+                (containerSize.Height - imageSize.Height) / 2.0
+            else
+                // Clamp the Y offset to keep the image within the vertical bounds
+                max (containerSize.Height - imageSize.Height) (min 0.0 newOffset.Y)
+        Point(offsetX, offsetY)
+
     /// Updates zoom scale and origin.
     let private onWheelZoom
-        dpiScale sign (pointerPos : Point) = function
+        dpiScale sign pointerPos = function
 
         | Loaded loaded ->
 
                 // update zoom scale
             let zoomScale =
-                let zoomScaleFloor =
-                    let containerSize =
-                        loaded.Browsed.Initialized.ContainerSize
-                    getDefaultZoomScale
-                        dpiScale containerSize loaded.Bitmap
-                updateZoomScale sign zoomScaleFloor loaded
+                updateZoomScale dpiScale sign loaded
+
+                // update image offset
+            let offset =
+                updateImageOffset
+                    dpiScale pointerPos zoomScale loaded
 
                 // update model
             let model =
                 Loaded {
                     loaded with
                         ZoomScale = zoomScale
-                        ZoomOriginOpt = Some pointerPos
+                        Offset = offset
                 }
             model, Cmd.none
 

@@ -48,12 +48,12 @@ type LoadedImage =
         /// Loaded bitmap.
         Bitmap : Bitmap
 
+        /// Image location offset.
+        Offset : Point
+
         /// Zoom scale. This will be 1.0 for an image displayed
         /// at 1:1 size.
         ZoomScale : float
-
-        /// Point at which zoom request originates, if any.
-        ZoomOriginOpt : Option<Point>
     }
 
     /// Browsed image lens.

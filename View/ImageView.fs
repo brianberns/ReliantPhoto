@@ -90,21 +90,13 @@ module ImageView =
                     image,
                     BitmapInterpolationMode.None))
 
-                // determine image size
             let imageSize =
                 bitmap.PixelSize.ToSize(dpiScale)
                     * loaded.ZoomScale
             Image.width imageSize.Width
             Image.height imageSize.Height
-
-                // determine image position (center image in container if necessary)
-            let containerSize =
-                loaded.Browsed.Initialized.ContainerSize
-            let margin = (containerSize - imageSize) / 2.0
-            if margin.Width > 0.0 then
-                Canvas.left margin.Width
-            if margin.Height > 0.0 then
-                Canvas.top margin.Height
+            Image.left loaded.Offset.X
+            Image.top loaded.Offset.Y
         ]
 
     /// Creates a zoomable image.
@@ -128,8 +120,14 @@ module ImageView =
                     Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
                     Canvas.onPointerWheelChanged (fun args ->
+                        let container =
+                            match args.Source with
+                                | :? Image as image ->
+                                    image.Parent :?> Visual
+                                | :? Canvas as canvas -> canvas
+                                | _ -> failwith "Invalid source"
                         let pointerPos =
-                            args.GetPosition(args.Source :?> Visual)
+                            args.GetPosition(container)
                         args.Handled <- true
                         (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
                             |> WheelZoom
