@@ -216,18 +216,19 @@ module ImageMessage =
         // If a dimension of the image is smaller than the canvas, center it on that axis.
         // Otherwise, use the offset calculated from the zoom origin.
         let containerSize = loaded.Browsed.Initialized.ContainerSize
+        let marginSize = containerSize - imageSize
         let offsetX =
-            if imageSize.Width < containerSize.Width then
-                (containerSize.Width - imageSize.Width) / 2.0
+            if marginSize.Width > 0.0 then
+                marginSize.Width / 2.0
             else
                 // Clamp the X offset to keep the image within the horizontal bounds
-                max (containerSize.Width - imageSize.Width) (min 0.0 newOffset.X)
+                max marginSize.Width (min 0.0 newOffset.X)
         let offsetY =
-            if imageSize.Height < containerSize.Height then
-                (containerSize.Height - imageSize.Height) / 2.0
+            if marginSize.Height > 0.0 then
+                marginSize.Height / 2.0
             else
                 // Clamp the Y offset to keep the image within the vertical bounds
-                max (containerSize.Height - imageSize.Height) (min 0.0 newOffset.Y)
+                max marginSize.Height (min 0.0 newOffset.Y)
         Point(offsetX, offsetY)
 
     /// Updates zoom scale and origin.
