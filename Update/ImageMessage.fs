@@ -209,25 +209,24 @@ module ImageMessage =
                 - (pointerPos - loaded.Offset)
                     * (newZoomScale / loaded.ZoomScale)
 
-            // calculate new image size
-        let imageSize =
-            loaded.Bitmap.PixelSize.ToSize(dpiScale) * newZoomScale
+            // compute (positive or negative) gap between image and container
+        let marginSize =
+            let imageSize =
+                loaded.Bitmap.PixelSize.ToSize(dpiScale) * newZoomScale
+            let containerSize = loaded.Browsed.Initialized.ContainerSize
+            containerSize - imageSize
 
-        // If a dimension of the image is smaller than the canvas, center it on that axis.
-        // Otherwise, use the offset calculated from the zoom origin.
-        let containerSize = loaded.Browsed.Initialized.ContainerSize
-        let marginSize = containerSize - imageSize
+            // positive margin: center image
+            // negative margin: clamp image edges to container edges, if necessary
         let offsetX =
             if marginSize.Width > 0.0 then
                 marginSize.Width / 2.0
             else
-                // Clamp the X offset to keep the image within the horizontal bounds
                 max marginSize.Width (min 0.0 newOffset.X)
         let offsetY =
             if marginSize.Height > 0.0 then
                 marginSize.Height / 2.0
             else
-                // Clamp the Y offset to keep the image within the vertical bounds
                 max marginSize.Height (min 0.0 newOffset.Y)
         Point(offsetX, offsetY)
 
