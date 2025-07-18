@@ -165,8 +165,7 @@ module ImageMessage =
     let private epsilon = 0.001
 
     /// Zooms in or out one step.
-    let private updateZoomScale
-        dpiScale zoomSign (loaded : LoadedImage) =
+    let private updateZoomScale dpiScale zoomSign loaded =
         assert(abs zoomSign = 1)
 
             // compute new zoom scale
