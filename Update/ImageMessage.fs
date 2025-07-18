@@ -164,34 +164,42 @@ module ImageMessage =
     /// Acceptable rounding error.
     let private epsilon = 0.001
 
-    /// Updates zoom scale based on user input.
+    /// Zooms in or out one step.
     let private updateZoomScale
         dpiScale zoomSign (loaded : LoadedImage) =
         assert(abs zoomSign = 1)
 
-            // get minimum allowable zoom scale
-        let zoomScaleFloor =
-            let containerSize =
-                loaded.Browsed.Initialized.ContainerSize
-            getDefaultZoomScale
-                dpiScale containerSize loaded.Bitmap
-
             // compute new zoom scale
         let zoomScale = loaded.ZoomScale
-        let newScale =
-            let factor = 1.1
-            if zoomSign >= 0 then zoomScale * factor
-            else
-                let newScale = zoomScale / factor
+        let factor = 1.1
+
+            // zoom in?
+        if zoomSign >= 0 then
+            zoomScale * factor
+
+            // zoom out?
+        else
+                // get minimum allowable zoom scale
+            let zoomScaleFloor =
+                let containerSize =
+                    loaded.Browsed.Initialized.ContainerSize
+                getDefaultZoomScale
+                    dpiScale containerSize loaded.Bitmap
+
+                // zoom out
+            let newScale = zoomScale / factor
+
+                // enforce floor
+            let newScale =
                 if zoomScaleFloor - newScale > epsilon then
                     zoomScale   // don't jump suddenly
                 else newScale
 
-            // snap to 1.0?
-        if newScale > 1.0 && zoomScale < 1.0
-            || newScale < 1.0 && zoomScale > 1.0 then
-            1.0
-        else newScale
+                // snap to 1.0?
+            if newScale > 1.0 && zoomScale < 1.0
+                || newScale < 1.0 && zoomScale > 1.0 then
+                1.0
+            else newScale
 
     let private updateImageOffset
         (dpiScale : float) (pointerPos : Point) newZoomScale loaded =
