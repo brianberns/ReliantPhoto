@@ -45,10 +45,10 @@ module Cmd =
 
 module ImageMessage =
 
-    /// Creates a command to load an image from the given
-    /// file. This is an asynchronous command in order to
-    /// allow the image view to create a container before
-    /// loading its first image.
+    /// Creates a command to load an image from the given file.
+    /// This is an asynchronous command to allow the image
+    /// view to create a container before loading its first
+    /// image.
     let loadImageCommand file =
         Cmd.OfAsync.perform
             async.Return
@@ -65,7 +65,8 @@ module ImageMessage =
                 |> Option.defaultValue Cmd.none
         model, cmd
 
-    /// Default zoom scale for the given bitmap in the given container.
+    /// Default zoom scale for the given bitmap in the given
+    /// container.
     let private getDefaultZoomScale
         (dpiScale : float)
         (containerSize : Size)
