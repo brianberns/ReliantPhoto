@@ -30,9 +30,6 @@ type ImageMessage =
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
-    /// Set zoom lock.
-    | SetZoomLock of bool
-
     /// Load error occurred.
     | HandleLoadError of string
 
@@ -293,15 +290,6 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
-    /// Sets the zoom lock.
-    let private onSetZoomLock flag = function
-        | Loaded loaded ->
-            Loaded {
-                loaded with
-                    ZoomScaleLock = flag },
-            Cmd.none
-        | _ -> failwith "Invalid state"
-
     /// Handles a load error.
     let private onHandleLoadError error = function
         | Browsed browsed ->
@@ -340,10 +328,6 @@ module ImageMessage =
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom dpiScale sign pointerPos model
-
-                // set zoom lock
-            | SetZoomLock flag ->
-                onSetZoomLock flag model
 
                 // handle load error
             | HandleLoadError error ->

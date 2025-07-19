@@ -39,18 +39,6 @@ module ImageView =
                             TextBlock.text $"%0.1f{pct}%%"
                         | _ -> ()
                 ]
-                    // zoom scale lock
-                match model with
-                    | Loaded loaded ->
-                        ToggleSwitch.create [
-                            ToggleSwitch.onContent "🔒"
-                            ToggleSwitch.offContent "🔓"
-                            ToggleSwitch.isChecked loaded.ZoomScaleLock
-                            ToggleSwitch.horizontalAlignment HorizontalAlignment.Left
-                            ToggleSwitch.verticalAlignment VerticalAlignment.Center
-                            ToggleSwitch.margin 5.0
-                        ]
-                    | _ -> ()
             ]
         ]
 
