@@ -99,14 +99,17 @@ module ImageMessage =
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Gets image offset and zoom scale.
-    let private getImageLayout dpiScale containerSize bitmap =
+    let private getImageLayout
+        dpiScale containerSize bitmap zoomScaleOpt =
 
-            // first scale the image to fit in the container
+            // scale the image to fit in the container, if necessary
         let zoomScale =
-            getDefaultZoomScale
-                dpiScale containerSize bitmap
+            zoomScaleOpt
+                |> Option.defaultWith (fun () ->
+                    getDefaultZoomScale
+                        dpiScale containerSize bitmap)
 
-            // then compute the correct offset for that zoom scale
+            // compute the correct offset for that zoom scale
         let offset =
             getDefaultOffset
                 dpiScale containerSize bitmap zoomScale
@@ -127,10 +130,21 @@ module ImageMessage =
                 | Uninitialized -> Initialized inited
 
                     // resize: update container size and image layout
-                | Loaded loaded when not loaded.ZoomScaleLock ->
+                | Loaded loaded ->
+
+                        // keep zoom scale constant?
+                    let zoomScaleOpt =
+                        if loaded.ZoomScaleLock then
+                            Some loaded.ZoomScale
+                        else None
+
+                        // get layout for new container size
                     let offset, zoomScale =
                         getImageLayout
-                            dpiScale containerSize loaded.Bitmap
+                            dpiScale
+                            containerSize
+                            loaded.Bitmap
+                            zoomScaleOpt
                     Loaded {
                         loaded with
                             Offset = offset
@@ -171,7 +185,8 @@ module ImageMessage =
                     let containerSize =
                         browsed.Initialized.ContainerSize
                     let offset, zoomScale =
-                        getImageLayout dpiScale containerSize bitmap
+                        getImageLayout
+                            dpiScale containerSize bitmap None
                     Loaded {
                         Browsed = browsed
                         Bitmap = bitmap
