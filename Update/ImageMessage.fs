@@ -71,26 +71,30 @@ module ImageMessage =
         (dpiScale : float) (bitmap : Bitmap) (zoomScale : float) =
         bitmap.PixelSize.ToSize(dpiScale) * zoomScale
 
-    /// Gets the (positive or negative) gap between the image
-    /// and its container.
-    let private getMarginSize
-        dpiScale containerSize bitmap zoomScale =
-        containerSize
-            - getImageSize dpiScale bitmap zoomScale
+    /// Default zoom scale for the given bitmap in the given
+    /// container.
+    let private getDefaultZoomScale
+        (dpiScale : float)
+        (containerSize : Size)
+        (bitmap : Bitmap) =
+        let ratio =
+            containerSize / bitmap.PixelSize.ToSize(dpiScale)
+        Array.min [| ratio.X; ratio.Y; 1.0 |]
 
-    /// Gets the default image offset, which is centered in both
-    /// dimensions.
-    let private getDefaultOffset
+    /// Computes image offset based on layout rules.
+    let private getImageOffset
         dpiScale containerSize bitmap offsetOpt zoomScale =
 
             // compute (positive or negative) gap between image and container
         let marginSize =
-            getMarginSize dpiScale containerSize bitmap zoomScale
+            containerSize
+                - getImageSize dpiScale bitmap zoomScale
 
-            // positive margin: center image
-            // negative margin: clamp image edges to container edges, if necessary
         let offsetX, offsetY =
             match offsetOpt with
+
+                    // positive margin: center image in that dimension
+                    // negative margin: clamp image edges to container edges, if necessary
                 | Some (offset : Point) ->
                     let offsetX =
                         if marginSize.Width > 0.0 then
@@ -103,22 +107,15 @@ module ImageMessage =
                         else
                             max marginSize.Height (min 0.0 offset.Y)
                     offsetX, offsetY
+
+                    // center image by default
                 | None ->
                     marginSize.Width / 2.0,
                     marginSize.Height / 2.0
+
         Point(offsetX, offsetY)
 
-    /// Default zoom scale for the given bitmap in the given
-    /// container.
-    let private getDefaultZoomScale
-        (dpiScale : float)
-        (containerSize : Size)
-        (bitmap : Bitmap) =
-        let ratio =
-            containerSize / bitmap.PixelSize.ToSize(dpiScale)
-        Array.min [| ratio.X; ratio.Y; 1.0 |]
-
-    /// Gets image offset and zoom scale.
+    /// Gets image offset and zoom scale based on layout rules.
     let private getImageLayout
         dpiScale containerSize bitmap offsetOpt zoomScaleOpt =
 
@@ -129,9 +126,9 @@ module ImageMessage =
                     getDefaultZoomScale
                         dpiScale containerSize bitmap)
 
-            // compute the correct offset for that zoom scale
+            // get image offset for that zoom scale
         let offset =
-            getDefaultOffset
+            getImageOffset
                 dpiScale containerSize bitmap offsetOpt zoomScale
 
         offset, zoomScale
@@ -227,7 +224,7 @@ module ImageMessage =
     let private epsilon = 0.001
 
     /// Zooms in or out one step.
-    let private updateZoomScale dpiScale zoomSign loaded =
+    let private incrementZoomScale dpiScale zoomSign loaded =
         assert(abs zoomSign = 1)
 
             // compute possible new zoom scale
@@ -292,7 +289,7 @@ module ImageMessage =
 
                 // update zoom scale
             let zoomScale, zoomScaleLock =
-                updateZoomScale dpiScale sign loaded
+                incrementZoomScale dpiScale sign loaded
 
                 // update image offset
             let offset, _ =
