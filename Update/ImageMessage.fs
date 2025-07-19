@@ -130,7 +130,7 @@ module ImageMessage =
                 | Uninitialized -> Initialized inited
 
                     // resize: update container size and image layout
-                | Loaded loaded ->
+                | Loaded loaded when not loaded.ZoomScaleLock ->
                     let offset, zoomScale =
                         getImageLayout
                             dpiScale containerSize loaded.Bitmap
