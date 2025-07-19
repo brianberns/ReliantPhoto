@@ -201,33 +201,40 @@ module ImageMessage =
         let zoomScale = loaded.ZoomScale
         let factor = 1.1
 
-            // zoom in?
-        if zoomSign >= 0 then
-            zoomScale * factor
+            // compute possible new zoom scale
+        let newScale, zoomScaleLock =
 
-            // zoom out?
+                // zoom in?
+            if zoomSign >= 0 then
+                let newScale = zoomScale * factor
+                newScale, true
+
+                // zoom out?
+            else
+                    // get minimum allowable zoom scale
+                let zoomScaleFloor =
+                    let containerSize =
+                        loaded.Browsed.Initialized.ContainerSize
+                    getDefaultZoomScale
+                        dpiScale containerSize loaded.Bitmap
+
+                    // zoom out
+                let newScale = zoomScale / factor
+
+                    // enforce floor
+                let newScale, zoomScaleLock =
+                    if zoomScaleFloor - newScale > epsilon then
+                        zoomScale, false   // don't jump suddenly
+                    else newScale, true
+
+                newScale, zoomScaleLock
+
+            // snap to 1.0?
+        if newScale > 1.0 && zoomScale < 1.0
+            || newScale < 1.0 && zoomScale > 1.0 then
+            1.0, true
         else
-                // get minimum allowable zoom scale
-            let zoomScaleFloor =
-                let containerSize =
-                    loaded.Browsed.Initialized.ContainerSize
-                getDefaultZoomScale
-                    dpiScale containerSize loaded.Bitmap
-
-                // zoom out
-            let newScale = zoomScale / factor
-
-                // enforce floor
-            let newScale =
-                if zoomScaleFloor - newScale > epsilon then
-                    zoomScale   // don't jump suddenly
-                else newScale
-
-                // snap to 1.0?
-            if newScale > 1.0 && zoomScale < 1.0
-                || newScale < 1.0 && zoomScale > 1.0 then
-                1.0
-            else newScale
+            newScale, zoomScaleLock
 
     /// Updates image offset based on a new zoom scale.
     let private updateImageOffset
@@ -268,7 +275,7 @@ module ImageMessage =
         | Loaded loaded ->
 
                 // update zoom scale
-            let zoomScale =
+            let zoomScale, zoomScaleLock =
                 updateZoomScale dpiScale sign loaded
 
                 // update image offset
@@ -280,8 +287,9 @@ module ImageMessage =
             let model =
                 Loaded {
                     loaded with
-                        ZoomScale = zoomScale
                         Offset = offset
+                        ZoomScale = zoomScale
+                        ZoomScaleLock = zoomScaleLock
                 }
             model, Cmd.none
 
