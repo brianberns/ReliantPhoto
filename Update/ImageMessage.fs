@@ -170,12 +170,8 @@ module ImageMessage =
                 | Browsed browsed ->
                     let containerSize =
                         browsed.Initialized.ContainerSize
-                    let zoomScale =
-                        getDefaultZoomScale
-                            dpiScale containerSize bitmap
-                    let offset =
-                        getDefaultOffset
-                            dpiScale containerSize bitmap zoomScale
+                    let offset, zoomScale =
+                        getImageLayout dpiScale containerSize bitmap
                     Loaded {
                         Browsed = browsed
                         Bitmap = bitmap
