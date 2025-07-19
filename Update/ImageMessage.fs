@@ -96,23 +96,27 @@ module ImageMessage =
             Offset = offset
             ZoomScale = zoomScale }
 
-    /// Sets or updates container size.
+    /// Sets or updates container size. This occurs when the
+    /// container is first created (before it contains an
+    /// image), and any time the container is resized by the
+    /// user.
     let private onContainerSized dpiScale containerSize model =
         let inited =
             { ContainerSize = containerSize }
         let model =
             match model with
 
-                    // set container size
+                    // creation: set container size
                 | Uninitialized -> Initialized inited
 
-                    // update container size and image layout
+                    // resize: update container size and image layout
                 | Loaded loaded ->
-                    updateImageLayout dpiScale containerSize loaded
+                    loaded
+                        |> updateImageLayout dpiScale containerSize
                         |> Loaded
                         |> inited ^= ImageModel.Initialized_
 
-                    // just update container size
+                    // resize: just update container size
                 | _ ->
                     model
                         |> inited ^= ImageModel.Initialized_
