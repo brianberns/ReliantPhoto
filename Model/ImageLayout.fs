@@ -131,3 +131,4 @@ module ImageLayout =
             loaded.Bitmap
             (Some newOffset)
             (Some newZoomScale)
+            |> fst

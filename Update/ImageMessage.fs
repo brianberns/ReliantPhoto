@@ -104,7 +104,8 @@ module ImageMessage =
 
                     // resize: update layout and container size
                 | Loaded loaded ->
-                    updateLayout dpiScale containerSize loaded
+                    loaded
+                        |> updateLayout dpiScale containerSize
                         |> Loaded
                         |> inited ^= ImageModel.Initialized_
 
@@ -139,11 +140,15 @@ module ImageMessage =
         let model =
             match model with
                 | Browsed browsed ->
-                    let containerSize =
-                        browsed.Initialized.ContainerSize
+
+                        // get default layout
                     let offset, zoomScale =
                         ImageLayout.getImageLayout
-                            dpiScale containerSize bitmap None None
+                            dpiScale
+                            browsed.Initialized.ContainerSize
+                            bitmap
+                            None None
+
                     Loaded {
                         Browsed = browsed
                         Bitmap = bitmap
@@ -165,12 +170,13 @@ module ImageMessage =
 
         | Loaded loaded ->
 
-                // update zoom scale
+                // increment/decrement zoom scale
             let zoomScale, zoomScaleLock =
-                ImageLayout.incrementZoomScale dpiScale sign loaded
+                ImageLayout.incrementZoomScale
+                    dpiScale sign loaded
 
                 // update image offset
-            let offset, _ =
+            let offset =
                 ImageLayout.updateImageOffset
                     dpiScale pointerPos zoomScale loaded
 
