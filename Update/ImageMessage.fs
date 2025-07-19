@@ -97,8 +97,7 @@ module ImageMessage =
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Updates image offset and zoom scale.
-    let private updateImageLayout
-        (dpiScale : float) containerSize bitmap =
+    let private updateImageLayout dpiScale containerSize bitmap =
         let zoomScale =
             getDefaultZoomScale
                 dpiScale containerSize bitmap
