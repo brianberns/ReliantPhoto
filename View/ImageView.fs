@@ -98,7 +98,7 @@ module ImageView =
 
                 // image layout
             let imageSize =
-                ImageMessage.getImageSize
+                ImageLayout.getImageSize
                     dpiScale bitmap loaded.ZoomScale
             Image.width imageSize.Width
             Image.height imageSize.Height
