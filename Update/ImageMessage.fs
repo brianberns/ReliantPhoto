@@ -65,16 +65,18 @@ module ImageMessage =
                 |> Option.defaultValue Cmd.none
         model, cmd
 
+    /// Gets the size of the given bitmap when displayed at the
+    /// given DPI and zoom scales.
+    let getImageSize
+        (dpiScale : float) (bitmap : Bitmap) (zoomScale : float) =
+        bitmap.PixelSize.ToSize(dpiScale) * zoomScale
+
     /// Gets the (positive or negative) gap between the image
     /// and its container.
     let private getMarginSize
-        (dpiScale : float)
-        (containerSize : Size)
-        (bitmap : Bitmap)
-        (zoomScale : float) =
-        let imageSize =
-            bitmap.PixelSize.ToSize(dpiScale) * zoomScale
-        containerSize - imageSize
+        dpiScale containerSize bitmap zoomScale =
+        containerSize
+            - getImageSize dpiScale bitmap zoomScale
 
     /// Gets the default image offset, which is centered in both
     /// dimensions.
@@ -227,6 +229,7 @@ module ImageMessage =
                 1.0
             else newScale
 
+    /// Updates image offset based on a new zoom scale.
     let private updateImageOffset
         dpiScale (pointerPos : Point) newZoomScale loaded =
 

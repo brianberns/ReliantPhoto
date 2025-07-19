@@ -78,7 +78,7 @@ module ImageView =
         ]
 
     /// Creates an image.
-    let private createImage (dpiScale : float) loaded =
+    let private createImage dpiScale loaded =
         Image.create [
 
             let bitmap = loaded.Bitmap
@@ -90,9 +90,10 @@ module ImageView =
                     image,
                     BitmapInterpolationMode.None))
 
+                // image layout
             let imageSize =
-                bitmap.PixelSize.ToSize(dpiScale)
-                    * loaded.ZoomScale
+                ImageMessage.getImageSize
+                    dpiScale bitmap loaded.ZoomScale
             Image.width imageSize.Width
             Image.height imageSize.Height
             Image.left loaded.Offset.X
