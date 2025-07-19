@@ -28,11 +28,11 @@ module Message =
     let init arg =
 
             // extract arguments
-        let dir, fileOpt =
+        let dir, fileOpt, mode =
             match arg with
-                | Choice1Of2 dir -> dir, None
+                | Choice1Of2 dir -> dir, None, Mode.Directory
                 | Choice2Of2 (file : FileInfo) ->
-                    file.Directory, Some file
+                    file.Directory, Some file, Mode.Image
 
             // initialize sub-models
         let dirModel, dirCmd = DirectoryMessage.init dir
@@ -43,7 +43,7 @@ module Message =
             {
                 DirectoryModel = dirModel
                 ImageModel = imgModel
-                Mode = Mode.Directory
+                Mode = mode
             }
         let cmd =
             Cmd.batch [
