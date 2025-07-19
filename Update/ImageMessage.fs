@@ -90,30 +90,26 @@ module ImageMessage =
             containerSize
                 - getImageSize dpiScale bitmap zoomScale
 
-        let offsetX, offsetY =
-            match offsetOpt with
+        match offsetOpt with
 
-                    // positive margin: center image in that dimension
-                    // negative margin: clamp image edges to container edges, if necessary
-                | Some (offset : Point) ->
-                    let offsetX =
-                        if marginSize.Width > 0.0 then
-                            marginSize.Width / 2.0
-                        else
-                            max marginSize.Width (min 0.0 offset.X)
-                    let offsetY =
-                        if marginSize.Height > 0.0 then
-                            marginSize.Height / 2.0
-                        else
-                            max marginSize.Height (min 0.0 offset.Y)
-                    offsetX, offsetY
+                // positive margin: center image in that dimension
+                // negative margin: clamp image edges to container edges, if necessary
+            | Some (offset : Point) ->
+                let offsetX =
+                    if marginSize.Width > 0.0 then
+                        marginSize.Width / 2.0
+                    else
+                        max marginSize.Width (min 0.0 offset.X)
+                let offsetY =
+                    if marginSize.Height > 0.0 then
+                        marginSize.Height / 2.0
+                    else
+                        max marginSize.Height (min 0.0 offset.Y)
+                Point(offsetX, offsetY)
 
-                    // center image by default
-                | None ->
-                    marginSize.Width / 2.0,
-                    marginSize.Height / 2.0
-
-        Point(offsetX, offsetY)
+                // center image by default
+            | None ->
+                Point(marginSize.Width, marginSize.Height) / 2.0
 
     /// Gets image offset and zoom scale based on layout rules.
     let private getImageLayout
