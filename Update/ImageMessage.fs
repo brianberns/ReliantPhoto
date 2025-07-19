@@ -197,11 +197,9 @@ module ImageMessage =
     let private updateZoomScale dpiScale zoomSign loaded =
         assert(abs zoomSign = 1)
 
-            // compute new zoom scale
+            // compute possible new zoom scale
         let zoomScale = loaded.ZoomScale
         let factor = 1.1
-
-            // compute possible new zoom scale
         let newScale, zoomScaleLock =
 
                 // zoom in?
