@@ -65,6 +65,27 @@ module ImageMessage =
                 |> Option.defaultValue Cmd.none
         model, cmd
 
+    /// Gets the (positive or negative) gap between the image
+    /// and its container.
+    let private getMarginSize
+        (dpiScale : float)
+        (containerSize : Size)
+        (bitmap : Bitmap)
+        (zoomScale : float) =
+        let imageSize =
+            bitmap.PixelSize.ToSize(dpiScale) * zoomScale
+        containerSize - imageSize
+
+    /// Gets the default image offset, which is centered in both
+    /// dimensions.
+    let private getDefaultOffset
+        dpiScale containerSize bitmap zoomScale =
+        let offsetSize =
+            (getMarginSize
+                dpiScale containerSize bitmap zoomScale)
+                / 2.0
+        Point(offsetSize.Width, offsetSize.Height)
+
     /// Default zoom scale for the given bitmap in the given
     /// container.
     let private getDefaultZoomScale
@@ -77,24 +98,14 @@ module ImageMessage =
 
     /// Updates image offset and zoom scale.
     let private updateImageLayout
-        (dpiScale : float) containerSize loaded =
-
-        let offset =
-            let imageSize =
-                loaded.Bitmap.PixelSize.ToSize(dpiScale)
-                    * loaded.ZoomScale
-            let offsetSize =
-                (loaded.Browsed.Initialized.ContainerSize - imageSize)
-                    / 2.0
-            Point(offsetSize.Width, offsetSize.Height)
-
+        (dpiScale : float) containerSize bitmap =
         let zoomScale =
             getDefaultZoomScale
-                dpiScale containerSize loaded.Bitmap
-
-        { loaded with
-            Offset = offset
-            ZoomScale = zoomScale }
+                dpiScale containerSize bitmap
+        let offset =
+            getDefaultOffset
+                dpiScale containerSize bitmap zoomScale
+        offset, zoomScale
 
     /// Sets or updates container size. This occurs when the
     /// container is first created (before it contains an
@@ -111,10 +122,14 @@ module ImageMessage =
 
                     // resize: update container size and image layout
                 | Loaded loaded ->
-                    loaded
-                        |> updateImageLayout dpiScale containerSize
-                        |> Loaded
-                        |> inited ^= ImageModel.Initialized_
+                    let offset, zoomScale =
+                        updateImageLayout
+                            dpiScale containerSize loaded.Bitmap
+                    Loaded {
+                        loaded with
+                            Offset = offset
+                            ZoomScale = zoomScale
+                    } |> inited ^= ImageModel.Initialized_
 
                     // resize: just update container size
                 | _ ->
@@ -147,15 +162,18 @@ module ImageMessage =
         let model =
             match model with
                 | Browsed browsed ->
+                    let containerSize =
+                        browsed.Initialized.ContainerSize
                     let zoomScale =
-                        let containerSize =
-                            browsed.Initialized.ContainerSize
                         getDefaultZoomScale
                             dpiScale containerSize bitmap
+                    let offset =
+                        getDefaultOffset
+                            dpiScale containerSize bitmap zoomScale
                     Loaded {
                         Browsed = browsed
                         Bitmap = bitmap
-                        Offset = Point(0, 0)
+                        Offset = offset
                         ZoomScale = zoomScale
                     }
                 | _ -> failwith "Invalid state"
@@ -206,7 +224,7 @@ module ImageMessage =
             else newScale
 
     let private updateImageOffset
-        (dpiScale : float) (pointerPos : Point) newZoomScale loaded =
+        dpiScale (pointerPos : Point) newZoomScale loaded =
 
             // ensure the point under the cursor stays stationary
         let newOffset =
@@ -216,10 +234,11 @@ module ImageMessage =
 
             // compute (positive or negative) gap between image and container
         let marginSize =
-            let imageSize =
-                loaded.Bitmap.PixelSize.ToSize(dpiScale) * newZoomScale
-            let containerSize = loaded.Browsed.Initialized.ContainerSize
-            containerSize - imageSize
+            getMarginSize
+                dpiScale
+                loaded.Browsed.Initialized.ContainerSize
+                loaded.Bitmap
+                newZoomScale
 
             // positive margin: center image
             // negative margin: clamp image edges to container edges, if necessary
