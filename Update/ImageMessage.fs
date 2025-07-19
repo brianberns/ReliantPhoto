@@ -96,14 +96,19 @@ module ImageMessage =
             containerSize / bitmap.PixelSize.ToSize(dpiScale)
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
-    /// Updates image offset and zoom scale.
-    let private updateImageLayout dpiScale containerSize bitmap =
+    /// Gets image offset and zoom scale.
+    let private getImageLayout dpiScale containerSize bitmap =
+
+            // first scale the image to fit in the container
         let zoomScale =
             getDefaultZoomScale
                 dpiScale containerSize bitmap
+
+            // then compute the correct offset for that zoom scale
         let offset =
             getDefaultOffset
                 dpiScale containerSize bitmap zoomScale
+
         offset, zoomScale
 
     /// Sets or updates container size. This occurs when the
@@ -122,7 +127,7 @@ module ImageMessage =
                     // resize: update container size and image layout
                 | Loaded loaded ->
                     let offset, zoomScale =
-                        updateImageLayout
+                        getImageLayout
                             dpiScale containerSize loaded.Bitmap
                     Loaded {
                         loaded with
