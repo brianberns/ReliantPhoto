@@ -3,6 +3,8 @@
 open Avalonia
 open Avalonia.Media.Imaging
 
+/// Functions relating to the location and size of an image
+/// within its container.
 module ImageLayout =
 
     /// Gets the size of the given bitmap when displayed at the
@@ -23,14 +25,14 @@ module ImageLayout =
 
     /// Computes image offset based on layout rules.
     let private getImageOffset
-        dpiScale containerSize bitmap offsetOpt zoomScale =
+        dpiScale containerSize bitmap proposedOffsetOpt zoomScale =
 
             // compute (positive or negative) gap between image and container
         let marginSize =
             containerSize
                 - getImageSize dpiScale bitmap zoomScale
 
-        match offsetOpt with
+        match proposedOffsetOpt with
 
                 // positive margin: center image in that dimension
                 // negative margin: clamp image edges to container edges, if necessary
@@ -53,7 +55,7 @@ module ImageLayout =
 
     /// Gets image offset and zoom scale based on layout rules.
     let getImageLayout
-        dpiScale containerSize bitmap offsetOpt zoomScaleOpt =
+        dpiScale containerSize bitmap proposedOffsetOpt zoomScaleOpt =
 
             // scale the image to fit in the container?
         let zoomScale =
@@ -65,7 +67,7 @@ module ImageLayout =
             // get image offset for that zoom scale
         let offset =
             getImageOffset
-                dpiScale containerSize bitmap offsetOpt zoomScale
+                dpiScale containerSize bitmap proposedOffsetOpt zoomScale
 
         offset, zoomScale
 
