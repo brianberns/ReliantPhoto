@@ -42,10 +42,14 @@ module ImageView =
                     // zoom scale lock
                 match model with
                     | Loaded loaded ->
-                        let lock =
-                            if loaded.ZoomScaleLock then "🔒"
-                            else "🔓"
-                        Button.createText lock ignore
+                        ToggleSwitch.create [
+                            ToggleSwitch.onContent "🔒"
+                            ToggleSwitch.offContent "🔓"
+                            ToggleSwitch.isChecked loaded.ZoomScaleLock
+                            ToggleSwitch.horizontalAlignment HorizontalAlignment.Left
+                            ToggleSwitch.verticalAlignment VerticalAlignment.Center
+                            ToggleSwitch.margin 5.0
+                        ]
                     | _ -> ()
             ]
         ]
