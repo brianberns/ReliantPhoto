@@ -119,7 +119,7 @@ module ImageLayout =
     let updateImageOffset
         dpiScale (pointerPos : Point) newZoomScale loaded =
 
-            // ensure the point under the cursor stays stationary
+            // try to keep the point under the cursor stationary
         let newOffset =
             pointerPos
                 - (pointerPos - loaded.Offset)
