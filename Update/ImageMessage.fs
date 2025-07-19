@@ -177,6 +177,7 @@ module ImageMessage =
                         Bitmap = bitmap
                         Offset = offset
                         ZoomScale = zoomScale
+                        ZoomScaleLock = false
                     }
                 | _ -> failwith "Invalid state"
         model, Cmd.none

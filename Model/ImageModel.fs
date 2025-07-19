@@ -54,6 +54,9 @@ type LoadedImage =
         /// Zoom scale. This will be 1.0 for an image displayed
         /// at 1:1 size.
         ZoomScale : float
+
+        /// Lock zoom scale when resizing?
+        ZoomScaleLock : bool
     }
 
     /// Browsed image lens.

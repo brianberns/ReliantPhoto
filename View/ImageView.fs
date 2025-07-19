@@ -21,10 +21,16 @@ module ImageView =
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
             StackPanel.children [
+
+                    // switch to directory mode
                 Button.createText "↩" (fun _ ->
                     dispatch SwitchToDirectory)
+
+                    // open file
                 Button.createText "🗀" (
                     FileSystemView.onSelectImage dispatch)
+
+                    // zoom scale
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
                     match model with
@@ -33,6 +39,14 @@ module ImageView =
                             TextBlock.text $"%0.1f{pct}%%"
                         | _ -> ()
                 ]
+                    // zoom scale lock
+                match model with
+                    | Loaded loaded ->
+                        let lock =
+                            if loaded.ZoomScaleLock then "🔒"
+                            else "🔓"
+                        Button.createText lock ignore
+                    | _ -> ()
             ]
         ]
 
