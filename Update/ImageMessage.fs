@@ -65,6 +65,30 @@ module ImageMessage =
                 |> Option.defaultValue Cmd.none
         model, cmd
 
+    /// Updates layout due to container resize.
+    let private updateLayout dpiScale containerSize loaded =
+
+            // keep zoom scale constant?
+        let zoomScaleOpt =
+            if loaded.ZoomScaleLock then
+                Some loaded.ZoomScale
+            else None
+
+            // get layout for new container size
+        let offset, zoomScale =
+            ImageLayout.getImageLayout
+                dpiScale
+                containerSize
+                loaded.Bitmap
+                (Some loaded.Offset)
+                zoomScaleOpt
+
+        {
+            loaded with
+                Offset = offset
+                ZoomScale = zoomScale
+        }
+
     /// Sets or updates container size. This occurs when the
     /// container is first created (before it contains an
     /// image), and any time the container is resized by the
@@ -78,28 +102,11 @@ module ImageMessage =
                     // creation: set container size
                 | Uninitialized -> Initialized inited
 
-                    // resize: update container size and image layout
+                    // resize: update layout and container size
                 | Loaded loaded ->
-
-                        // keep zoom scale constant?
-                    let zoomScaleOpt =
-                        if loaded.ZoomScaleLock then
-                            Some loaded.ZoomScale
-                        else None
-
-                        // get layout for new container size
-                    let offset, zoomScale =
-                        ImageLayout.getImageLayout
-                            dpiScale
-                            containerSize
-                            loaded.Bitmap
-                            (Some loaded.Offset)
-                            zoomScaleOpt
-                    Loaded {
-                        loaded with
-                            Offset = offset
-                            ZoomScale = zoomScale
-                    } |> inited ^= ImageModel.Initialized_
+                    updateLayout dpiScale containerSize loaded
+                        |> Loaded
+                        |> inited ^= ImageModel.Initialized_
 
                     // resize: just update container size
                 | _ ->
