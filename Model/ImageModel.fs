@@ -17,6 +17,12 @@ type InitializedContainer =
         ContainerSize : Size
     }
 
+    /// Container size lens.
+    static member ContainerSize_ : Lens<_, _> =
+        _.ContainerSize,
+        fun containerSize inited ->
+            { inited with ContainerSize = containerSize }
+
 /// A browsed image file.
 type BrowsedImage =
     {
@@ -38,6 +44,11 @@ type BrowsedImage =
         _.Initialized,
         fun inited browsed ->
             { browsed with Initialized = inited }
+
+    /// Container size lens.
+    static member ContainerSize_ : Lens<_, _> =
+        BrowsedImage.Initialized_
+            >-> InitializedContainer.ContainerSize_
 
 /// A loaded image.
 type LoadedImage =
@@ -69,6 +80,11 @@ type LoadedImage =
     static member Initialized_ =
         LoadedImage.Browsed_ >-> BrowsedImage.Initialized_
 
+    /// Container size lens.
+    static member ContainerSize_ : Lens<_, _> =
+        LoadedImage.Initialized_
+            >-> InitializedContainer.ContainerSize_
+
 /// An image file that could not be browsed.
 type BrowseError =
     {
@@ -98,6 +114,11 @@ type LoadError =
     /// Initialized container lens.
     static member Initialized_ : Lens<_, _> =
         LoadError.Browsed_>-> BrowsedImage.Initialized_
+
+    /// Container size lens.
+    static member ContainerSize_ : Lens<_, _> =
+        LoadError.Initialized_
+            >-> InitializedContainer.ContainerSize_
 
 type ImageModel =
 
@@ -161,6 +182,11 @@ type ImageModel =
         (fun inited model ->
             model
                 |> inited ^= ImageModel.TryInitialized_)
+
+    /// Container size lens.
+    static member ContainerSize_ : Lens<_, _> =
+        ImageModel.Initialized_
+            >-> InitializedContainer.ContainerSize_
 
     /// Browsed image prism.
     static member TryBrowsed_ : Prism<_, _> =

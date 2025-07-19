@@ -3,6 +3,8 @@
 open Avalonia
 open Avalonia.Media.Imaging
 
+open Aether.Operators
+
 /// Functions relating to the location and size of an image
 /// within its container.
 module ImageLayout =
@@ -93,7 +95,7 @@ module ImageLayout =
                     // get minimum allowable zoom scale
                 let zoomScaleFloor =
                     let containerSize =
-                        loaded.Browsed.Initialized.ContainerSize
+                        loaded ^. LoadedImage.ContainerSize_
                     getDefaultZoomScale
                         dpiScale containerSize loaded.Bitmap
 
@@ -127,7 +129,7 @@ module ImageLayout =
 
         getImageLayout
             dpiScale
-            loaded.Browsed.Initialized.ContainerSize
+            (loaded ^. LoadedImage.ContainerSize_)
             loaded.Bitmap
             (Some newOffset)
             (Some newZoomScale)
