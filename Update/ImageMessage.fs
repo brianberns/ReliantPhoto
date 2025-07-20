@@ -218,7 +218,7 @@ module ImageMessage =
             let model =
                 Loaded {
                     loaded with
-                        PanOpt = Some (loaded.Offset - pointerPos)
+                        PanOpt = Some (loaded.Offset, pointerPos)
                 }
             model, Cmd.none
         | _ -> failwith "Invalid state"
@@ -226,11 +226,13 @@ module ImageMessage =
     let private onPanMove pointerPos = function
         | Loaded loaded as model ->
             match loaded.PanOpt with
-                | Some pan ->
+                | Some (panOffset, panPointerPos) ->
                     let model =
                         Loaded {
                             loaded with
-                                Offset = pan + pointerPos
+                                Offset =
+                                    panOffset
+                                    + (pointerPos - panPointerPos)
                         }
                     model, Cmd.none
                 | None -> model, Cmd.none

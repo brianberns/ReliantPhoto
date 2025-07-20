@@ -144,8 +144,14 @@ module ImageView =
                     if loaded.PanOpt.IsNone then
 
                         Canvas.onPointerPressed (fun args ->
+                            let container =
+                                match args.Source with
+                                    | :? Image as image ->
+                                        image.Parent :?> Visual
+                                    | :? Canvas as canvas -> canvas
+                                    | _ -> failwith "Invalid source"
                             let pointerPos =
-                                args.GetPosition(args.Source :?> _)
+                                args.GetPosition(container)
                             args.Handled <- true
                             pointerPos
                                 |> PanStart
@@ -155,8 +161,15 @@ module ImageView =
                     else
 
                         Canvas.onPointerMoved (fun args ->
+                            let container =
+                                match args.Source with
+                                    | :? Image as image ->
+                                        image.Parent :?> Visual
+                                    | :? Canvas as canvas -> canvas
+                                    | _ -> failwith "Invalid source"
                             let pointerPos =
-                                args.GetPosition(args.Source :?> _)
+                                args.GetPosition(container)
+                            printfn $"{pointerPos}"
                             args.Handled <- true
                             pointerPos
                                 |> PanMove

@@ -73,7 +73,7 @@ type LoadedImage =
         ZoomScaleLock : bool
 
         /// Pan location, when panning.
-        PanOpt : Option<Point>
+        PanOpt : Option<Point * Point>
     }
 
     /// Browsed image lens.
