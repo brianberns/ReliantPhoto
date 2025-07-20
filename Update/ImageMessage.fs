@@ -218,7 +218,7 @@ module ImageMessage =
         | Loaded loaded ->
             let pan =
                 {
-                    Offset = loaded.Offset
+                    ImageOffset = loaded.Offset
                     PointerPos = pointerPos
                 }
             let model =
@@ -227,17 +227,22 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
+    /// Moves the image during a pan.
+    let private moveImage pointerPos pan loaded =
+        let offset =
+            pan.ImageOffset
+                + (pointerPos - pan.PointerPos)
+        { loaded with Offset = offset }
+
     /// Continues panning.
     let private onPanMove pointerPos = function
         | Loaded loaded as model ->
             match loaded.PanOpt with
                 | Some pan ->
-                    let offset =
-                        pan.Offset
-                            + (pointerPos - pan.PointerPos)
                     let model =
-                        Loaded {
-                            loaded with Offset = offset }
+                        loaded
+                            |> moveImage pointerPos pan
+                            |> Loaded
                     model, Cmd.none
                 | None -> model, Cmd.none
         | _ -> failwith "Invalid state"

@@ -54,7 +54,7 @@ type BrowsedImage =
 type Pan =
     {
         /// Image offset.
-        Offset : Point
+        ImageOffset : Point
 
         /// Previous pointer position.
         PointerPos : Point
