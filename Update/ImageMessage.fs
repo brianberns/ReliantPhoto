@@ -102,25 +102,24 @@ module ImageMessage =
     /// image), and any time the container is resized by the
     /// user.
     let private onContainerSized containerSize model =
-        let inited =
-            { ContainerSize = containerSize }
         let model =
             match model with
 
                     // creation: set container size
-                | Uninitialized -> Initialized inited
+                | Uninitialized ->
+                    Initialized { ContainerSize = containerSize }
 
                     // resize: update container size and layout
                 | Loaded loaded ->
                     loaded
-                        |> inited ^= LoadedImage.Initialized_
+                        |> containerSize ^= LoadedImage.ContainerSize_
                         |> updateLayout
                         |> Loaded
 
                     // resize: just update container size
                 | _ ->
                     model
-                        |> inited ^= ImageModel.Initialized_
+                        |> containerSize ^= ImageModel.ContainerSize_
         model, Cmd.none
 
     /// Browses to and starts loading a file, if possible.
