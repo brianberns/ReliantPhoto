@@ -21,7 +21,7 @@ module ImageLayout =
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Computes image offset based on layout rules.
-    let private getImageOffset
+    let getImageOffset
         containerSize bitmapSize proposedOffsetOpt zoomScale =
 
             // compute (positive or negative) gap between image and container
@@ -120,9 +120,8 @@ module ImageLayout =
                 - (pointerPos - loaded.Offset)
                     * (newZoomScale / loaded.ZoomScale)
 
-        getImageLayout
+        getImageOffset
             (loaded ^. LoadedImage.ContainerSize_)
             loaded.BitmapSize
             (Some newOffset)
-            (Some newZoomScale)
-            |> fst
+            newZoomScale
