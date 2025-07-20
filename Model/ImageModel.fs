@@ -71,6 +71,9 @@ type LoadedImage =
 
         /// Lock zoom scale when resizing?
         ZoomScaleLock : bool
+
+        /// Pan location, when panning.
+        PanOpt : Option<Point>
     }
 
     /// Browsed image lens.

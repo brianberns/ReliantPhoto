@@ -21,6 +21,9 @@ type ImageMessage =
     /// Image has been loaded.
     | ImageLoaded of Bitmap
 
+    /// Load error occurred.
+    | HandleLoadError of string
+
     /// Browse to previous image in directory, if possible.
     | PreviousImage
 
@@ -30,8 +33,14 @@ type ImageMessage =
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
-    /// Load error occurred.
-    | HandleLoadError of string
+    /// Pointer pan has started.
+    | PanStart of Point
+
+    /// Pointer pan has moved.
+    | PanMove of Point
+
+    /// Pointer pan has ended.
+    | PanEnd
 
 module Cmd =
 
@@ -134,6 +143,17 @@ module ImageMessage =
         let inited = model ^. ImageModel.Initialized_
         browse inited 0 file
 
+    /// Handles a load error.
+    let private onHandleLoadError error = function
+        | Browsed browsed ->
+            let model =
+                LoadError {
+                    Browsed = browsed
+                    Message = error
+                }
+            model, Cmd.none
+        | _ -> failwith "Invalid state"
+
     /// Sets image's bitmap.
     let private onImageLoaded
         (dpiScale : float) (bitmap : Bitmap) model =
@@ -157,6 +177,7 @@ module ImageMessage =
                         Offset = offset
                         ZoomScale = zoomScale
                         ZoomScaleLock = false
+                        PanOpt = None
                     }
                 | _ -> failwith "Invalid state"
         model, Cmd.none
@@ -192,13 +213,34 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
-    /// Handles a load error.
-    let private onHandleLoadError error = function
-        | Browsed browsed ->
+    let private onPanStart pointerPos = function
+        | Loaded loaded ->
             let model =
-                LoadError {
-                    Browsed = browsed
-                    Message = error
+                Loaded {
+                    loaded with
+                        PanOpt = Some (loaded.Offset - pointerPos)
+                }
+            model, Cmd.none
+        | _ -> failwith "Invalid state"
+
+    let private onPanMove pointerPos = function
+        | Loaded loaded as model ->
+            match loaded.PanOpt with
+                | Some pan ->
+                    let model =
+                        Loaded {
+                            loaded with
+                                Offset = pan + pointerPos
+                        }
+                    model, Cmd.none
+                | None -> model, Cmd.none
+        | _ -> failwith "Invalid state"
+
+    let private onPanEnd = function
+        | Loaded loaded ->
+            let model =
+                Loaded {
+                    loaded with PanOpt = None
                 }
             model, Cmd.none
         | _ -> failwith "Invalid state"
@@ -219,6 +261,10 @@ module ImageMessage =
             | ImageLoaded bitmap ->
                 onImageLoaded dpiScale bitmap model
 
+                // handle load error
+            | HandleLoadError error ->
+                onHandleLoadError error model
+
                 // browse to previous image
             | PreviousImage  ->
                 onBrowse -1 model
@@ -231,6 +277,11 @@ module ImageMessage =
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
 
-                // handle load error
-            | HandleLoadError error ->
-                onHandleLoadError error model
+            | PanStart pointerPos ->
+                onPanStart pointerPos model
+
+            | PanMove pointerPos ->
+                onPanMove pointerPos model
+
+            | PanEnd ->
+                onPanEnd model

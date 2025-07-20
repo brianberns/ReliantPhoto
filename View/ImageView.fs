@@ -141,6 +141,34 @@ module ImageView =
                             |> MkImageMessage
                             |> dispatch)
 
+                    if loaded.PanOpt.IsNone then
+
+                        Canvas.onPointerPressed (fun args ->
+                            let pointerPos =
+                                args.GetPosition(args.Source :?> _)
+                            args.Handled <- true
+                            pointerPos
+                                |> PanStart
+                                |> MkImageMessage
+                                |> dispatch)
+
+                    else
+
+                        Canvas.onPointerMoved (fun args ->
+                            let pointerPos =
+                                args.GetPosition(args.Source :?> _)
+                            args.Handled <- true
+                            pointerPos
+                                |> PanMove
+                                |> MkImageMessage
+                                |> dispatch)
+
+                        Canvas.onPointerReleased (fun args ->
+                            args.Handled <- true
+                            PanEnd
+                                |> MkImageMessage
+                                |> dispatch)
+
                 | _ -> ()
         ]
 
