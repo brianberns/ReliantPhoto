@@ -1,8 +1,6 @@
 ﻿namespace Reliant.Photo
 
 open Avalonia
-open Avalonia.Media.Imaging
-
 open Aether.Operators
 
 /// Functions relating to the location and size of an image
@@ -10,29 +8,25 @@ open Aether.Operators
 module ImageLayout =
 
     /// Gets the size of the given bitmap when displayed at the
-    /// given DPI and zoom scales.
-    let getImageSize
-        (dpiScale : float) (bitmap : Bitmap) (zoomScale : float) =
-        bitmap.PixelSize.ToSize(dpiScale) * zoomScale
+    /// system DPI and given zoom scale.
+    let getImageSize (bitmapSize : Size) (zoomScale : float) =
+        bitmapSize * zoomScale
 
     /// Gets the default zoom scale for the given bitmap in the
     /// given container.
     let private getDefaultZoomScale
-        (dpiScale : float)
         (containerSize : Size)
-        (bitmap : Bitmap) =
-        let ratio =
-            containerSize / bitmap.PixelSize.ToSize(dpiScale)
+        (bitmapSize : Size) =
+        let ratio = containerSize / bitmapSize
         Array.min [| ratio.X; ratio.Y; 1.0 |]
 
     /// Computes image offset based on layout rules.
     let private getImageOffset
-        dpiScale containerSize bitmap proposedOffsetOpt zoomScale =
+        containerSize bitmapSize proposedOffsetOpt zoomScale =
 
             // compute (positive or negative) gap between image and container
         let marginSize =
-            containerSize
-                - getImageSize dpiScale bitmap zoomScale
+            containerSize - getImageSize bitmapSize zoomScale
 
         match proposedOffsetOpt with
 
@@ -57,19 +51,18 @@ module ImageLayout =
 
     /// Gets image offset and zoom scale based on layout rules.
     let getImageLayout
-        dpiScale containerSize bitmap proposedOffsetOpt zoomScaleOpt =
+        containerSize bitmapSize proposedOffsetOpt zoomScaleOpt =
 
             // scale the image to fit in the container?
         let zoomScale =
             zoomScaleOpt
                 |> Option.defaultWith (fun () ->
-                    getDefaultZoomScale
-                        dpiScale containerSize bitmap)
+                    getDefaultZoomScale containerSize bitmapSize)
 
             // get image offset for that zoom scale
         let offset =
             getImageOffset
-                dpiScale containerSize bitmap proposedOffsetOpt zoomScale
+                containerSize bitmapSize proposedOffsetOpt zoomScale
 
         offset, zoomScale
 
@@ -77,7 +70,7 @@ module ImageLayout =
     let private epsilon = 0.001
 
     /// Zooms in or out one step.
-    let incrementZoomScale dpiScale zoomSign loaded =
+    let incrementZoomScale zoomSign loaded =
         assert(abs zoomSign = 1)
 
             // compute possible new zoom scale
@@ -97,7 +90,7 @@ module ImageLayout =
                     let containerSize =
                         loaded ^. LoadedImage.ContainerSize_
                     getDefaultZoomScale
-                        dpiScale containerSize loaded.Bitmap
+                        containerSize loaded.BitmapSize
 
                     // zoom out
                 let newScale = zoomScale / factor
@@ -119,7 +112,7 @@ module ImageLayout =
 
     /// Updates image offset based on a new zoom scale.
     let updateImageOffset
-        dpiScale (pointerPos : Point) newZoomScale loaded =
+        (pointerPos : Point) newZoomScale loaded =
 
             // try to keep the point under the cursor stationary
         let newOffset =
@@ -128,9 +121,8 @@ module ImageLayout =
                     * (newZoomScale / loaded.ZoomScale)
 
         getImageLayout
-            dpiScale
             (loaded ^. LoadedImage.ContainerSize_)
-            loaded.Bitmap
+            loaded.BitmapSize
             (Some newOffset)
             (Some newZoomScale)
             |> fst

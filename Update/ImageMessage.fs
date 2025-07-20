@@ -66,7 +66,7 @@ module ImageMessage =
         model, cmd
 
     /// Updates layout due to container resize.
-    let private updateLayout dpiScale loaded =
+    let private updateLayout loaded =
 
             // keep zoom scale constant?
         let zoomScaleOpt =
@@ -77,9 +77,8 @@ module ImageMessage =
             // get layout for new container size
         let offset, zoomScale =
             ImageLayout.getImageLayout
-                dpiScale
                 (loaded ^. LoadedImage.ContainerSize_)
-                loaded.Bitmap
+                loaded.BitmapSize
                 (Some loaded.Offset)
                 zoomScaleOpt
 
@@ -93,7 +92,7 @@ module ImageMessage =
     /// container is first created (before it contains an
     /// image), and any time the container is resized by the
     /// user.
-    let private onContainerSized dpiScale containerSize model =
+    let private onContainerSized containerSize model =
         let inited =
             { ContainerSize = containerSize }
         let model =
@@ -106,7 +105,7 @@ module ImageMessage =
                 | Loaded loaded ->
                     loaded
                         |> inited ^= LoadedImage.Initialized_
-                        |> updateLayout dpiScale
+                        |> updateLayout
                         |> Loaded
 
                     // resize: just update container size
@@ -136,21 +135,25 @@ module ImageMessage =
         browse inited 0 file
 
     /// Sets image's bitmap.
-    let private onImageLoaded dpiScale bitmap model =
+    let private onImageLoaded
+        (dpiScale : float) (bitmap : Bitmap) model =
         let model =
             match model with
                 | Browsed browsed ->
 
                         // get default layout
+                    let bitmapSize =
+                        bitmap.PixelSize.ToSize(dpiScale)
                     let offset, zoomScale =
                         let containerSize =
                             (browsed ^. BrowsedImage.ContainerSize_)
                         ImageLayout.getImageLayout
-                            dpiScale containerSize bitmap None None
+                            containerSize bitmapSize None None
 
                     Loaded {
                         Browsed = browsed
                         Bitmap = bitmap
+                        BitmapSize = bitmapSize
                         Offset = offset
                         ZoomScale = zoomScale
                         ZoomScaleLock = false
@@ -164,20 +167,18 @@ module ImageMessage =
         browse inited incr model.File
 
     /// Updates zoom scale and origin.
-    let private onWheelZoom
-        dpiScale sign pointerPos = function
+    let private onWheelZoom sign pointerPos = function
 
         | Loaded loaded ->
 
                 // increment/decrement zoom scale
             let zoomScale, zoomScaleLock =
-                ImageLayout.incrementZoomScale
-                    dpiScale sign loaded
+                ImageLayout.incrementZoomScale sign loaded
 
                 // update image offset
             let offset =
                 ImageLayout.updateImageOffset
-                    dpiScale pointerPos zoomScale loaded
+                    pointerPos zoomScale loaded
 
                 // update model
             let model =
@@ -208,7 +209,7 @@ module ImageMessage =
 
                 // set/update container size
             | ContainerSized containerSize ->
-                 onContainerSized dpiScale containerSize model
+                 onContainerSized containerSize model
 
                 // start loading an image
             | LoadImage file ->
@@ -228,7 +229,7 @@ module ImageMessage =
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
-                onWheelZoom dpiScale sign pointerPos model
+                onWheelZoom sign pointerPos model
 
                 // handle load error
             | HandleLoadError error ->

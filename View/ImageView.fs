@@ -84,7 +84,7 @@ module ImageView =
         ]
 
     /// Creates an image.
-    let private createImage dpiScale loaded =
+    let private createImage loaded =
         Image.create [
 
             let bitmap = loaded.Bitmap
@@ -99,7 +99,7 @@ module ImageView =
                 // image layout
             let imageSize =
                 ImageLayout.getImageSize
-                    dpiScale bitmap loaded.ZoomScale
+                    loaded.BitmapSize loaded.ZoomScale
             Image.width imageSize.Width
             Image.height imageSize.Height
             Image.left loaded.Offset.X
@@ -107,7 +107,7 @@ module ImageView =
         ]
 
     /// Creates a zoomable image.
-    let private createZoomableImage dpiScale model dispatch =
+    let private createZoomableImage model dispatch =
 
         Canvas.create [
 
@@ -121,7 +121,7 @@ module ImageView =
             match model with
                 | Loaded loaded ->
 
-                    let image = createImage dpiScale loaded
+                    let image = createImage loaded
                     Canvas.children [ image ]
                     Canvas.clipToBounds true
                     Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
@@ -157,8 +157,7 @@ module ImageView =
         ]
 
     /// Creates a panel that can display images.
-    let private createImagePanel
-        dpiScale (model : ImageModel) dispatch =
+    let private createImagePanel (model : ImageModel) dispatch =
         DockPanel.create [
 
             if model.IsUninitialized
@@ -182,8 +181,7 @@ module ImageView =
                     | LoadError errored ->
                         createErrorMessage errored.Message
                     | _ ->
-                        createZoomableImage
-                            dpiScale model dispatch
+                        createZoomableImage model dispatch
             ]
         ]
 
@@ -223,6 +221,6 @@ module ImageView =
         ]
 
     /// Creates a view of the given model.
-    let view dpiScale model dispatch =
-        createImagePanel dpiScale model dispatch
+    let view model dispatch =
+        createImagePanel model dispatch
             |> createKeyBindingBorder model dispatch

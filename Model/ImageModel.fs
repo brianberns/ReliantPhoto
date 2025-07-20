@@ -59,6 +59,9 @@ type LoadedImage =
         /// Loaded bitmap.
         Bitmap : Bitmap
 
+        /// Bitmap size, adjusted for system DPI scale.
+        BitmapSize : Size
+
         /// Image location offset.
         Offset : Point
 
