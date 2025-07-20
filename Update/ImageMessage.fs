@@ -228,10 +228,21 @@ module ImageMessage =
         | _ -> failwith "Invalid state"
 
     /// Moves the image during a pan.
-    let private moveImage pointerPos pan loaded =
+    let private panImage pointerPos pan loaded =
+
+            // track pointer
         let offset =
             pan.ImageOffset
                 + (pointerPos - pan.PointerPos)
+
+            // enforce layout rules
+        let offset =
+            ImageLayout.getImageOffset
+                (loaded ^. LoadedImage.ContainerSize_)
+                loaded.BitmapSize
+                (Some offset)
+                loaded.ZoomScale
+
         { loaded with Offset = offset }
 
     /// Continues panning.
@@ -241,7 +252,7 @@ module ImageMessage =
                 | Some pan ->
                     let model =
                         loaded
-                            |> moveImage pointerPos pan
+                            |> panImage pointerPos pan
                             |> Loaded
                     model, Cmd.none
                 | None -> model, Cmd.none
