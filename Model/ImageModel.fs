@@ -50,6 +50,16 @@ type BrowsedImage =
         BrowsedImage.Initialized_
             >-> InitializedContainer.ContainerSize_
 
+/// Image pan.
+type Pan =
+    {
+        /// Image offset.
+        Offset : Point
+
+        /// Previous pointer position.
+        PointerPos : Point
+    }
+
 /// A loaded image.
 type LoadedImage =
     {
@@ -73,7 +83,7 @@ type LoadedImage =
         ZoomScaleLock : bool
 
         /// Pan location, when panning.
-        PanOpt : Option<Point * Point>
+        PanOpt : Option<Pan>
     }
 
     /// Browsed image lens.

@@ -213,37 +213,41 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
+    /// Starts panning.
     let private onPanStart pointerPos = function
         | Loaded loaded ->
+            let pan =
+                {
+                    Offset = loaded.Offset
+                    PointerPos = pointerPos
+                }
             let model =
                 Loaded {
-                    loaded with
-                        PanOpt = Some (loaded.Offset, pointerPos)
-                }
+                    loaded with PanOpt = Some pan }
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
+    /// Continues panning.
     let private onPanMove pointerPos = function
         | Loaded loaded as model ->
             match loaded.PanOpt with
-                | Some (panOffset, panPointerPos) ->
+                | Some pan ->
+                    let offset =
+                        pan.Offset
+                            + (pointerPos - pan.PointerPos)
                     let model =
                         Loaded {
-                            loaded with
-                                Offset =
-                                    panOffset
-                                    + (pointerPos - panPointerPos)
-                        }
+                            loaded with Offset = offset }
                     model, Cmd.none
                 | None -> model, Cmd.none
         | _ -> failwith "Invalid state"
 
+    /// Ends panning.
     let private onPanEnd = function
         | Loaded loaded ->
             let model =
                 Loaded {
-                    loaded with PanOpt = None
-                }
+                    loaded with PanOpt = None }
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
@@ -279,11 +283,14 @@ module ImageMessage =
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
 
+                // start pan
             | PanStart pointerPos ->
                 onPanStart pointerPos model
 
+                // continue pan
             | PanMove pointerPos ->
                 onPanMove pointerPos model
 
+                // finish pan
             | PanEnd ->
                 onPanEnd model
