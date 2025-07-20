@@ -66,7 +66,7 @@ module ImageMessage =
         model, cmd
 
     /// Updates layout due to container resize.
-    let private updateLayout dpiScale containerSize loaded =
+    let private updateLayout dpiScale loaded =
 
             // keep zoom scale constant?
         let zoomScaleOpt =
@@ -78,7 +78,7 @@ module ImageMessage =
         let offset, zoomScale =
             ImageLayout.getImageLayout
                 dpiScale
-                containerSize
+                (loaded ^. LoadedImage.ContainerSize_)
                 loaded.Bitmap
                 (Some loaded.Offset)
                 zoomScaleOpt
@@ -102,12 +102,12 @@ module ImageMessage =
                     // creation: set container size
                 | Uninitialized -> Initialized inited
 
-                    // resize: update layout and container size
+                    // resize: update container size and layout
                 | Loaded loaded ->
                     loaded
-                        |> updateLayout dpiScale containerSize
+                        |> inited ^= LoadedImage.Initialized_
+                        |> updateLayout dpiScale
                         |> Loaded
-                        |> inited ^= ImageModel.Initialized_
 
                     // resize: just update container size
                 | _ ->

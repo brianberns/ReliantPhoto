@@ -15,8 +15,8 @@ module ImageLayout =
         (dpiScale : float) (bitmap : Bitmap) (zoomScale : float) =
         bitmap.PixelSize.ToSize(dpiScale) * zoomScale
 
-    /// Default zoom scale for the given bitmap in the given
-    /// container.
+    /// Gets the default zoom scale for the given bitmap in the
+    /// given container.
     let private getDefaultZoomScale
         (dpiScale : float)
         (containerSize : Size)
