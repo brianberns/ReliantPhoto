@@ -8,6 +8,7 @@ open Avalonia.Input
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Media.Imaging
+open Avalonia.VisualTree
 
 open Aether.Operators
 
@@ -106,6 +107,14 @@ module ImageView =
             Image.top loaded.Offset.Y
         ]
 
+    /// Gets the pointer position relative to the canvas.
+    let private getPointerPosition<'t
+        when 't :> Visual
+            and 't : not struct> (args : PointerEventArgs) =
+        let visual = args.Source :?> Visual
+        let container = visual.FindAncestorOfType<'t>()
+        args.GetPosition(container)
+
     /// Creates a zoomable image.
     let private createZoomableImage model dispatch =
 
@@ -127,14 +136,7 @@ module ImageView =
                     Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
                     Canvas.onPointerWheelChanged (fun args ->
-                        let container =
-                            match args.Source with
-                                | :? Image as image ->
-                                    image.Parent :?> Visual
-                                | :? Canvas as canvas -> canvas
-                                | _ -> failwith "Invalid source"
-                        let pointerPos =
-                            args.GetPosition(container)
+                        let pointerPos = getPointerPosition<Canvas> args
                         args.Handled <- true
                         (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
                             |> WheelZoom
@@ -144,14 +146,7 @@ module ImageView =
                     if loaded.PanOpt.IsNone then
 
                         Canvas.onPointerPressed (fun args ->
-                            let container =
-                                match args.Source with
-                                    | :? Image as image ->
-                                        image.Parent :?> Visual
-                                    | :? Canvas as canvas -> canvas
-                                    | _ -> failwith "Invalid source"
-                            let pointerPos =
-                                args.GetPosition(container)
+                            let pointerPos = getPointerPosition<Canvas> args
                             args.Handled <- true
                             pointerPos
                                 |> PanStart
@@ -161,14 +156,7 @@ module ImageView =
                     else
 
                         Canvas.onPointerMoved (fun args ->
-                            let container =
-                                match args.Source with
-                                    | :? Image as image ->
-                                        image.Parent :?> Visual
-                                    | :? Canvas as canvas -> canvas
-                                    | _ -> failwith "Invalid source"
-                            let pointerPos =
-                                args.GetPosition(container)
+                            let pointerPos = getPointerPosition<Canvas> args
                             printfn $"{pointerPos}"
                             args.Handled <- true
                             pointerPos
