@@ -48,27 +48,21 @@ module Window =
     /// Subscribes to effects.
     let subscribe (window : Window) model =
         [
-                // directory subscriptions
-                // ... side effects
+                // side effects
             let dirModel = model.DirectoryModel
-            directory <- dirModel.Directory
-            window.Title <- dirModel.Directory.FullName
+            match model.Mode with
+                | Mode.Directory ->
+                    directory <- dirModel.Directory
+                    window.Title <- dirModel.Directory.FullName
+                | Mode.Image ->
+                    if model.ImageModel.IsBrowsed
+                        || model.ImageModel.IsLoaded then
+                        window.Title <- model.ImageModel.File.Name
 
-                // ... Elmish subscription
+                // Elmish subscription
             yield! dirModel
                 |> DirectoryMessage.subscribe
                 |> Sub.map "directory" MkDirectoryMessage
-
-                // image subscriptions
-            if model.Mode = Mode.Image then
-
-                    // side effects
-                if model.ImageModel.IsBrowsed
-                    || model.ImageModel.IsLoaded then
-                    window.Title <- model.ImageModel.File.Name
-
-                    // Elmish subscription
-                yield! Sub.none
         ]
 
     /// Gets initial directory and file.
