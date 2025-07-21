@@ -19,7 +19,7 @@ type ImageMessage =
     | LoadImage of FileInfo
 
     /// Image has been loaded.
-    | ImageLoaded of Bitmap
+    | ImageLoaded of FileInfo * Bitmap
 
     /// Load error occurred.
     | HandleLoadError of string
@@ -41,16 +41,6 @@ type ImageMessage =
 
     /// Pointer pan has ended.
     | PanEnd
-
-module Cmd =
-
-    /// Creates a command that handles an async result.
-    let ofAsyncResult task arg ofSuccess ofError =
-        Cmd.OfAsync.perform
-            task arg
-            (function
-                | Ok success -> ofSuccess success
-                | Error error -> ofError error)
 
 module ImageMessage =
 
@@ -128,11 +118,13 @@ module ImageMessage =
         let cmd =
             match model with
                 | Browsed browsed ->
-                    Cmd.ofAsyncResult
+                    Cmd.OfAsync.perform
                         (ImageFile.tryLoadImage None)
                         browsed.File
-                        ImageLoaded
-                        HandleLoadError
+                        (function
+                            | Ok bitmap ->
+                                ImageLoaded (browsed.File, bitmap)
+                            | Error msg -> HandleLoadError msg)
                 | BrowseError _ -> Cmd.none
                 | _ -> failwith "Invalid state"
         model, cmd
@@ -153,32 +145,39 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
+    /// Applies default layout rules to the given bitmap.
+    let private layoutImage
+        (dpiScale : float) (bitmap : Bitmap) browsed =
+
+            // get default layout
+        let bitmapSize =
+            bitmap.PixelSize.ToSize(dpiScale)
+        let offset, zoomScale =
+            let containerSize =
+                (browsed ^. BrowsedImage.ContainerSize_)
+            ImageLayout.getImageLayout
+                containerSize bitmapSize None None
+
+        Loaded {
+            Browsed = browsed
+            Bitmap = bitmap
+            BitmapSize = bitmapSize
+            Offset = offset
+            ZoomScale = zoomScale
+            ZoomScaleLock = false
+            PanOpt = None
+        }
+
     /// Sets image's bitmap.
     let private onImageLoaded
-        (dpiScale : float) (bitmap : Bitmap) model =
+        dpiScale (file : FileInfo) bitmap (model : ImageModel) =
         let model =
-            match model with
-                | Browsed browsed ->
-
-                        // get default layout
-                    let bitmapSize =
-                        bitmap.PixelSize.ToSize(dpiScale)
-                    let offset, zoomScale =
-                        let containerSize =
-                            (browsed ^. BrowsedImage.ContainerSize_)
-                        ImageLayout.getImageLayout
-                            containerSize bitmapSize None None
-
-                    Loaded {
-                        Browsed = browsed
-                        Bitmap = bitmap
-                        BitmapSize = bitmapSize
-                        Offset = offset
-                        ZoomScale = zoomScale
-                        ZoomScaleLock = false
-                        PanOpt = None
-                    }
-                | _ -> failwith "Invalid state"
+            if file.FullName = model.File.FullName then
+                match model with
+                    | Browsed browsed ->
+                        layoutImage dpiScale bitmap browsed
+                    | _ -> failwith "Invalid state"
+            else model   // stale async message
         model, Cmd.none
 
     /// Browses to a file, if possible.
@@ -279,8 +278,8 @@ module ImageMessage =
                 onLoadImage file model
 
                 // finish loading an image
-            | ImageLoaded bitmap ->
-                onImageLoaded dpiScale bitmap model
+            | ImageLoaded (file, bitmap) ->
+                onImageLoaded dpiScale file bitmap model
 
                 // handle load error
             | HandleLoadError error ->
