@@ -93,13 +93,8 @@ module ImageView =
 
             Image.init (fun image ->
                 let mode =
-                    let ext =
+                    ImageFile.getInterpolationMode
                         loaded.Browsed.File
-                            .Extension.ToLower()
-                    match ext with
-                        | ".gif" | ".bmp" | ".png" ->   // try to display crisp edges in lossless images
-                            BitmapInterpolationMode.None
-                        | _ -> BitmapInterpolationMode.HighQuality
                 RenderOptions.SetBitmapInterpolationMode(
                     image, mode))
 

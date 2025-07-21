@@ -112,3 +112,11 @@ module ImageFile =
                             file
                     return ((file, result) : FileImageResult)
                 })
+
+    /// Gets the appropriate interpolation mode for the given
+    /// image file.
+    let getInterpolationMode (file : FileInfo) =
+        match file.Extension.ToLower() with
+            | ".gif" | ".bmp" | ".png" ->   // try to display crisp edges in lossless images
+                BitmapInterpolationMode.None
+            | _ -> BitmapInterpolationMode.HighQuality
