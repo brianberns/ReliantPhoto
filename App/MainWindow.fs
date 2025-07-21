@@ -50,9 +50,9 @@ module Window =
         [
                 // side effects
             let dirModel = model.DirectoryModel
+            directory <- dirModel.Directory
             match model.Mode with
                 | Mode.Directory ->
-                    directory <- dirModel.Directory
                     window.Title <- dirModel.Directory.FullName
                 | Mode.Image ->
                     if model.ImageModel.IsBrowsed
