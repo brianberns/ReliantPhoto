@@ -170,14 +170,13 @@ module ImageMessage =
 
     /// Sets image's bitmap.
     let private onImageLoaded
-        dpiScale (file : FileInfo) bitmap (model : ImageModel) =
+        dpiScale (file : FileInfo) bitmap model =
         let model =
-            if file.FullName = model.File.FullName then
-                match model with
-                    | Browsed browsed ->
-                        layoutImage dpiScale bitmap browsed
-                    | _ -> failwith "Invalid state"
-            else model   // stale async message
+            match model with
+                | Browsed browsed
+                    when file.FullName = model.File.FullName ->
+                    layoutImage dpiScale bitmap browsed
+                | _ -> model   // stale async message
         model, Cmd.none
 
     /// Browses to a file, if possible.
