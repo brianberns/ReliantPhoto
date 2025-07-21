@@ -91,11 +91,17 @@ module ImageView =
             let bitmap = loaded.Bitmap
             Image.source bitmap
 
-                // ensure clean edges in image
             Image.init (fun image ->
+                let mode =
+                    let ext =
+                        loaded.Browsed.File
+                            .Extension.ToLower()
+                    match ext with
+                        | ".gif" | ".bmp" | ".png" ->   // try to display crisp edges in lossless images
+                            BitmapInterpolationMode.None
+                        | _ -> BitmapInterpolationMode.HighQuality
                 RenderOptions.SetBitmapInterpolationMode(
-                    image,
-                    BitmapInterpolationMode.None))
+                    image, mode))
 
                 // image layout
             let imageSize =
