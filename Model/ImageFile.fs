@@ -36,21 +36,39 @@ module private SixLabors =
     open SixLabors.ImageSharp.Processing
     open SixLabors.ImageSharp.Formats
     open SixLabors.ImageSharp.Formats.Png
+    open SixLabors.ImageSharp.Metadata.Profiles.Exif
+
+    /// Gets the orientation of the given image.
+    let getOrientation (imageInfo : ImageInfo) =
+        option {
+            let! profile =
+                Option.ofObj imageInfo.Metadata.ExifProfile
+            let flag, exifValue =
+                profile.TryGetValue(ExifTag.Orientation)
+            if flag then
+                return exifValue.Value
+        } |> Option.defaultValue ExifOrientationMode.TopLeft
+
+    /// Gets the target size for the given target height,
+    /// accounting for rotation, if necessary.
+    let getTargetSize targetHeight imageInfo =
+        match getOrientation imageInfo with
+            | ExifOrientationMode.LeftTop
+            | ExifOrientationMode.RightTop
+            | ExifOrientationMode.RightBottom
+            | ExifOrientationMode.LeftBottom ->
+                Size(targetHeight, 0)   // rotate
+            | _ ->
+                Size(0, targetHeight)
 
     /// Creates decoder options for loading an image.
-    let private getDecoderOptions heightOpt (file : FileInfo) =
-        match heightOpt with
-
-                // decode to the given height
-            | Some height ->
-                let width =
-                    let imgInfo = Image.Identify(file.FullName)
-                    int (float imgInfo.Width
-                        / float imgInfo.Height * float height)
+    let private getDecoderOptions heightOpt imageInfo =
+        heightOpt
+            |> Option.map (fun height ->
                 DecoderOptions(
-                    TargetSize = Size(width, height))
-
-            | None -> DecoderOptions()
+                    TargetSize =   // decode to the given height
+                        getTargetSize height imageInfo))
+            |> Option.defaultWith DecoderOptions
 
     /// PNG encoder.
     let private pngEncoder =
@@ -59,12 +77,15 @@ module private SixLabors =
                 PngCompressionLevel.NoCompression)
 
     /// Loads an image from the given file.
-    let loadImage heightOpt file =
+    let loadImage heightOpt (file : FileInfo) =
 
             // load image to PNG format
         use stream = new MemoryStream()
         do
-            let options = getDecoderOptions heightOpt file
+            let options =
+                file.FullName
+                    |> Image.Identify
+                    |> getDecoderOptions heightOpt
             use image = Image.Load(options, file.FullName)
             image.Mutate(_.AutoOrient() >> ignore)
             image.SaveAsPng(stream, pngEncoder)
