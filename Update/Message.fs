@@ -71,8 +71,11 @@ module Message =
     /// Switches to image mode.
     let private onSwitchToImage file model =
         { model with Mode = Mode.Image },
-        file
-            |> ImageMessage.loadImageCommand
+        [
+            Cmd.ofMsg (ImageMessage.UnloadImage)   // avoid flashing previous image
+            (ImageMessage.loadImageCommand file)
+        ]
+            |> Cmd.batch
             |> Cmd.map MkImageMessage
 
     /// Switches to directory mode.
