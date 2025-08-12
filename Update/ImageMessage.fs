@@ -122,7 +122,7 @@ module ImageMessage =
             match model with
                 | Browsed browsed ->
                     Cmd.OfAsync.perform
-                        (ImageFile.tryLoadImage None)
+                        ImageFile.tryLoadImage
                         browsed.File
                         (function
                             | Ok bitmap ->

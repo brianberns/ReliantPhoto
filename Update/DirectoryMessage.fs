@@ -74,8 +74,7 @@ module DirectoryMessage =
                 let file = FileInfo(args.FullPath)
                 do! FileInfo.waitForFileRead token file
                 let! result =
-                    ImageFile.tryLoadImage
-                        (Some imageHeight) file
+                    ImageFile.tryLoadThumbnail imageHeight file
                 let pair = file, result
                 dispatch (ImagesLoaded (sessionId, [|pair|]))
             }

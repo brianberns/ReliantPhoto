@@ -61,15 +61,6 @@ module private SixLabors =
             | _ ->
                 Size(0, targetHeight)
 
-    /// Creates decoder options for loading an image.
-    let private getDecoderOptions heightOpt imageInfo =
-        heightOpt
-            |> Option.map (fun height ->
-                DecoderOptions(
-                    TargetSize =   // decode to the given height
-                        getTargetSize height imageInfo))
-            |> Option.defaultWith DecoderOptions
-
     /// PNG encoder.
     let private pngEncoder =
         PngEncoder(
@@ -77,15 +68,11 @@ module private SixLabors =
                 PngCompressionLevel.NoCompression)
 
     /// Loads an image from the given file.
-    let loadImage heightOpt (file : FileInfo) =
+    let private loadImageImpl options (file : FileInfo) =
 
             // load image to PNG format
         use stream = new MemoryStream()
         do
-            let options =
-                file.FullName
-                    |> Image.Identify
-                    |> getDecoderOptions heightOpt
             use image = Image.Load(options, file.FullName)
             image.Mutate(_.AutoOrient() >> ignore)
             image.SaveAsPng(stream, pngEncoder)
@@ -94,21 +81,49 @@ module private SixLabors =
             // create Avalonia bitmap
         new Bitmap(stream)
 
+    /// Loads an image from the given file.
+    let loadImage file =
+        let options = DecoderOptions()
+        loadImageImpl options file
+
+    /// Loads a thumbnail image from the given file.
+    let loadThumbnail height (file : FileInfo) =
+        let imageInfo = Image.Identify file.FullName
+        let options =
+            DecoderOptions(
+                TargetSize =   // decode to the given height
+                    getTargetSize height imageInfo)
+        loadImageImpl options file
+
 /// An image result for a specific file.
 type FileImageResult = FileInfo * Result<Bitmap, string (*error message*)>
 
 module ImageFile =
 
     /// Loads an image from the given file.
-    let private loadImage heightOpt (file : FileInfo) =
-        SixLabors.loadImage heightOpt file
+    let private loadImage file =
+        SixLabors.loadImage file
+
+    /// Loads a thumbnail image from the given file.
+    let private loadThumbnail height file =
+        SixLabors.loadThumbnail height file
 
     /// Tries to load an image from the given file.
-    let tryLoadImage heightOpt file =
+    let tryLoadImage file =
         async {
             try
-                let image = loadImage heightOpt file
+                let image = loadImage file
                 return Ok image
+            with exn ->
+                return Error exn.Message
+        }
+
+    /// Tries to load a thumbnail image from the given file.
+    let tryLoadThumbnail height file =
+        async {
+            try
+                let thumbnail = loadThumbnail height file
+                return Ok thumbnail
             with exn ->
                 return Error exn.Message
         }
@@ -119,9 +134,7 @@ module ImageFile =
             |> Seq.map (fun file ->
                 async {
                     let! result =
-                        tryLoadImage
-                            (Some height)
-                            file
+                        tryLoadThumbnail height file
                     return ((file, result) : FileImageResult)
                 })
 
