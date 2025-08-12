@@ -143,7 +143,7 @@ module ImageMessage =
             model ^. ImageModel.TryInitialized_
                 |> Option.map Initialized
                 |> Option.defaultValue model
-        model , Cmd.none
+        model, Cmd.none
 
     /// Handles a load error.
     let private onHandleLoadError error = function
