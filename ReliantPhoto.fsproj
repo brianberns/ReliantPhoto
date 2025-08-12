@@ -35,11 +35,11 @@
 
   <ItemGroup>
     <PackageReference Include="Aether" Version="8.3.1" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.3" />
     <PackageReference Include="Avalonia.FuncUI" Version="1.5.1" />
     <PackageReference Include="Avalonia.FuncUI.Elmish" Version="1.5.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.2" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
   </ItemGroup>
 
 </Project>
