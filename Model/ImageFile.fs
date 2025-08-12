@@ -33,14 +33,9 @@ module FileInfo =
 module private SixLabors =
 
     open SixLabors.ImageSharp
+    open SixLabors.ImageSharp.Processing
     open SixLabors.ImageSharp.Formats
     open SixLabors.ImageSharp.Formats.Png
-
-    /// PNG encoder.
-    let private pngEncoder =
-        PngEncoder(
-            CompressionLevel =
-                PngCompressionLevel.NoCompression)
 
     /// Creates decoder options for loading an image.
     let private getDecoderOptions heightOpt (file : FileInfo) =
@@ -57,15 +52,21 @@ module private SixLabors =
 
             | None -> DecoderOptions()
 
+    /// PNG encoder.
+    let private pngEncoder =
+        PngEncoder(
+            CompressionLevel =
+                PngCompressionLevel.NoCompression)
+
     /// Loads an image from the given file.
     let loadImage heightOpt file =
 
             // load image to PNG format
         use stream = new MemoryStream()
         do
-            let options =
-                getDecoderOptions heightOpt file
+            let options = getDecoderOptions heightOpt file
             use image = Image.Load(options, file.FullName)
+            image.Mutate(_.AutoOrient() >> ignore)
             image.SaveAsPng(stream, pngEncoder)
             stream.Position <- 0
 
@@ -79,17 +80,7 @@ module ImageFile =
 
     /// Loads an image from the given file.
     let private loadImage heightOpt (file : FileInfo) =
-
-        try
-            use stream = file.OpenRead()
-            match heightOpt with
-                | Some height ->
-                    Bitmap.DecodeToHeight(stream, height)
-                | None -> new Bitmap(stream)
-
-            // try SixLabors for images not supported by Avalonia
-        with _ ->
-            SixLabors.loadImage heightOpt file
+        SixLabors.loadImage heightOpt file
 
     /// Tries to load an image from the given file.
     let tryLoadImage heightOpt file =
