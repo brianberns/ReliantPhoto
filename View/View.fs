@@ -6,7 +6,7 @@ open Avalonia.FuncUI.DSL
 module View =
 
     /// Creates a view of the given model.
-    let view dpiScale model dispatch =
+    let view model dispatch =
         Grid.create [
             Grid.children [
 

@@ -78,7 +78,7 @@ module Window =
         Program.mkProgram
             Message.init
             (Message.update dpiScale)
-            (View.view dpiScale)
+            View.view
             |> Program.withSubscription (
                 subscribe window)
             |> Program.withHost window
