@@ -93,7 +93,9 @@ type MainWindow(args : string[]) as this =
             WindowIcon(
                 Path.Combine(
                     AppContext.BaseDirectory,
-                    "icon.png")))
+                    "icon.png")),
+        MinWidth = 600.0,
+        MinHeight = 400.0)
     do
             // load settings at startup
         Window.loadSettings this
