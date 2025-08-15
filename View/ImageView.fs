@@ -23,11 +23,11 @@ module ImageView =
             StackPanel.children [
 
                     // switch to directory mode
-                Button.createText "↩" (fun _ ->
+                Button.createText "↩" "View folder contents" (fun _ ->
                     dispatch SwitchToDirectory)
 
                     // open file
-                Button.createText "🗀" (
+                Button.createText "🗀" "Open image file" (
                     FileSystemView.onSelectImage dispatch)
 
                     // zoom scale
@@ -44,13 +44,13 @@ module ImageView =
 
     /// Creates a browse panel, with or without a button.
     let private createBrowsePanel
-        dock text hasButton message dispatch =
+        dock text tooltip hasButton message dispatch =
         DockPanel.create [
             DockPanel.width Button.buttonSize
             DockPanel.dock dock
             DockPanel.children [
                 if hasButton then
-                    Button.createText text (fun _ ->
+                    Button.createText text tooltip (fun _ ->
                         MkImageMessage message |> dispatch)
             ]
         ]
@@ -69,7 +69,7 @@ module ImageView =
         [
                 // "previous image" button
             createBrowsePanel
-                Dock.Left "◀"
+                Dock.Left "◀" "Previous image"
                 hasPrev
                 PreviousImage
                 dispatch
@@ -77,7 +77,7 @@ module ImageView =
 
                 // "next image" button
             createBrowsePanel
-                Dock.Right "▶"
+                Dock.Right "▶" "Next image"
                 hasNext
                 NextImage
                 dispatch

@@ -23,7 +23,7 @@ module Button =
     let buttonSize = 50
 
     /// Creates a text button.
-    let createText text onClick =
+    let createText text (tooltip : string) onClick =
         Button.create [
             Button.content (
                 Viewbox.create [
@@ -39,6 +39,7 @@ module Button =
                     )
                 ]
             )
+            ToolTip.tip tooltip
             Button.height buttonSize
             Button.horizontalAlignment HorizontalAlignment.Stretch
             Button.verticalAlignment VerticalAlignment.Stretch
@@ -79,7 +80,7 @@ module DirectoryView =
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
             StackPanel.children [
-                Button.createText "🗀" (
+                Button.createText "🗀" "Open image file" (
                     FileSystemView.onSelectImage dispatch)
             ]
         ]
