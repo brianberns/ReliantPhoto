@@ -27,11 +27,8 @@ type ImageMessage =
     /// Load error occurred.
     | HandleLoadError of string
 
-    /// Browse to previous image in directory, if possible.
-    | PreviousImage
-
-    /// Browse to next image in directory, if possible.
-    | NextImage
+    /// Browse to previous/next image in directory, if possible.
+    | Browse of int (*increment*)
 
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
@@ -300,13 +297,9 @@ module ImageMessage =
             | HandleLoadError error ->
                 onHandleLoadError error model
 
-                // browse to previous image
-            | PreviousImage  ->
-                onBrowse -1 model
-
-                // browse to next image
-            | NextImage  ->
-                onBrowse 1 model
+                // browse to previous/next image
+            | Browse incr ->
+                onBrowse incr model
 
                 // update zoom
             | WheelZoom (sign, pointerPos) ->

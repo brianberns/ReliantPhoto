@@ -75,7 +75,7 @@ module ImageView =
             createBrowsePanel
                 Dock.Left "◀" "Previous image"
                 hasPrev
-                PreviousImage
+                (Browse -1)
                 dispatch
                 :> IView
 
@@ -83,7 +83,7 @@ module ImageView =
             createBrowsePanel
                 Dock.Right "▶" "Next image"
                 hasNext
-                NextImage
+                (Browse 1)
                 dispatch
         ]
 
@@ -236,14 +236,14 @@ module ImageView =
                                 KeyBinding.create [
                                     KeyBinding.key key
                                     KeyBinding.execute (fun _ ->
-                                        dispatch (MkImageMessage PreviousImage))
+                                        dispatch (MkImageMessage (Browse -1)))
                                 ]
                         if browsed.HasNextImage then
                             for key in [ Key.Right; Key.PageDown ] do
                                 KeyBinding.create [
                                     KeyBinding.key key
                                     KeyBinding.execute (fun _ ->
-                                        dispatch (MkImageMessage NextImage))
+                                        dispatch (MkImageMessage (Browse 1)))
                                 ]
                     ]
                 | None -> ()
