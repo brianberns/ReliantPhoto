@@ -30,6 +30,10 @@ module ImageView =
                 Button.createText "🗀" "Open image file" (
                     FileSystemView.onSelectImage dispatch)
 
+                    // zoom to actual size
+                Button.createText "⊞" "Zoom to actual size" (fun _ ->
+                    dispatch (MkImageMessage ZoomToActualSize))
+
                     // zoom scale
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center

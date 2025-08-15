@@ -112,16 +112,18 @@ module ImageLayout =
 
     /// Updates image offset based on a new zoom scale.
     let updateImageOffset
-        (pointerPos : Point) newZoomScale loaded =
+        (pointerPosOpt : Option<Point>) newZoomScale loaded =
 
             // try to keep the point under the cursor stationary
-        let newOffset =
-            pointerPos
-                - (pointerPos - loaded.Offset)
-                    * (newZoomScale / loaded.ZoomScale)
+        let newOffsetOpt =
+            pointerPosOpt
+                |> Option.map (fun pointerPos ->
+                    pointerPos
+                        - (pointerPos - loaded.Offset)
+                            * (newZoomScale / loaded.ZoomScale))
 
         getImageOffset
             (loaded ^. LoadedImage.ContainerSize_)
             loaded.BitmapSize
-            (Some newOffset)
+            newOffsetOpt
             newZoomScale

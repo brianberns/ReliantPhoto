@@ -36,6 +36,9 @@ type ImageMessage =
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
+    /// Zoom image to actual size.
+    | ZoomToActualSize
+
     /// Pointer pan has started.
     | PanStart of Point
 
@@ -195,30 +198,30 @@ module ImageMessage =
         let inited = model ^. ImageModel.Initialized_
         browse inited incr model.File
 
+    /// Zooms the current image.
+    let private zoom
+        zoomScale zoomScaleLock pointerPosOpt loaded =
+        let offset =
+            ImageLayout.updateImageOffset
+                pointerPosOpt zoomScale loaded
+        Loaded {
+            loaded with
+                Offset = offset
+                ZoomScale = zoomScale
+                ZoomScaleLock = zoomScaleLock
+        }, Cmd.none
+
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
-
         | Loaded loaded ->
-
-                // increment/decrement zoom scale
             let zoomScale, zoomScaleLock =
                 ImageLayout.incrementZoomScale sign loaded
+            zoom zoomScale zoomScaleLock (Some pointerPos) loaded
+        | _ -> failwith "Invalid state"
 
-                // update image offset
-            let offset =
-                ImageLayout.updateImageOffset
-                    pointerPos zoomScale loaded
-
-                // update model
-            let model =
-                Loaded {
-                    loaded with
-                        Offset = offset
-                        ZoomScale = zoomScale
-                        ZoomScaleLock = zoomScaleLock
-                }
-            model, Cmd.none
-
+    /// Zoom to actual size.
+    let private onZoomToActualSize = function
+        | Loaded loaded -> zoom 1.0 true None loaded
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
@@ -229,10 +232,8 @@ module ImageMessage =
                     ImageOffset = loaded.Offset
                     PointerPos = pointerPos
                 }
-            let model =
-                Loaded {
-                    loaded with PanOpt = Some pan }
-            model, Cmd.none
+            Loaded { loaded with PanOpt = Some pan },
+            Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Moves the image during a pan.
@@ -310,6 +311,10 @@ module ImageMessage =
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
+
+                // zoom to actual size
+            | ZoomToActualSize ->
+                onZoomToActualSize model
 
                 // start pan
             | PanStart pointerPos ->
