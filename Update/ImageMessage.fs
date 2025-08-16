@@ -208,7 +208,7 @@ module ImageMessage =
         let browsed =
             loaded.Browsed
                 |> zoomScale ^= BrowsedImage.ZoomScale_
-                |> false ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
 
         Loaded {
             loaded with
