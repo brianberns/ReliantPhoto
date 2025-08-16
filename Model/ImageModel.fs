@@ -89,6 +89,14 @@ type BrowsedImage =
         BrowsedImage.Initialized_
             >-> InitializedContainer.ZoomScaleLock_
 
+module BrowsedImage =
+
+    /// Get locked zoom scale, if any.
+    let tryGetLockedZoomScale browsed =
+        if browsed ^. BrowsedImage.ZoomScaleLock_ then
+            Some (browsed ^. BrowsedImage.ZoomScale_)
+        else None
+
 /// Image pan.
 type Pan =
     {

@@ -70,11 +70,11 @@ module ImageMessage =
     /// Updates layout due to container resize.
     let private updateLayout loaded =
 
-            // keep zoom scale constant?
+            // keep zoom scale?
         let zoomScaleOpt =
-            if loaded ^. LoadedImage.ZoomScaleLock_ then
-                Some (loaded ^. LoadedImage.ZoomScale_)
-            else None
+            loaded
+                ^. LoadedImage.Browsed_
+                |> BrowsedImage.tryGetLockedZoomScale
 
             // get layout for new container size
         let offset, zoomScale =
@@ -160,14 +160,20 @@ module ImageMessage =
     let private layoutImage
         (dpiScale : float) (bitmap : Bitmap) browsed =
 
-            // get default layout
+            // get size of bitmap, adjusted for DPI scale
         let bitmapSize =
             bitmap.PixelSize.ToSize(dpiScale)
+
+            // keep zoom scale?
+        let zoomScaleOpt =
+            BrowsedImage.tryGetLockedZoomScale browsed
+
+            // layout image
         let offset, zoomScale =
             let containerSize =
                 (browsed ^. BrowsedImage.ContainerSize_)
             ImageLayout.getImageLayout
-                containerSize bitmapSize None None
+                containerSize bitmapSize None zoomScaleOpt
 
         let browsed =
             browsed
