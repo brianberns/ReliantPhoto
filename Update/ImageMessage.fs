@@ -72,8 +72,8 @@ module ImageMessage =
 
             // keep zoom scale constant?
         let zoomScaleOpt =
-            if loaded.ZoomScaleLock then
-                Some loaded.ZoomScale
+            if loaded ^. LoadedImage.ZoomScaleLock_ then
+                Some (loaded ^. LoadedImage.ZoomScale_)
             else None
 
             // get layout for new container size
@@ -87,8 +87,7 @@ module ImageMessage =
         {
             loaded with
                 Offset = offset
-                ZoomScale = zoomScale
-        }
+        } |> zoomScale ^= LoadedImage.ZoomScale_   // to-do: we eventually just need the initialized container here
 
     /// Sets or updates container size. This occurs when the
     /// container is first created (before it contains an
@@ -100,7 +99,8 @@ module ImageMessage =
 
                     // creation: set container size
                 | Uninitialized ->
-                    Initialized { ContainerSize = containerSize }
+                    Initialized (
+                        InitializedContainer.create containerSize)
 
                     // resize: update container size and layout
                 | Loaded loaded ->
@@ -169,13 +169,16 @@ module ImageMessage =
             ImageLayout.getImageLayout
                 containerSize bitmapSize None None
 
+        let browsed =
+            browsed
+                |> zoomScale ^= BrowsedImage.ZoomScale_
+                |> false ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+
         Loaded {
             Browsed = browsed
             Bitmap = bitmap
             BitmapSize = bitmapSize
             Offset = offset
-            ZoomScale = zoomScale
-            ZoomScaleLock = false
             PanOpt = None
         }
 
@@ -201,11 +204,16 @@ module ImageMessage =
         let offset =
             ImageLayout.updateImageOffset
                 pointerPosOpt zoomScale loaded
+
+        let browsed =
+            loaded.Browsed
+                |> zoomScale ^= BrowsedImage.ZoomScale_
+                |> false ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+
         Loaded {
             loaded with
+                Browsed = browsed
                 Offset = offset
-                ZoomScale = zoomScale
-                ZoomScaleLock = zoomScaleLock
         }, Cmd.none
 
     /// Updates zoom scale and origin.
@@ -247,7 +255,7 @@ module ImageMessage =
                 (loaded ^. LoadedImage.ContainerSize_)
                 loaded.BitmapSize
                 (Some offset)
-                loaded.ZoomScale
+                (loaded ^. LoadedImage.ZoomScale_)
 
         { loaded with Offset = offset }
 

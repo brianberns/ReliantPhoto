@@ -39,7 +39,8 @@ module ImageView =
                     TextBlock.verticalAlignment VerticalAlignment.Center
                     match model with
                         | Loaded loaded ->
-                            let pct = loaded.ZoomScale * 100.0
+                            let pct =
+                                (loaded ^. LoadedImage.ZoomScale_) * 100.0
                             TextBlock.text $"%0.1f{pct}%%"
                         | _ -> ()
                 ]
@@ -104,7 +105,8 @@ module ImageView =
                 // image layout
             let imageSize =
                 ImageLayout.getImageSize
-                    loaded.BitmapSize loaded.ZoomScale
+                    loaded.BitmapSize
+                    (loaded ^. LoadedImage.ZoomScale_)
             Image.width imageSize.Width
             Image.height imageSize.Height
             Image.left loaded.Offset.X

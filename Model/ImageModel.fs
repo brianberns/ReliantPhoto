@@ -15,6 +15,13 @@ type InitializedContainer =
     {
         /// Container size.
         ContainerSize : Size
+
+        /// Zoom scale. This will be 1.0 for an image displayed
+        /// at 1:1 size.
+        ZoomScale : float
+
+        /// Lock zoom scale when resizing?
+        ZoomScaleLock : bool
     }
 
     /// Container size lens.
@@ -22,6 +29,28 @@ type InitializedContainer =
         _.ContainerSize,
         fun containerSize inited ->
             { inited with ContainerSize = containerSize }
+
+    /// Zoom scale lens.
+    static member ZoomScale_ : Lens<_, _> =
+        _.ZoomScale,
+        fun zoomScale inited ->
+            { inited with ZoomScale = zoomScale }
+
+    /// Zoom scale lock lens.
+    static member ZoomScaleLock_ : Lens<_, _> =
+        _.ZoomScaleLock,
+        fun zoomScaleLock inited ->
+            { inited with ZoomScaleLock = zoomScaleLock }
+
+module InitializedContainer =
+
+    /// Creates an initialized container.
+    let create containerSize =
+        {
+            ContainerSize = containerSize
+            ZoomScale = 1.0
+            ZoomScaleLock = false
+        }
 
 /// A browsed image file.
 type BrowsedImage =
@@ -50,6 +79,16 @@ type BrowsedImage =
         BrowsedImage.Initialized_
             >-> InitializedContainer.ContainerSize_
 
+    /// Zoom scale lens.
+    static member ZoomScale_ : Lens<_, _> =
+        BrowsedImage.Initialized_
+            >-> InitializedContainer.ZoomScale_
+
+    /// Zoom scale lock lens.
+    static member ZoomScaleLock_ : Lens<_, _> =
+        BrowsedImage.Initialized_
+            >-> InitializedContainer.ZoomScaleLock_
+
 /// Image pan.
 type Pan =
     {
@@ -75,13 +114,6 @@ type LoadedImage =
         /// Image location offset.
         Offset : Point
 
-        /// Zoom scale. This will be 1.0 for an image displayed
-        /// at 1:1 size.
-        ZoomScale : float
-
-        /// Lock zoom scale when resizing?
-        ZoomScaleLock : bool
-
         /// Pan location, when panning.
         PanOpt : Option<Pan>
     }
@@ -100,6 +132,16 @@ type LoadedImage =
     static member ContainerSize_ : Lens<_, _> =
         LoadedImage.Initialized_
             >-> InitializedContainer.ContainerSize_
+
+    /// Zoom scale lens.
+    static member ZoomScale_ : Lens<_, _> =
+        LoadedImage.Initialized_
+            >-> InitializedContainer.ZoomScale_
+
+    /// Zoom scale lock lens.
+    static member ZoomScaleLock_ : Lens<_, _> =
+        LoadedImage.Initialized_
+            >-> InitializedContainer.ZoomScaleLock_
 
 /// An image file that could not be browsed.
 type BrowseError =

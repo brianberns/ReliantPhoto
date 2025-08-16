@@ -74,7 +74,7 @@ module ImageLayout =
         assert(abs zoomSign = 1)
 
             // compute possible new zoom scale
-        let zoomScale = loaded.ZoomScale
+        let zoomScale = loaded ^. LoadedImage.ZoomScale_
         let factor = 1.1
         let newScale, zoomScaleLock =
 
@@ -118,9 +118,11 @@ module ImageLayout =
         let newOffsetOpt =
             pointerPosOpt
                 |> Option.map (fun pointerPos ->
+                    let zoomScale =
+                        loaded ^. LoadedImage.ZoomScale_
                     pointerPos
                         - (pointerPos - loaded.Offset)
-                            * (newZoomScale / loaded.ZoomScale))
+                            * (newZoomScale / zoomScale))
 
         getImageOffset
             (loaded ^. LoadedImage.ContainerSize_)
