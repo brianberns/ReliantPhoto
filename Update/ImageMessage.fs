@@ -145,17 +145,6 @@ module ImageMessage =
                 |> Option.defaultValue model
         model, Cmd.none
 
-    /// Handles a load error.
-    let private onHandleLoadError error = function
-        | Browsed browsed ->
-            let model =
-                LoadError {
-                    Browsed = browsed
-                    Message = error
-                }
-            model, Cmd.none
-        | _ -> failwith "Invalid state"
-
     /// Applies default layout rules to the given bitmap.
     let private layoutImage
         (dpiScale : float) (bitmap : Bitmap) browsed =
@@ -198,6 +187,17 @@ module ImageMessage =
                     layoutImage dpiScale bitmap browsed
                 | _ -> model   // stale async message
         model, Cmd.none
+
+    /// Handles a load error.
+    let private onHandleLoadError error = function
+        | Browsed browsed ->
+            let model =
+                LoadError {
+                    Browsed = browsed
+                    Message = error
+                }
+            model, Cmd.none
+        | _ -> failwith "Invalid state"
 
     /// Browses to a file, if possible.
     let private onBrowse incr model =
