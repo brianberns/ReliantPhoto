@@ -44,6 +44,15 @@ module ImageView =
                             TextBlock.text $"%0.1f{pct}%%"
                         | _ -> ()
                 ]
+                    // zoom scale lock
+                match model with
+                    | Loaded loaded ->
+                        let lockSymbol =
+                            if loaded ^. LoadedImage.ZoomScaleLock_ then "🔒"
+                            else "🔓"
+                        Button.createText lockSymbol "Zoom lock" (fun _ ->
+                            ())
+                    | _ -> ()
             ]
         ]
 
