@@ -10,15 +10,14 @@ module ImageLayout =
     /// Gets the size of the given bitmap when displayed at the
     /// system DPI and given zoom scale.
     let getImageSize (bitmapSize : Size) (zoomScale : float) =
-        bitmapSize * zoomScale
+        bitmapSize * zoomScale   // assume bitmap size already accounts for system DPI
 
     /// Gets the default zoom scale for the given bitmap in the
     /// given container.
     let private getDefaultZoomScale
-        (containerSize : Size)
-        (bitmapSize : Size) =
+        (containerSize : Size) (bitmapSize : Size) =
         let ratio = containerSize / bitmapSize
-        Array.min [| ratio.X; ratio.Y; 1.0 |]
+        min ratio.X ratio.Y |> min 1.0
 
     /// Computes image offset based on layout rules.
     let getImageOffset
@@ -49,7 +48,7 @@ module ImageLayout =
             | None ->
                 Point(marginSize.Width, marginSize.Height) / 2.0
 
-    /// Gets image offset and zoom scale based on layout rules.
+    /// Computes image offset and zoom scale based on layout rules.
     let getImageLayout
         containerSize bitmapSize proposedOffsetOpt zoomScaleOpt =
 
