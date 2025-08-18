@@ -156,6 +156,7 @@ module ImageMessage =
             // keep zoom scale?
         let zoomScaleOpt =
             BrowsedImage.tryGetLockedZoomScale browsed
+        let zoomScaleLock = zoomScaleOpt.IsSome
 
             // layout image
         let offset, zoomScale =
@@ -167,7 +168,7 @@ module ImageMessage =
         let browsed =
             browsed
                 |> zoomScale ^= BrowsedImage.ZoomScale_
-                |> false ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
 
         Loaded {
             Browsed = browsed
