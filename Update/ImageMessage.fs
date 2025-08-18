@@ -153,10 +153,9 @@ module ImageMessage =
         let bitmapSize =
             bitmap.PixelSize.ToSize(dpiScale)
 
-            // keep zoom scale?
+            // try to keep zoom scale?
         let zoomScaleOpt =
             BrowsedImage.tryGetLockedZoomScale browsed
-        let zoomScaleLock = zoomScaleOpt.IsSome
 
             // layout image
         let offset, zoomScale =
@@ -164,6 +163,9 @@ module ImageMessage =
                 (browsed ^. BrowsedImage.ContainerSize_)
             ImageLayout.getImageLayout
                 containerSize bitmapSize None zoomScaleOpt
+
+            // zoom scale lock succeeded?
+        let zoomScaleLock = (Some zoomScale = zoomScaleOpt)
 
         let browsed =
             browsed
