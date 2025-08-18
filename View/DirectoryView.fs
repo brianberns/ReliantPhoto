@@ -17,6 +17,11 @@ module Cursor =
     /// Wait cursor.
     let wait = new Cursor(StandardCursorType.Wait)
 
+module Color =
+
+    /// Dark gray.
+    let darkGray = "#181818"
+
 module Button =
 
     /// Button height and width.
@@ -150,7 +155,7 @@ module DirectoryView =
                 createStatusBar Dock.Bottom images.Length
 
                 ScrollViewer.create [
-                    ScrollViewer.background "#181818"
+                    ScrollViewer.background Color.darkGray
                     ScrollViewer.content (
                         WrapPanel.create [
                             WrapPanel.orientation
