@@ -107,6 +107,22 @@ type Pan =
         PointerPos : Point
     }
 
+/// Image zoom animation.
+type ZoomAnimation =
+    {
+        /// Zoom scale at start of animation.
+        StartZoom : float
+
+        /// Zoom scale at end of animation.
+        EndZoom : float
+
+        /// Animation start time.
+        StartTime : DateTime
+
+        /// Pointer position that initiated zoom.
+        PointerPos : Point
+    }
+
 /// A loaded image.
 type LoadedImage =
     {
@@ -124,6 +140,9 @@ type LoadedImage =
 
         /// Pan location, when panning.
         PanOpt : Option<Pan>
+
+        /// Zoom animation.
+        ZoomAnimation : Option<ZoomAnimation>
     }
 
     /// Browsed image lens.

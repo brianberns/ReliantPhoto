@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
 
 open Elmish
@@ -33,6 +34,9 @@ type ImageMessage =
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
+    /// Update zoom animation.
+    | AnimateZoom
+
     /// Zoom image to actual size.
     | ZoomToActualSize
 
@@ -46,6 +50,14 @@ type ImageMessage =
     | PanEnd
 
 module ImageMessage =
+
+    /// Time between zoom animation frames.
+    let private animationInterval =
+        TimeSpan.FromMilliseconds(10.0)
+
+    /// Zoom animation duration.
+    let private animationDuration =
+        TimeSpan.FromMilliseconds(200.0)
 
     /// Creates a command to load an image from the given file.
     /// This is an asynchronous command to allow the image
@@ -178,6 +190,7 @@ module ImageMessage =
             BitmapSize = bitmapSize
             Offset = offset
             PanOpt = None
+            ZoomAnimation = None
         }
 
     /// Sets image's bitmap.
@@ -207,35 +220,95 @@ module ImageMessage =
         let inited = model ^. ImageModel.Initialized_
         browse inited incr model.File
 
-    /// Zooms the current image.
-    let private zoom
-        zoomScale zoomScaleLock pointerPosOpt loaded =
-        let offset =
-            ImageLayout.updateImageOffset
-                pointerPosOpt zoomScale loaded
-
-        let browsed =
-            loaded.Browsed
-                |> zoomScale ^= BrowsedImage.ZoomScale_
-                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
-
-        Loaded {
-            loaded with
-                Browsed = browsed
-                Offset = offset
-        }, Cmd.none
+    /// Creates a command to animate zoom.
+    let private animationCmd =
+        Cmd.OfAsync.perform
+            (fun () -> async {
+                do! Async.Sleep(int animationInterval.TotalMilliseconds)
+                return AnimateZoom
+            })
+            ()
+            id
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
         | Loaded loaded ->
             let zoomScale, zoomScaleLock =
                 ImageLayout.incrementZoomScale sign loaded
-            zoom zoomScale zoomScaleLock (Some pointerPos) loaded
+            let animation =
+                {
+                    StartZoom = loaded ^. LoadedImage.ZoomScale_
+                    EndZoom = zoomScale
+                    StartTime = DateTime.UtcNow
+                    PointerPos = pointerPos
+                }
+            let loaded =
+                { loaded with ZoomAnimation = Some animation }
+                    |> zoomScaleLock
+                        ^= LoadedImage.ZoomScaleLock_
+            Loaded loaded, animationCmd
         | _ -> failwith "Invalid state"
+
+    /// Smoothly animates a zoom operation.
+    let private onAnimateZoom = function
+        | Loaded loaded as model ->
+            match loaded.ZoomAnimation with
+                | Some animation ->
+
+                        // how far are we through the animation?
+                    let elapsed =
+                        DateTime.UtcNow - animation.StartTime
+                    let fraction =
+                        elapsed.TotalMilliseconds
+                            / animationDuration.TotalMilliseconds
+                        |> min 1.0
+
+                        // apply ease-out function
+                    let easedFraction = 1.0 - pown (1.0 - fraction) 3
+
+                        // are we done?
+                    if fraction >= 1.0 then
+                        let loaded =
+                            { loaded with ZoomAnimation = None }
+                        Loaded loaded, Cmd.none
+                    else
+                            // compute new zoom scale
+                        let newZoomScale =
+                            animation.StartZoom
+                                + (animation.EndZoom
+                                    - animation.StartZoom)
+                                * easedFraction
+
+                            // update offset to keep pointer over the same spot
+                        let newOffset =
+                            ImageLayout.updateImageOffset
+                                (Some animation.PointerPos)
+                                newZoomScale
+                                loaded
+
+                        let loaded =
+                            { loaded with Offset = newOffset }
+                                |> newZoomScale
+                                    ^= LoadedImage.ZoomScale_
+                        Loaded loaded, animationCmd
+                | None -> model, Cmd.none
+        | model -> model, Cmd.none
 
     /// Zoom to actual size.
     let private onZoomToActualSize = function
-        | Loaded loaded -> zoom 1.0 true None loaded
+        | Loaded loaded ->
+            let browsed =
+                loaded.Browsed
+                    |> 1.0 ^= BrowsedImage.ZoomScale_
+                    |> true ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+            let offset =
+                ImageLayout.updateImageOffset
+                    None 1.0 loaded
+            Loaded {
+                loaded with
+                    Browsed = browsed
+                    Offset = offset
+            }, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
@@ -321,6 +394,10 @@ module ImageMessage =
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
+
+                // animate zoom
+            | AnimateZoom ->
+                onAnimateZoom model
 
                 // zoom to actual size
             | ZoomToActualSize ->
