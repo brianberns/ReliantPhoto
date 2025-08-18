@@ -44,15 +44,6 @@ module ImageView =
                             TextBlock.text $"%0.1f{pct}%%"
                         | _ -> ()
                 ]
-                    // zoom scale lock
-                match model with
-                    | Loaded loaded ->
-                        let lockSymbol =
-                            if loaded ^. LoadedImage.ZoomScaleLock_ then "🔒"
-                            else "🔓"
-                        Button.createText lockSymbol "Zoom lock" (fun _ ->
-                            ())
-                    | _ -> ()
             ]
         ]
 
@@ -202,20 +193,16 @@ module ImageView =
                 TextAlignment.Center
         ]
 
-    /// Creates a panel that can display images.
-    let private createImagePanel (model : ImageModel) dispatch =
+    /// Creates a panel that can browse and display images.
+    let private createBrowseDisplayPanel model dispatch =
+        let background =
+            match model with
+                | Loaded loaded
+                    when loaded ^. LoadedImage.ZoomScaleLock_ -> "#202020"
+                | _ -> "Black"
         DockPanel.create [
-
-            if model.IsUninitialized
-                || model.IsInitialized
-                || model.IsBrowsed then
-                DockPanel.cursor Cursor.wait
-                DockPanel.background "Transparent"   // needed to force the cursor change for some reason
-
+            DockPanel.background background
             DockPanel.children [
-
-                    // toolbar
-                createToolbar Dock.Top model dispatch
 
                     // prev/next browse panels
                 yield! createBrowsePanels model dispatch
@@ -228,6 +215,22 @@ module ImageView =
                         createErrorMessage errored.Message
                     | _ ->
                         createZoomableImage model dispatch
+            ]
+        ]
+
+    /// Creates a panel that can work with images.
+    let private createWorkPanel (model : ImageModel) dispatch =
+        DockPanel.create [
+
+            if model.IsUninitialized
+                || model.IsInitialized
+                || model.IsBrowsed then
+                DockPanel.cursor Cursor.wait
+                DockPanel.background "Transparent"   // needed to force the cursor change for some reason
+
+            DockPanel.children [
+                createToolbar Dock.Top model dispatch
+                createBrowseDisplayPanel model dispatch
             ]
         ]
 
@@ -268,5 +271,5 @@ module ImageView =
 
     /// Creates a view of the given model.
     let view model dispatch =
-        createImagePanel model dispatch
+        createWorkPanel model dispatch
             |> createKeyBindingBorder model dispatch
