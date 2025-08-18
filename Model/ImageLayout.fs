@@ -12,13 +12,6 @@ module ImageLayout =
     let getImageSize (bitmapSize : Size) (zoomScale : float) =
         bitmapSize * zoomScale   // assume bitmap size already accounts for system DPI
 
-    /// Gets the default zoom scale for the given bitmap in the
-    /// given container.
-    let private getDefaultZoomScale
-        (containerSize : Size) (bitmapSize : Size) =
-        let ratio = containerSize / bitmapSize
-        min ratio.X ratio.Y |> min 1.0
-
     /// Computes image offset based on layout rules.
     let getImageOffset
         containerSize bitmapSize proposedOffsetOpt zoomScale =
@@ -48,15 +41,37 @@ module ImageLayout =
             | None ->
                 Point(marginSize.Width, marginSize.Height) / 2.0
 
+    /// Gets the default zoom scale for the given bitmap in the
+    /// given container.
+    let private getDefaultZoomScale
+        (containerSize : Size) (bitmapSize : Size) =
+        let ratio = containerSize / bitmapSize
+        min ratio.X ratio.Y |> min 1.0
+
+    /// Gets an acceptable zoom scale for the given bitmap in the
+    /// given container.
+    let private getZoomScale
+        containerSize bitmapSize proposedZoomScaleOpt =
+
+            // get smallest allowable zoom scale
+        let zoomScaleFloor =
+            getDefaultZoomScale containerSize bitmapSize
+
+            // enforce floor
+        match proposedZoomScaleOpt with
+            | Some proposedZoomScale
+                when proposedZoomScale > zoomScaleFloor ->
+                    proposedZoomScale
+            | _ -> zoomScaleFloor
+
     /// Computes image offset and zoom scale based on layout rules.
     let getImageLayout
-        containerSize bitmapSize proposedOffsetOpt zoomScaleOpt =
+        containerSize bitmapSize proposedOffsetOpt proposedZoomScaleOpt =
 
-            // scale the image to fit in the container?
+            // get an acceptable zoom scale
         let zoomScale =
-            zoomScaleOpt
-                |> Option.defaultWith (fun () ->
-                    getDefaultZoomScale containerSize bitmapSize)
+            getZoomScale
+                containerSize bitmapSize proposedZoomScaleOpt
 
             // get image offset for that zoom scale
         let offset =
@@ -84,21 +99,21 @@ module ImageLayout =
 
                 // zoom out?
             else
-                    // get minimum allowable zoom scale
-                let zoomScaleFloor =
+                    // proposed zoom in
+                let proposedScale = zoomScale / factor
+
+                    // apply layout rules to proposed zoom scale
+                let newScale =
                     let containerSize =
                         loaded ^. LoadedImage.ContainerSize_
-                    getDefaultZoomScale
+                    getZoomScale
                         containerSize loaded.BitmapSize
+                        (Some proposedScale)
 
-                    // zoom out
-                let newScale = zoomScale / factor
-
-                    // enforce floor
-                let newScale, zoomScaleLock =
-                    if zoomScaleFloor - newScale > epsilon then
-                        zoomScale, false   // don't jump suddenly
-                    else newScale, true
+                    // unlock zoom when floor reached
+                let zoomScaleLock =
+                    assert(newScale >= proposedScale)
+                    newScale = proposedScale
 
                 newScale, zoomScaleLock
 
