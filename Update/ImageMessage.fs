@@ -87,7 +87,7 @@ module ImageMessage =
         {
             loaded with
                 Offset = offset
-        } |> zoomScale ^= LoadedImage.ZoomScale_   // to-do: we eventually just need the initialized container here
+        } |> zoomScale ^= LoadedImage.ZoomScale_   // to-do: keep zoom offset in addition to zoom scale (in which case, we just need the initialized container here)
 
     /// Sets or updates container size. This occurs when the
     /// container is first created (before it contains an
