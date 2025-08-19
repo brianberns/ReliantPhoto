@@ -65,10 +65,14 @@ module private ImageSharp =
             // create Avalonia bitmap
         new Bitmap(stream)
 
+    module private DecoderOptions =
+
+        /// Default decoder options.
+        let empty = DecoderOptions()
+
     /// Loads an image from the given file.
     let loadImage file =
-        let options = DecoderOptions()
-        loadImageImpl options file
+        loadImageImpl DecoderOptions.empty file
 
     /// Loads a thumbnail image from the given file.
     let loadThumbnail height (file : FileInfo) =
