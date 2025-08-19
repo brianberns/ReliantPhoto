@@ -89,7 +89,7 @@ module ImageView =
         ]
 
     /// Creates an image.
-    let private createImage loaded =
+    let private createImage dpiScale loaded =
         Image.create [
 
             let bitmap = loaded.Bitmap
@@ -103,18 +103,19 @@ module ImageView =
                     image, mode))
 
                 // image layout
-            let imageSize =
-                ImageLayout.getImageSize
-                    loaded.BitmapSize
-                    (loaded ^. LoadedImage.ZoomScale_)
-            Image.width imageSize.Width
-            Image.height imageSize.Height
-            Image.left loaded.Offset.X
-            Image.top loaded.Offset.Y
+            let zoomScale =
+                (loaded ^. LoadedImage.ZoomScale_) / dpiScale
+            let group = TransformGroup()
+            group.Children.AddRange [
+                ScaleTransform(zoomScale, zoomScale)
+                TranslateTransform(loaded.Offset.X, loaded.Offset.Y)
+            ]
+            Image.renderTransform group
+            Image.renderTransformOrigin RelativePoint.TopLeft
         ]
 
     /// Creates a zoomable image.
-    let private createZoomableImage model dispatch =
+    let private createZoomableImage dpiScale model dispatch =
 
         /// Gets the pointer position relative to the canvas.
         let getPointerPosition (args : PointerEventArgs) =
@@ -135,7 +136,7 @@ module ImageView =
             match model with
                 | Loaded loaded ->
 
-                    let image = createImage loaded
+                    let image = createImage dpiScale loaded
                     Canvas.children [ image ]
                     Canvas.clipToBounds true
                     Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
@@ -195,7 +196,7 @@ module ImageView =
         ]
 
     /// Creates a panel that can browse and display images.
-    let private createBrowseDisplayPanel model dispatch =
+    let private createBrowseDisplayPanel dpiScale model dispatch =
         let background =
             match model with
                 | Loaded loaded
@@ -216,12 +217,12 @@ module ImageView =
                     | LoadError errored ->
                         createErrorMessage errored.Message
                     | _ ->
-                        createZoomableImage model dispatch
+                        createZoomableImage dpiScale model dispatch
             ]
         ]
 
     /// Creates a panel that can work with images.
-    let private createWorkPanel (model : ImageModel) dispatch =
+    let private createWorkPanel dpiScale (model : ImageModel) dispatch =
         DockPanel.create [
 
             if model.IsUninitialized
@@ -232,7 +233,7 @@ module ImageView =
 
             DockPanel.children [
                 createToolbar Dock.Top model dispatch
-                createBrowseDisplayPanel model dispatch
+                createBrowseDisplayPanel dpiScale model dispatch
             ]
         ]
 
@@ -272,6 +273,6 @@ module ImageView =
         ]
 
     /// Creates a view of the given model.
-    let view model dispatch =
-        createWorkPanel model dispatch
+    let view dpiScale model dispatch =
+        createWorkPanel dpiScale model dispatch
             |> createKeyBindingBorder model dispatch

@@ -6,7 +6,7 @@ open Avalonia.FuncUI.DSL
 module View =
 
     /// Creates a view of the given model.
-    let view model dispatch =
+    let view dpiScale model dispatch =
         Grid.create [
             Grid.children [
 
@@ -22,7 +22,7 @@ module View =
                 Border.create [
                     Border.isVisible (model.Mode = Mode.Image)
                     Border.child (
-                        ImageView.view model.ImageModel dispatch
+                        ImageView.view dpiScale model.ImageModel dispatch
                     )
                 ]
             ]

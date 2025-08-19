@@ -7,18 +7,12 @@ open Aether.Operators
 /// within its container.
 module ImageLayout =
 
-    /// Gets the size of the given bitmap when displayed at the
-    /// system DPI and given zoom scale.
-    let getImageSize (bitmapSize : Size) (zoomScale : float) =
-        bitmapSize * zoomScale   // assume bitmap size already accounts for system DPI
-
     /// Computes image offset based on layout rules.
     let getImageOffset
-        containerSize bitmapSize proposedOffsetOpt zoomScale =
+        containerSize (bitmapSize : Size) proposedOffsetOpt (zoomScale : float) =
 
             // compute (positive or negative) gap between image and container
-        let marginSize =
-            containerSize - getImageSize bitmapSize zoomScale
+        let marginSize = containerSize - bitmapSize * zoomScale
 
         match proposedOffsetOpt with
 
