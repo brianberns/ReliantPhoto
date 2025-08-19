@@ -54,7 +54,7 @@ module ImageFile =
                 return Error exn.Message
         }
 
-    /// Tries to load the contents of the given directory.
+    /// Tries to load thumbnails of images the given directory.
     let tryLoadDirectory height (dir : DirectoryInfo) =
         dir.EnumerateFiles("*", EnumerationOptions())   // ignore hidden and system files
             |> Seq.map (fun file ->
