@@ -139,9 +139,11 @@ module ImageFile =
                 })
 
     /// Gets the appropriate interpolation mode for the given
-    /// image file.
+    /// image file. The goal is to display crisp edges in
+    /// lossless images without introducing zoom artifacts in
+    /// lossy images.
     let getInterpolationMode (file : FileInfo) =
         match file.Extension.ToLower() with
-            | ".gif" | ".bmp" | ".png" | ".tif" ->   // try to display crisp edges in lossless images
+            | ".gif" | ".bmp" | ".png" | ".tif" ->
                 BitmapInterpolationMode.None
             | _ -> BitmapInterpolationMode.HighQuality
