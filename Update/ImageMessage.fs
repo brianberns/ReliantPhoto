@@ -86,7 +86,7 @@ module ImageMessage =
 
         loaded
             |> offset ^= LoadedImage.Offset_
-            |> zoomScale ^= LoadedImage.ZoomScale_   // to-do: avoid creating so many instances
+            |> zoomScale ^= LoadedImage.ZoomScale_
 
     /// Sets or updates container size. This occurs when the
     /// container is first created (before it contains an
@@ -165,18 +165,19 @@ module ImageMessage =
             // layout image
         let offset, zoomScale =
             let containerSize =
-                (browsed ^. BrowsedImage.ContainerSize_)
+                browsed ^. BrowsedImage.ContainerSize_
             ImageLayout.getImageLayout
                 containerSize bitmapSize offsetOpt zoomScaleOpt
 
             // zoom scale lock succeeded?
         let zoomScaleLock = (Some zoomScale = zoomScaleOpt)
 
+            // update offset/zoom
         let browsed =
             browsed
                 |> offset ^= BrowsedImage.Offset_
                 |> zoomScale ^= BrowsedImage.ZoomScale_
-                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_
 
         Loaded {
             Browsed = browsed
@@ -219,11 +220,12 @@ module ImageMessage =
             ImageLayout.updateImageOffset
                 pointerPosOpt zoomScale loaded
 
+            // update offset/zoom
         let loaded =
             loaded
                 |> offset ^= LoadedImage.Offset_
                 |> zoomScale ^= LoadedImage.ZoomScale_
-                |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+                |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
 
         Loaded loaded, Cmd.none
 
