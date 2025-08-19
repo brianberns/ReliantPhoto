@@ -242,6 +242,7 @@ module ImageView =
         Border.create [
 
             Border.focusable true
+            Border.focusAdorner null
             Border.background "Transparent"
 
             match model ^. ImageModel.TryBrowsed_ with
