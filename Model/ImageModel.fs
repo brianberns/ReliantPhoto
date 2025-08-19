@@ -62,6 +62,12 @@ module InitializedContainer =
             ZoomScaleLock = false
         }
 
+    /// Get locked zoom scale, if any.
+    let tryGetLockedZoomScale inited =
+        if inited.ZoomScaleLock then
+            Some inited.ZoomScale
+        else None
+
 /// A browsed image file.
 type BrowsedImage =
     {
@@ -103,14 +109,6 @@ type BrowsedImage =
     static member Offset_ =
         BrowsedImage.Initialized_
             >-> InitializedContainer.Offset_
-
-module BrowsedImage =
-
-    /// Get locked zoom scale, if any.
-    let tryGetLockedZoomScale browsed =
-        if browsed ^. BrowsedImage.ZoomScaleLock_ then
-            Some (browsed ^. BrowsedImage.ZoomScale_)
-        else None
 
 /// Image pan.
 type Pan =
