@@ -80,9 +80,6 @@ module ImageLayout =
 
         offset, zoomScale
 
-    /// Acceptable rounding error.
-    let private epsilon = 0.001
-
     /// Zooms in or out one step.
     let incrementZoomScale zoomSign loaded =
         assert(abs zoomSign = 1)
