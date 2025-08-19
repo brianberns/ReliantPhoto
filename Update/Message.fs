@@ -72,8 +72,8 @@ module Message =
     let private onSwitchToImage file model =
         { model with Mode = Mode.Image },
         [
-            Cmd.ofMsg (ImageMessage.UnloadImage)   // avoid flashing previous image
-            (ImageMessage.loadImageCommand file)
+            Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
+            ImageMessage.loadImageCommand file
         ]
             |> Cmd.batch
             |> Cmd.map MkImageMessage

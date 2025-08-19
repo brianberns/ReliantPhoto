@@ -140,7 +140,10 @@ module ImageMessage =
     let private onUnloadImage model =
         let model =
             model ^. ImageModel.TryInitialized_
-                |> Option.map Initialized
+                |> Option.map (fun inited ->
+                    inited.ContainerSize   // keep only the container size
+                        |> InitializedContainer.create
+                        |> Initialized)
                 |> Option.defaultValue model
         model, Cmd.none
 
