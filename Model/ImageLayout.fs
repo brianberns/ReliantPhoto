@@ -53,16 +53,18 @@ module ImageLayout =
     let private getZoomScale
         containerSize bitmapSize proposedZoomScaleOpt =
 
-            // get smallest allowable zoom scale
+            // get zoom scale limits
         let zoomScaleFloor =
             getDefaultZoomScale containerSize bitmapSize
+        let zoomScaleCeiling = 8.0
 
-            // enforce floor
+            // enforce limits
         match proposedZoomScaleOpt with
-            | Some proposedZoomScale
-                when proposedZoomScale > zoomScaleFloor ->
-                    proposedZoomScale
-            | _ -> zoomScaleFloor
+            | Some proposedZoomScale ->
+                proposedZoomScale
+                    |> max zoomScaleFloor
+                    |> min zoomScaleCeiling
+            | _ -> zoomScaleFloor   // zoom all the way out by default
 
     /// Computes image offset and zoom scale based on layout rules.
     let getImageLayout
@@ -89,32 +91,29 @@ module ImageLayout =
         let factor = 1.1
         let newScale, zoomScaleLock =
 
-                // zoom in?
-            if zoomSign >= 0 then
-                let newScale = zoomScale * factor
-                newScale, true
+                // proposed zoom
+            let proposedScale =
+                if zoomSign >= 0 then zoomScale * factor   // zoom in: enlarge image
+                else zoomScale / factor                    // zoom out: shrink image
 
-                // zoom out?
-            else
-                    // proposed zoom in
-                let proposedScale = zoomScale / factor
+                // apply layout rules to proposed zoom scale
+            let newScale =
+                let containerSize =
+                    loaded ^. LoadedImage.ContainerSize_
+                getZoomScale
+                    containerSize loaded.BitmapSize
+                    (Some proposedScale)
 
-                    // apply layout rules to proposed zoom scale
-                let newScale =
-                    let containerSize =
-                        loaded ^. LoadedImage.ContainerSize_
-                    getZoomScale
-                        containerSize loaded.BitmapSize
-                        (Some proposedScale)
-
-                    // unlock zoom when floor reached
-                let zoomScaleLock =
+                // unlock zoom when floor reached
+            let zoomScaleLock =
+                if zoomSign >= 0 then true
+                else
                     assert(newScale >= proposedScale)
                     newScale = proposedScale
 
-                newScale, zoomScaleLock
+            newScale, zoomScaleLock
 
-            // snap to 1.0?
+            // snap to 1.0 instead?
         if newScale > 1.0 && zoomScale < 1.0
             || newScale < 1.0 && zoomScale > 1.0 then
             1.0, true
