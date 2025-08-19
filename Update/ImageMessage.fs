@@ -68,7 +68,7 @@ module ImageMessage =
         model, cmd
 
     /// Updates layout due to container resize.
-    let private updateLayout loaded =
+    let private resize loaded =
 
             // keep zoom scale?
         let zoomScaleOpt =
@@ -84,10 +84,9 @@ module ImageMessage =
                 (Some loaded.Offset)
                 zoomScaleOpt
 
-        {
-            loaded with
-                Offset = offset
-        } |> zoomScale ^= LoadedImage.ZoomScale_   // to-do: keep zoom offset in addition to zoom scale (in which case, we just need the initialized container here)
+        loaded
+            |> offset ^= LoadedImage.Offset_
+            |> zoomScale ^= LoadedImage.ZoomScale_   // to-do: avoid creating so many instances
 
     /// Sets or updates container size. This occurs when the
     /// container is first created (before it contains an
@@ -106,7 +105,7 @@ module ImageMessage =
                 | Loaded loaded ->
                     loaded
                         |> containerSize ^= LoadedImage.ContainerSize_
-                        |> updateLayout
+                        |> resize
                         |> Loaded
 
                     // resize: just update container size
@@ -169,6 +168,7 @@ module ImageMessage =
 
         let browsed =
             browsed
+                |> offset ^= BrowsedImage.Offset_
                 |> zoomScale ^= BrowsedImage.ZoomScale_
                 |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
 
@@ -176,7 +176,6 @@ module ImageMessage =
             Browsed = browsed
             Bitmap = bitmap
             BitmapSize = bitmapSize
-            Offset = offset
             PanOpt = None
         }
 
@@ -214,16 +213,13 @@ module ImageMessage =
             ImageLayout.updateImageOffset
                 pointerPosOpt zoomScale loaded
 
-        let browsed =
-            loaded.Browsed
-                |> zoomScale ^= BrowsedImage.ZoomScale_
-                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
+        let loaded =
+            loaded
+                |> offset ^= LoadedImage.Offset_
+                |> zoomScale ^= LoadedImage.ZoomScale_
+                |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_   // to-do: avoid creating so many instances
 
-        Loaded {
-            loaded with
-                Browsed = browsed
-                Offset = offset
-        }, Cmd.none
+        Loaded loaded, Cmd.none
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
@@ -266,7 +262,8 @@ module ImageMessage =
                 (Some offset)
                 (loaded ^. LoadedImage.ZoomScale_)
 
-        { loaded with Offset = offset }
+        loaded
+            |> offset ^= LoadedImage.Offset_
 
     /// Continues panning.
     let private onPanMove pointerPos = function

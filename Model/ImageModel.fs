@@ -16,6 +16,9 @@ type InitializedContainer =
         /// Container size.
         ContainerSize : Size
 
+        /// Image location offset, if any.
+        OffsetOpt : Option<Point>
+
         /// Zoom scale. This will be 1.0 for an image displayed
         /// at 1:1 size.
         ZoomScale : float
@@ -29,6 +32,12 @@ type InitializedContainer =
         _.ContainerSize,
         fun containerSize inited ->
             { inited with ContainerSize = containerSize }
+
+    /// Offset prism.
+    static member Offset_ : Prism<_, _> =
+        _.OffsetOpt,
+        fun offset inited ->
+            { inited with OffsetOpt = Some offset }
 
     /// Zoom scale lens.
     static member ZoomScale_ : Lens<_, _> =
@@ -48,6 +57,7 @@ module InitializedContainer =
     let create containerSize =
         {
             ContainerSize = containerSize
+            OffsetOpt = None
             ZoomScale = 1.0
             ZoomScaleLock = false
         }
@@ -75,19 +85,24 @@ type BrowsedImage =
             { browsed with Initialized = inited }
 
     /// Container size lens.
-    static member ContainerSize_ : Lens<_, _> =
+    static member ContainerSize_ =
         BrowsedImage.Initialized_
             >-> InitializedContainer.ContainerSize_
 
     /// Zoom scale lens.
-    static member ZoomScale_ : Lens<_, _> =
+    static member ZoomScale_ =
         BrowsedImage.Initialized_
             >-> InitializedContainer.ZoomScale_
 
     /// Zoom scale lock lens.
-    static member ZoomScaleLock_ : Lens<_, _> =
+    static member ZoomScaleLock_ =
         BrowsedImage.Initialized_
             >-> InitializedContainer.ZoomScaleLock_
+
+    /// Offset prism.
+    static member Offset_ =
+        BrowsedImage.Initialized_
+            >-> InitializedContainer.Offset_
 
 module BrowsedImage =
 
@@ -119,12 +134,15 @@ type LoadedImage =
         /// Bitmap size, adjusted for system DPI scale.
         BitmapSize : Size
 
-        /// Image location offset.
-        Offset : Point
-
         /// Pan location, when panning.
         PanOpt : Option<Pan>
     }
+
+    /// Loaded image offset.
+    member this.Offset =
+        match this ^. LoadedImage.Offset_ with
+            | Some offset -> offset
+            | None -> failwith "Invalid state"
 
     /// Browsed image lens.
     static member Browsed_ : Lens<_, _> =
@@ -137,19 +155,24 @@ type LoadedImage =
         LoadedImage.Browsed_ >-> BrowsedImage.Initialized_
 
     /// Container size lens.
-    static member ContainerSize_ : Lens<_, _> =
+    static member ContainerSize_ =
         LoadedImage.Initialized_
             >-> InitializedContainer.ContainerSize_
 
     /// Zoom scale lens.
-    static member ZoomScale_ : Lens<_, _> =
+    static member ZoomScale_ =
         LoadedImage.Initialized_
             >-> InitializedContainer.ZoomScale_
 
     /// Zoom scale lock lens.
-    static member ZoomScaleLock_ : Lens<_, _> =
+    static member ZoomScaleLock_ =
         LoadedImage.Initialized_
             >-> InitializedContainer.ZoomScaleLock_
+
+    /// Offset prism.
+    static member Offset_ =
+        LoadedImage.Initialized_
+            >-> InitializedContainer.Offset_
 
 /// An image file that could not be browsed.
 type BrowseError =
@@ -178,11 +201,11 @@ type LoadError =
             { errored with Browsed = browsed }
 
     /// Initialized container lens.
-    static member Initialized_ : Lens<_, _> =
+    static member Initialized_ =
         LoadError.Browsed_>-> BrowsedImage.Initialized_
 
     /// Container size lens.
-    static member ContainerSize_ : Lens<_, _> =
+    static member ContainerSize_ =
         LoadError.Initialized_
             >-> InitializedContainer.ContainerSize_
 
@@ -250,7 +273,7 @@ type ImageModel =
                 |> inited ^= ImageModel.TryInitialized_)
 
     /// Container size lens.
-    static member ContainerSize_ : Lens<_, _> =
+    static member ContainerSize_ =
         ImageModel.Initialized_
             >-> InitializedContainer.ContainerSize_
 
