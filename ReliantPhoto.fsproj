@@ -16,6 +16,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="Prelude.fs" />
+    <Compile Include="Model\ImageSharp.fs" />
     <Compile Include="Model\ImageFile.fs" />
     <Compile Include="Model\DirectoryModel.fs" />
     <Compile Include="Model\ImageModel.fs" />
