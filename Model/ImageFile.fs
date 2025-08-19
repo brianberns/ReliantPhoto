@@ -70,12 +70,22 @@ module private SixLabors =
     /// Loads an image from the given file.
     let private loadImageImpl options (file : FileInfo) =
 
-            // load image to PNG format
         use stream = new MemoryStream()
         do
+                // load image
             use image = Image.Load(options, file.FullName)
             image.Mutate(_.AutoOrient() >> ignore)
-            image.SaveAsPng(stream, pngEncoder)
+
+                // re-encode image to stream
+            let encoder =
+                match image.Metadata.DecodedImageFormat.Name.ToLower() with
+                    | "tiff" -> pngEncoder :> IImageEncoder
+                    | _ ->
+                        image.Configuration
+                            .ImageFormatsManager
+                            .GetEncoder(
+                                image.Metadata.DecodedImageFormat)
+            image.Save(stream, encoder)
             stream.Position <- 0
 
             // create Avalonia bitmap
