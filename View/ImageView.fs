@@ -142,12 +142,13 @@ module ImageView =
 
                         // zoom
                     Canvas.onPointerWheelChanged (fun args ->
-                        let pointerPos = getPointerPosition args
-                        args.Handled <- true
-                        (sign args.Delta.Y, pointerPos)   // y-coord: vertical wheel movement
-                            |> WheelZoom
-                            |> MkImageMessage
-                            |> dispatch)
+                        if args.Delta.Y <> 0 then   // y-coord: vertical wheel movement
+                            let pointerPos = getPointerPosition args
+                            args.Handled <- true
+                            (sign args.Delta.Y, pointerPos)
+                                |> WheelZoom
+                                |> MkImageMessage
+                                |> dispatch)
 
                     if loaded.PanOpt.IsNone then
 
