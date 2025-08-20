@@ -1,29 +1,16 @@
 ﻿namespace Reliant.Photo
 
-open Avalonia.Controls
-open Avalonia.FuncUI.DSL
+open Avalonia.FuncUI.Types
 
 module View =
 
     /// Creates a view of the given model.
     let view model dispatch =
-        Grid.create [
-            Grid.children [
-
-                    // directory view
-                Border.create [
-                    Border.isVisible (model.Mode = Mode.Directory)
-                    Border.child (
-                        DirectoryView.view
-                            model.DirectoryModel dispatch
-                    )
-                ]
-                    // image view
-                Border.create [
-                    Border.isVisible (model.Mode = Mode.Image)
-                    Border.child (
-                        ImageView.view model.ImageModel dispatch
-                    )
-                ]
-            ]
-        ]
+        match model.Mode with
+            | Mode.Directory ->
+                DirectoryView.view
+                    model.DirectoryModel dispatch
+                        :> IView
+            | Mode.Image ->
+                ImageView.view
+                    model.ImageModel dispatch
