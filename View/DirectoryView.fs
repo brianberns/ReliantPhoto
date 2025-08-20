@@ -71,7 +71,7 @@ module FileSystemView =
             if folders.Count > 0 then
                 folders[0].Path.LocalPath
                     |> FileInfo
-                    |> ImageSelected
+                    |> LoadImage
                     |> dispatch
         } |> Async.StartImmediate
 
@@ -131,7 +131,7 @@ module DirectoryView =
                     Border.onPointerExited (fun _ ->
                         isHovered.Set false)
                     Border.onTapped (fun _ ->
-                        dispatch (SwitchToImage file))
+                        dispatch (LoadImage file))
                 ]
         )
 

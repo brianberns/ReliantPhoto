@@ -12,15 +12,11 @@ type Message =
     /// An image-mode message.
     | MkImageMessage of ImageMessage
 
-    /// Switch from directory mode to image mode.
-    | SwitchToImage of FileInfo
+    /// Load the given image.
+    | LoadImage of FileInfo
 
-    /// Switch from image mode to directory mode.
+    /// Switch to directory mode.
     | SwitchToDirectory
-
-    /// User has selected an image to load from the file
-    /// system.
-    | ImageSelected of FileInfo
 
 module Message =
 
@@ -53,8 +49,8 @@ module Message =
             Cmd.map MkImageMessage imgCmd
         | _ -> failwith "Invalid state"
 
-    /// Switches to image mode.
-    let private onSwitchToImage file (_model : Model) =
+    /// Loads the given image.
+    let private onLoadImage file (_model : Model) =
         let imgModel, imgCmd = ImageMessage.init file
         MkImageModel imgModel,
         Cmd.map MkImageMessage imgCmd
@@ -68,10 +64,6 @@ module Message =
             Cmd.map MkDirectoryMessage dirCmd
         | _ -> failwith "Invalid state"
 
-    /// Opens the given file in its directory.
-    let private onImageSelected file model =
-        onSwitchToImage file model
-
     /// Updates the given model based on the given message.
     let update dpiScale message model =
         match message with
@@ -79,9 +71,7 @@ module Message =
                 onDirectoryMessage dirMsg model
             | MkImageMessage imgMsg ->
                 onImageMessage dpiScale imgMsg model
-            | SwitchToImage file ->
-                onSwitchToImage file model
+            | LoadImage file ->
+                onLoadImage file model
             | SwitchToDirectory ->
                 onSwitchToDirectory model
-            | ImageSelected file ->
-                onImageSelected file model
