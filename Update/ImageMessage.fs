@@ -21,9 +21,6 @@ type ImageMessage =
     /// Image has been loaded.
     | ImageLoaded of FileInfo * Bitmap
 
-    /// Unload current image.
-    | UnloadImage
-
     /// Load error occurred.
     | HandleLoadError of string
 
@@ -57,15 +54,10 @@ module ImageMessage =
             file
             LoadImage
 
-    /// Initializes model to start loading the given file, if
-    /// specified.
-    let init fileOpt =
-        let model = ImageModel.init ()
-        let cmd =
-            fileOpt
-                |> Option.map loadImageCommand
-                |> Option.defaultValue Cmd.none
-        model, cmd
+    /// Initializes model to start loading the given file.
+    let init file =
+        ImageModel.init (),
+        loadImageCommand file
 
     /// Updates layout due to container resize.
     let private resize loaded =
@@ -135,17 +127,6 @@ module ImageMessage =
     let private onLoadImage file model =
         let inited = model ^. ImageModel.Initialized_
         browse inited 0 file
-
-    /// Unloads the current image, if any.
-    let private onUnloadImage model =
-        let model =
-            model ^. ImageModel.TryInitialized_
-                |> Option.map (fun inited ->
-                    inited.ContainerSize   // keep only the container size
-                        |> InitializedContainer.create
-                        |> Initialized)
-                |> Option.defaultValue model
-        model, Cmd.none
 
     /// Applies default layout rules to the given bitmap.
     let private layoutImage
@@ -313,10 +294,6 @@ module ImageMessage =
                 // finish loading an image
             | ImageLoaded (file, bitmap) ->
                 onImageLoaded dpiScale file bitmap model
-
-                // unload current image
-            | UnloadImage ->
-                onUnloadImage model
 
                 // handle load error
             | HandleLoadError error ->

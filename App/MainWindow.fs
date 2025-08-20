@@ -49,20 +49,28 @@ module Window =
     let subscribe (window : Window) model =
         [
                 // side effects
-            let dirModel = model.DirectoryModel
-            directory <- dirModel.Directory
-            match model.Mode with
-                | Mode.Directory ->
-                    window.Title <- dirModel.Directory.FullName
-                | Mode.Image ->
-                    if model.ImageModel.IsBrowsed
-                        || model.ImageModel.IsLoaded then
-                        window.Title <- model.ImageModel.File.Name
+            let dir, title =
+                match model with
+                    | MkDirectoryModel dirModel ->
+                        dirModel.Directory,
+                        dirModel.Directory.FullName
+                    | MkImageModel imgModel ->
+                        if imgModel.IsBrowsed
+                            || imgModel.IsLoaded then
+                            imgModel.File.Directory,
+                            imgModel.File.Name
+                        else
+                            directory, window.Title
+            directory <- dir
+            window.Title <- title
 
                 // Elmish subscription
-            yield! dirModel
-                |> DirectoryMessage.subscribe
-                |> Sub.map "directory" MkDirectoryMessage
+            match model with
+                | MkDirectoryModel dirModel ->
+                    yield! dirModel
+                        |> DirectoryMessage.subscribe
+                        |> Sub.map "directory" MkDirectoryMessage
+                | _ -> ()
         ]
 
     /// Gets initial directory and file.

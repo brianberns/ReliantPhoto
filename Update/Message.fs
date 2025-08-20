@@ -25,83 +25,52 @@ type Message =
 module Message =
 
     /// Initializes model.
-    let init arg =
-
-            // extract arguments
-        let dir, fileOpt, mode =
-            match arg with
-                | Choice1Of2 dir -> dir, None, Mode.Directory
-                | Choice2Of2 (file : FileInfo) ->
-                    file.Directory, Some file, Mode.Image
-
-            // initialize sub-models
-        let dirModel, dirCmd = DirectoryMessage.init dir
-        let imgModel, imgCmd = ImageMessage.init fileOpt
-
-            // build top-level model and command
-        let model =
-            {
-                DirectoryModel = dirModel
-                ImageModel = imgModel
-                Mode = mode
-            }
-        let cmd =
-            Cmd.batch [
-                Cmd.map MkDirectoryMessage dirCmd
-                Cmd.map MkImageMessage imgCmd
-            ]
-        model, cmd
+    let init = function
+        | Choice1Of2 dir ->
+            let dirModel, dirCmd = DirectoryMessage.init dir
+            MkDirectoryModel dirModel,
+            Cmd.map MkDirectoryMessage dirCmd
+        | Choice2Of2 file ->
+            let imgModel, imgCmd = ImageMessage.init file
+            MkImageModel imgModel,
+            Cmd.map MkImageMessage imgCmd
 
     /// Handles a directory-mode message.
-    let private onDirectoryMessage dirMsg model =
-        let dirModel, dirCmd =
-            DirectoryMessage.update
-                dirMsg model.DirectoryModel
-        { model with DirectoryModel = dirModel },
-        Cmd.map MkDirectoryMessage dirCmd
+    let private onDirectoryMessage dirMsg = function
+        | MkDirectoryModel dirModel ->
+            let dirModel, dirCmd =
+                DirectoryMessage.update dirMsg dirModel
+            MkDirectoryModel dirModel,
+            Cmd.map MkDirectoryMessage dirCmd
+        | _ -> failwith "Invalid state"
 
     /// Handles an image-mode message.
-    let private onImageMessage dpiScale imgMsg model =
-        let imgModel, imgCmd =
-            ImageMessage.update
-                dpiScale imgMsg model.ImageModel
-        { model with ImageModel = imgModel },
-        Cmd.map MkImageMessage imgCmd
+    let private onImageMessage dpiScale imgMsg = function
+        | MkImageModel imgModel ->
+            let imgModel, imgCmd =
+                ImageMessage.update dpiScale imgMsg imgModel
+            MkImageModel imgModel,
+            Cmd.map MkImageMessage imgCmd
+        | _ -> failwith "Invalid state"
 
     /// Switches to image mode.
-    let private onSwitchToImage file model =
-        { model with Mode = Mode.Image },
-        [
-            Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
-            ImageMessage.loadImageCommand file
-        ]
-            |> Cmd.batch
-            |> Cmd.map MkImageMessage
+    let private onSwitchToImage file (_model : Model) =
+        let imgModel, imgCmd = ImageMessage.init file
+        MkImageModel imgModel,
+        Cmd.map MkImageMessage imgCmd
 
     /// Switches to directory mode.
-    let private onSwitchToDirectory model =
-        { model with Mode = Mode.Directory },
-        Cmd.none
+    let private onSwitchToDirectory = function
+        | MkImageModel imgModel ->
+            let dirModel, dirCmd =
+                DirectoryMessage.init imgModel.File.Directory
+            MkDirectoryModel dirModel,
+            Cmd.map MkDirectoryMessage dirCmd
+        | _ -> failwith "Invalid state"
 
     /// Opens the given file in its directory.
-    let private onImageSelected (file : FileInfo) model =
-
-            // initialize chosen directory
-        let dirModel, dirCmd =
-            DirectoryMessage.init file.Directory
-
-            // switch to chosen image in that directory
-        let model, switchCmd =
-            { model with
-                DirectoryModel = dirModel }
-                |> onSwitchToImage file
-
-            // assemble top-level model and command
-        model,
-        Cmd.batch [
-            Cmd.map MkDirectoryMessage dirCmd
-            switchCmd
-        ]
+    let private onImageSelected file model =
+        onSwitchToImage file model
 
     /// Updates the given model based on the given message.
     let update dpiScale message model =

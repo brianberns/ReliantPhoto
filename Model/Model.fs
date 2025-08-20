@@ -1,18 +1,10 @@
 ﻿namespace Reliant.Photo
 
-/// Model mode.
-[<RequireQualifiedAccess>]
-type Mode = Directory | Image
-
 /// Top-level model.
 type Model =
-    {
-        /// Directory model.
-        DirectoryModel : DirectoryModel
 
-        /// Image model.
-        ImageModel : ImageModel
+    /// Directory model.
+    | MkDirectoryModel of DirectoryModel
 
-        /// Current mode.
-        Mode : Mode
-    }
+    /// Image model.
+    | MkImageModel of ImageModel

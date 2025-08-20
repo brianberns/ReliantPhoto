@@ -6,11 +6,9 @@ module View =
 
     /// Creates a view of the given model.
     let view model dispatch =
-        match model.Mode with
-            | Mode.Directory ->
-                DirectoryView.view
-                    model.DirectoryModel dispatch
-                        :> IView
-            | Mode.Image ->
-                ImageView.view
-                    model.ImageModel dispatch
+        match model with
+            | MkDirectoryModel dirModel ->
+                DirectoryView.view dirModel dispatch
+                    :> IView
+            | MkImageModel imgModel ->
+                ImageView.view imgModel dispatch
