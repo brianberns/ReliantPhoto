@@ -1,9 +1,10 @@
-﻿namespace Reliant.Photo
+namespace Reliant.Photo
 
 open Elmish
 
 open System
 open System.IO
+open System.Reflection
 
 open Avalonia
 open Avalonia.Controls
@@ -17,6 +18,14 @@ module Window =
         Environment.SpecialFolder.MyPictures
             |> Environment.GetFolderPath
             |> DirectoryInfo
+
+    /// Gets the window icon.
+    let getIcon () =
+        Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream(
+                "ReliantPhoto.icon.png")
+            |> WindowIcon
 
     /// Loads user settings, if possible.
     let loadSettings (window : Window) =
@@ -97,11 +106,7 @@ module Window =
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo Viewer",
-        Icon =
-            WindowIcon(
-                Path.Combine(
-                    AppContext.BaseDirectory,
-                    "icon.png")),
+        Icon = Window.getIcon (),
         MinWidth = 600.0,
         MinHeight = 400.0)
     do

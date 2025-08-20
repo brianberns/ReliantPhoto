@@ -15,9 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="icon.png" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Model\ImageSharp.fs" />
     <Compile Include="Model\ImageFile.fs" />
