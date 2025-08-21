@@ -15,6 +15,9 @@ type DirectoryMessage =
     /// Some images in the current directory were loaded.
     | ImagesLoaded of SessionId * FileImageResult[]
 
+    /// A file in the current directory was deleted.
+    | ImageDeleted of SessionId * FileInfo
+
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded of SessionId
 
@@ -80,6 +83,12 @@ module DirectoryMessage =
             }
         Async.Start(work, token)
 
+    /// Responds to the deletion of a file.
+    let private onFileDeleted
+        sessionId dispatch (args : FileSystemEventArgs) =
+        let file = FileInfo(args.FullPath)
+        dispatch (ImageDeleted (sessionId, file))
+
     /// Watches the model's directory for changes.
     let private watch model : Subscribe<_> =
         fun dispatch ->
@@ -94,6 +103,10 @@ module DirectoryMessage =
                 onFileCreated
                     model.SessionId
                     cts.Token
+                    dispatch)
+            watcher.Deleted.Add(
+                onFileDeleted
+                    model.SessionId
                     dispatch)
 
                 // cleanup
@@ -114,28 +127,54 @@ module DirectoryMessage =
             [ key; "watch" ], watch model
         ]
 
+    /// Handles the start of directory loading.
+    let private onLoadDirectory model =
+        { model with IsLoading = true },   // trigger subscription
+        Cmd.none
+
+    /// Handles newly loaded images.
+    let private onImagesLoaded
+        sessionId fileImageResults model =
+        let model =
+            if sessionId = model.SessionId then
+                { model with
+                    FileImageResults =
+                        Array.append
+                            model.FileImageResults
+                            fileImageResults }
+                else model   // ignore stale message
+        model, Cmd.none
+
+    /// Handles a deleted image.
+    let private onImageDeleted
+        sessionId (file : FileInfo) model =
+        let model =
+            if sessionId = model.SessionId then
+                { model with
+                    FileImageResults =
+                        model.FileImageResults
+                            |> Seq.where (fun (file_, _) ->   // to-do: improve efficiency
+                                file_.FullName <> file.FullName)
+                            |> Seq.toArray }
+            else model   // ignore state message
+        model, Cmd.none
+
+    /// Handles the end of directory loading.
+    let private onDirectoryLoaded sessionId model =
+        let model =
+            if sessionId = model.SessionId then
+                { model with IsLoading = false }
+            else model   // ignore stale message
+        model, Cmd.none
+
     /// Updates the given model based on the given message.
     let update message (model : DirectoryModel) =
         match message with
-
-            | LoadDirectory ->
-                { model with IsLoading = true },   // trigger subscription
-                Cmd.none
-
-            | ImagesLoaded (sessionId, pairs) ->
-                let model =
-                    if sessionId = model.SessionId then
-                        { model with
-                            FileImageResults =
-                                Array.append
-                                    model.FileImageResults
-                                    pairs }
-                        else model   // ignore stale message
-                model, Cmd.none
-
+            | LoadDirectory -> onLoadDirectory model
+            | ImagesLoaded (sessionId, fileImageResults) ->
+                onImagesLoaded
+                    sessionId fileImageResults model
+            | ImageDeleted (sessionId, file) ->
+                onImageDeleted sessionId file model
             | DirectoryLoaded sessionId ->
-                let model =
-                    if sessionId = model.SessionId then
-                        { model with IsLoading = false }
-                    else model   // ignore stale message
-                model, Cmd.none
+                onDirectoryLoaded sessionId model
