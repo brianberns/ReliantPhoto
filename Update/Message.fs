@@ -20,16 +20,22 @@ type Message =
 
 module Message =
 
+    /// Initializes directory model.
+    let private initDirectory dir =
+        let dirModel, dirCmd = DirectoryMessage.init dir
+        MkDirectoryModel dirModel,
+        Cmd.map MkDirectoryMessage dirCmd
+
+    /// Initializes image model.
+    let private initImage file =
+        let imgModel, imgCmd = ImageMessage.init file
+        MkImageModel imgModel,
+        Cmd.map MkImageMessage imgCmd
+
     /// Initializes model.
     let init = function
-        | Choice1Of2 dir ->
-            let dirModel, dirCmd = DirectoryMessage.init dir
-            MkDirectoryModel dirModel,
-            Cmd.map MkDirectoryMessage dirCmd
-        | Choice2Of2 file ->
-            let imgModel, imgCmd = ImageMessage.init file
-            MkImageModel imgModel,
-            Cmd.map MkImageMessage imgCmd
+        | Choice1Of2 dir -> initDirectory dir
+        | Choice2Of2 file -> initImage file
 
     /// Handles a directory-mode message.
     let private onDirectoryMessage dirMsg = function
@@ -51,17 +57,12 @@ module Message =
 
     /// Loads the given image.
     let private onLoadImage file (_model : Model) =
-        let imgModel, imgCmd = ImageMessage.init file
-        MkImageModel imgModel,
-        Cmd.map MkImageMessage imgCmd
+        initImage file
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
         | MkImageModel imgModel ->
-            let dirModel, dirCmd =
-                DirectoryMessage.init imgModel.File.Directory
-            MkDirectoryModel dirModel,
-            Cmd.map MkDirectoryMessage dirCmd
+            initDirectory imgModel.File.Directory
         | _ -> failwith "Invalid state"
 
     /// Updates the given model based on the given message.
