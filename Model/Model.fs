@@ -3,8 +3,8 @@
 /// Top-level model.
 type Model =
 
-    /// Directory model.
-    | MkDirectoryModel of DirectoryModel
+    /// Directory mode.
+    | DirectoryMode of (DirectoryModel * Option<ImageModel>)
 
-    /// Image model.
-    | MkImageModel of ImageModel
+    /// Image mode.
+    | ImageMode of (Option<DirectoryModel> * ImageModel)

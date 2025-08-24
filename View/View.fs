@@ -7,8 +7,8 @@ module View =
     /// Creates a view of the given model.
     let view model dispatch =
         match model with
-            | MkDirectoryModel dirModel ->
+            | DirectoryMode (dirModel, _) ->
                 DirectoryView.view dirModel dispatch
                     :> IView
-            | MkImageModel imgModel ->
+            | ImageMode (_, imgModel) ->
                 ImageView.view imgModel dispatch

@@ -60,10 +60,10 @@ module Window =
                 // side effects
             let dir, title =
                 match model with
-                    | MkDirectoryModel dirModel ->
+                    | DirectoryMode (dirModel, _) ->
                         dirModel.Directory,
                         dirModel.Directory.FullName
-                    | MkImageModel imgModel ->
+                    | ImageMode (_, imgModel) ->
                         if imgModel.IsBrowsed
                             || imgModel.IsLoaded then
                             imgModel.File.Directory,
@@ -75,7 +75,7 @@ module Window =
 
                 // Elmish subscription
             match model with
-                | MkDirectoryModel dirModel ->
+                | DirectoryMode (dirModel, _) ->
                     yield! dirModel
                         |> DirectoryMessage.subscribe
                         |> Sub.map "directory" MkDirectoryMessage
