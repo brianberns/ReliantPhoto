@@ -5,6 +5,12 @@ open System.Threading
 
 open Avalonia.Media.Imaging
 
+module FileSystemInfo =
+
+    /// File/directory equality.
+    let same<'t when 't :> FileSystemInfo> (fsiA : 't) (fsiB : 't) =
+        fsiA.FullName = fsiB.FullName
+
 module FileInfo =
 
     /// Waits for the given file to be readable.

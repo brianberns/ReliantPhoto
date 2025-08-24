@@ -176,7 +176,7 @@ module ImageMessage =
         let model =
             match model with
                 | Browsed browsed
-                    when file.FullName = model.File.FullName ->
+                    when FileSystemInfo.same file model.File ->
                     layoutImage dpiScale bitmap browsed
                 | _ -> model   // stale async message
         model, Cmd.none

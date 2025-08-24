@@ -154,7 +154,7 @@ module DirectoryMessage =
                     FileImageResults =
                         model.FileImageResults
                             |> Seq.where (fun (file_, _) ->   // to-do: improve efficiency
-                                file_.FullName <> file.FullName)
+                                not (FileSystemInfo.same file_ file))
                             |> Seq.toArray }
             else model   // ignore state message
         model, Cmd.none

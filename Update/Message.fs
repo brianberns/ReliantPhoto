@@ -20,16 +20,22 @@ type Message =
 
 module Message =
 
+    /// Initializes directory model.
+    let private initDirectory dir imgModelOpt =
+        let dirModel, dirCmd = DirectoryMessage.init dir
+        DirectoryMode (dirModel, imgModelOpt),
+        Cmd.map MkDirectoryMessage dirCmd
+
+    /// Initializes image model.
+    let private initImage file dirModelOpt =
+        let imgModel, imgCmd = ImageMessage.init file
+        ImageMode (dirModelOpt, imgModel),
+        Cmd.map MkImageMessage imgCmd
+
     /// Initializes model.
     let init = function
-        | Choice1Of2 dir ->
-            let dirModel, dirCmd = DirectoryMessage.init dir
-            DirectoryMode (dirModel, None),
-            Cmd.map MkDirectoryMessage dirCmd
-        | Choice2Of2 file ->
-            let imgModel, imgCmd = ImageMessage.init file
-            ImageMode (None, imgModel),
-            Cmd.map MkImageMessage imgCmd
+        | Choice1Of2 dir -> initDirectory dir None
+        | Choice2Of2 file -> initImage file None
 
     /// Handles a directory-mode message.
     let private onDirectoryMessage dirMsg = function
@@ -50,36 +56,37 @@ module Message =
         | _ -> failwith "Invalid state"
 
     /// Loads the given image.
+    let private loadImage file dirModelOpt imgModel =
+        let imgCmd = ImageMessage.loadImageCommand file
+        ImageMode (dirModelOpt, imgModel),
+        Cmd.map MkImageMessage imgCmd
+
+    /// Loads the given image.
     let private onLoadImage file = function
-        | ImageMode _ as model ->   // to-do: refactor
-            let imgCmd = ImageMessage.loadImageCommand file
-            model,
-            Cmd.map MkImageMessage imgCmd
+
+            // create image model
         | DirectoryMode (dirModel, None) ->
-            let imgModel, imgCmd = ImageMessage.init file
-            ImageMode (Some dirModel, imgModel),
-            Cmd.map MkImageMessage imgCmd
+            initImage file (Some dirModel)
+
+            // reuse image model
         | DirectoryMode (dirModel, Some imgModel) ->
-            let imgCmd = ImageMessage.loadImageCommand file
-            ImageMode (Some dirModel, imgModel),
-            Cmd.map MkImageMessage imgCmd
+            loadImage file (Some dirModel) imgModel
+
+            // reuse image model
+        | ImageMode (dirModelOpt, imgModel) ->
+            loadImage file dirModelOpt imgModel
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
-        | ImageMode (None, imgModel) ->
-            let dirModel, dirCmd =
-                DirectoryMessage.init imgModel.File.Directory
-            DirectoryMode (dirModel, None),
-            Cmd.map MkDirectoryMessage dirCmd
-        | ImageMode (Some dirModel, imgModel) ->
-            let dirModel, dirCmd =
-                if dirModel.Directory.FullName
-                    = imgModel.File.Directory.FullName then
-                    dirModel, Cmd.none
-                else
-                    DirectoryMessage.init imgModel.File.Directory
-            DirectoryMode (dirModel, Some imgModel),
-            Cmd.map MkDirectoryMessage dirCmd
+        | ImageMode (Some dirModel, imgModel) as model
+            when FileSystemInfo.same
+                dirModel.Directory
+                imgModel.File.Directory ->
+                model, Cmd.none
+        | ImageMode (_, imgModel) ->
+            initDirectory
+                imgModel.File.Directory
+                (Some imgModel)
         | _ -> failwith "Invalid state"
 
     /// Updates the given model based on the given message.
