@@ -78,11 +78,12 @@ module Message =
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
-        | ImageMode (Some dirModel, imgModel) as model
+        | ImageMode (Some dirModel, imgModel)
             when FileSystemInfo.same
                 dirModel.Directory
                 imgModel.File.Directory ->
-                model, Cmd.none
+                DirectoryMode (dirModel, Some imgModel),
+                Cmd.none
         | ImageMode (_, imgModel) ->
             initDirectory
                 imgModel.File.Directory
