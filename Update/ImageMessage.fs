@@ -195,7 +195,7 @@ module ImageMessage =
                 | Browsed browsed
                     when FileSystemInfo.same file model.File ->
                     layoutImage dpiScale bitmap browsed
-                | _ -> model   // stale async message
+                | _ -> model   // ignore stale message
         model, Cmd.none
 
     /// Handles a load error.

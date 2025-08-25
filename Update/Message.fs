@@ -37,16 +37,26 @@ module Message =
         | Choice1Of2 dir -> initDirectory dir None
         | Choice2Of2 file -> initImage file None
 
-    /// Handles a directory-mode message.
-    let private onDirectoryMessage dirMsg = function
-        | DirectoryMode (dirModel, imgModelOpt) ->
+    /// Handles a directory message.
+    let private onDirectoryMessage dirMsg model =
+
+        let handle dirModel mkModel =
             let dirModel, dirCmd =
                 DirectoryMessage.update dirMsg dirModel
-            DirectoryMode (dirModel, imgModelOpt),
+            mkModel dirModel,
             Cmd.map MkDirectoryMessage dirCmd
-        | _ -> failwith "Invalid state"
 
-    /// Handles an image-mode message.
+        match model with
+            | DirectoryMode (dirModel, imgModelOpt) ->
+                handle dirModel (fun dirModel ->
+                    DirectoryMode (dirModel, imgModelOpt))
+            | ImageMode (Some dirModel, imgModel) ->   // e.g. add/delete file
+                handle dirModel (fun dirModel ->
+                    ImageMode (Some dirModel, imgModel))
+            | ImageMode (None, _) ->
+                model, Cmd.none
+
+    /// Handles an image message.
     let private onImageMessage dpiScale imgMsg = function
         | ImageMode (dirModelOpt, imgModel) ->
             let imgModel, imgCmd =

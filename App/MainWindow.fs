@@ -74,12 +74,12 @@ module Window =
             window.Title <- title
 
                 // Elmish subscription
-            match model with
-                | DirectoryMode (dirModel, _) ->
+            match Model.tryGetDirectoryModel model with
+                | Some dirModel ->
                     yield! dirModel
                         |> DirectoryMessage.subscribe
                         |> Sub.map "directory" MkDirectoryMessage
-                | _ -> ()
+                | None -> ()
         ]
 
     /// Gets initial directory and file.

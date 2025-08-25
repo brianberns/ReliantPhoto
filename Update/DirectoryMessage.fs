@@ -156,7 +156,7 @@ module DirectoryMessage =
                             |> Seq.where (fun (file_, _) ->   // to-do: improve efficiency
                                 not (FileSystemInfo.same file_ file))
                             |> Seq.toArray }
-            else model   // ignore state message
+            else model   // ignore stale message
         model, Cmd.none
 
     /// Handles the end of directory loading.
