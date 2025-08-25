@@ -175,6 +175,9 @@ type LoadedImage =
 /// An image file that could not be browsed.
 type BrowseError =
     {
+        /// Initialized container.
+        Initialized : InitializedContainer
+
         /// Image file that couldn't be browsed.
         File : FileInfo
 
@@ -182,10 +185,16 @@ type BrowseError =
         Message : string
     }
 
+    /// Initialized container lens.
+    static member Initialized_ : Lens<_, _> =
+        _.Initialized,
+        fun inited errored ->
+            { errored with Initialized = inited }
+
 /// An image file that could not be loaded.
 type LoadError =
     {
-        /// Browsed browsed file.
+        /// Browsed file.
         Browsed : BrowsedImage
 
         /// Error message.
@@ -236,10 +245,11 @@ type ImageModel =
                 Some (browsed ^. BrowsedImage.Initialized_)
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Initialized_)
+            | BrowseError errored ->
+                Some (errored ^. BrowseError.Initialized_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Initialized_)
-            | Uninitialized
-            | BrowseError _ -> None),
+            | Uninitialized -> None),
 
         (fun inited -> function
             | Initialized _ -> Initialized inited
@@ -251,6 +261,10 @@ type ImageModel =
                 loaded
                     |> inited ^= LoadedImage.Initialized_
                     |> Loaded
+            | BrowseError errored ->
+                errored
+                    |> inited ^= BrowseError.Initialized_
+                    |> BrowseError
             | LoadError errored ->
                 errored
                     |> inited ^= LoadError.Initialized_
@@ -371,6 +385,7 @@ module ImageModel =
         modelOpt
             |> Option.defaultValue
                 (BrowseError {
+                    Initialized = inited
                     File = fromFile
                     Message = "Could not browse file"
                 })

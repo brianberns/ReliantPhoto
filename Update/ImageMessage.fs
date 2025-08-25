@@ -310,6 +310,7 @@ module ImageMessage =
                             onBrowse -1 model
                         else
                             BrowseError {   // to-do: handle better?
+                                Initialized = browsed.Initialized
                                 File = browsed.File
                                 Message = "No file"
                             }, Cmd.none
