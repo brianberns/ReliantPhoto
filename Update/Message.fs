@@ -66,7 +66,17 @@ module Message =
         | _ -> failwith "Invalid state"
 
     /// Loads the given image.
-    let private loadImage file dirModelOpt imgModel =
+    let private loadImage (file : FileInfo) dirModelOpt imgModel =
+
+            // reuse directory model?
+        let dirModelOpt =
+            option {
+                let! dirModel = dirModelOpt
+                if FileSystemInfo.same
+                    dirModel.Directory file.Directory then
+                    return dirModel
+            }
+
         ImageMode (dirModelOpt, imgModel),
         [
             Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
@@ -92,13 +102,13 @@ module Message =
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
-        | ImageMode (Some dirModel, imgModel)
-            when FileSystemInfo.same
+        | ImageMode (Some dirModel, imgModel) ->
+            assert(FileSystemInfo.same
                 dirModel.Directory
-                imgModel.File.Directory ->
-                DirectoryMode (dirModel, Some imgModel),
-                Cmd.none
-        | ImageMode (_, imgModel) ->
+                imgModel.File.Directory)
+            DirectoryMode (dirModel, Some imgModel),
+            Cmd.none
+        | ImageMode (None, imgModel) ->
             initDirectory
                 imgModel.File.Directory
                 (Some imgModel)
