@@ -16,7 +16,7 @@ open SixLabors.ImageSharp.Processing
 module private ImageSharp =
 
     /// Gets the orientation of the given image.
-    let getOrientation (imageInfo : ImageInfo) =
+    let private getOrientation (imageInfo : ImageInfo) =
         option {
             let! profile =
                 Option.ofObj imageInfo.Metadata.ExifProfile
@@ -28,7 +28,7 @@ module private ImageSharp =
 
     /// Gets the target size for the given target height,
     /// accounting for rotation, if necessary.
-    let getTargetSize targetHeight imageInfo =
+    let private getTargetSize targetHeight imageInfo =
         match getOrientation imageInfo with
             | ExifOrientationMode.LeftTop
             | ExifOrientationMode.RightTop
