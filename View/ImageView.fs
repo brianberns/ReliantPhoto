@@ -252,6 +252,8 @@ module ImageView =
             match model ^. ImageModel.TryBrowsed_ with
                 | Some browsed ->
                     Border.keyBindings [
+
+                            // previous image
                         if browsed.HasPreviousImage then
                             for key in [ Key.Left; Key.PageUp ] do
                                 KeyBinding.create [
@@ -259,6 +261,8 @@ module ImageView =
                                     KeyBinding.execute (fun _ ->
                                         dispatch (MkImageMessage (Browse -1)))
                                 ]
+
+                            // next image
                         if browsed.HasNextImage then
                             for key in [ Key.Right; Key.PageDown ] do
                                 KeyBinding.create [
@@ -266,6 +270,13 @@ module ImageView =
                                     KeyBinding.execute (fun _ ->
                                         dispatch (MkImageMessage (Browse 1)))
                                 ]
+
+                            // delete file
+                        KeyBinding.create [
+                            KeyBinding.key Key.Delete
+                            KeyBinding.execute (fun _ ->
+                                dispatch (MkImageMessage DeleteFile))
+                        ]
                     ]
                 | None -> ()
 
