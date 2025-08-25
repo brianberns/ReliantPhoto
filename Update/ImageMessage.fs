@@ -45,6 +45,9 @@ type ImageMessage =
     /// Pointer pan has ended.
     | PanEnd
 
+    /// Delete the current file.
+    | DeleteFile
+
 module ImageMessage =
 
     /// Creates a command to load an image from the given file.
@@ -293,6 +296,37 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
+    /// Deletes the current image.
+    let private onDeleteFile model =
+        match model ^. ImageModel.TryBrowsed_ with
+            | Some browsed ->
+
+                try
+                        // browse first
+                    let model, cmd =
+                        if browsed.HasNextImage then
+                            onBrowse 1 model
+                        elif browsed.HasPreviousImage then
+                            onBrowse -1 model
+                        else
+                            BrowseError {   // to-do: handle better?
+                                File = browsed.File
+                                Message = "No file"
+                            }, Cmd.none
+
+                        // then delete file
+                    browsed.File.Delete()
+
+                    model, cmd
+
+                with exn ->
+                    LoadError {   // to-do: handle better?
+                        Browsed = browsed
+                        Message = exn.Message
+                    }, Cmd.none
+
+            | None -> failwith "Invalid state"
+
     /// Updates the given model based on the given message.
     let update dpiScale message model =
         match message with
@@ -340,3 +374,7 @@ module ImageMessage =
                 // finish pan
             | PanEnd ->
                 onPanEnd model
+
+                // delete file
+            | DeleteFile ->
+                onDeleteFile model

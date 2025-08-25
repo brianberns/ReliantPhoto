@@ -30,6 +30,10 @@ module ImageView =
                 Button.createText "🗀" "Open image file" (
                     FileSystemView.onSelectImage dispatch)
 
+                    // delete file
+                Button.createText "🗑" "Delete file" (fun _ ->
+                    dispatch (MkImageMessage DeleteFile))
+
                     // zoom to actual size
                 Button.createText "▦" "Zoom to actual size" (fun _ ->
                     dispatch (MkImageMessage ZoomToActualSize))
