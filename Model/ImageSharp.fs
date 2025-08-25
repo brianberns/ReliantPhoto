@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
 open System.Runtime.InteropServices
 
@@ -66,9 +67,9 @@ module private ImageSharp =
                     let destAddress =
                         fbLock.Address + nativeint (y * fbLock.RowBytes)
                     let byteRow = MemoryMarshal.AsBytes(row)
-                    Marshal.Copy(
-                        byteRow.ToArray(), 0,
-                        destAddress, byteRow.Length))
+                    let destSpan =
+                        Span(destAddress.ToPointer(), byteRow.Length)
+                    byteRow.CopyTo(destSpan))
 
         wb :> Bitmap
 
