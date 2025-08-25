@@ -47,14 +47,9 @@ module private ImageSharp =
             image.Mutate(_.AutoOrient() >> ignore)           // rotate, if necessary
             image.CloneAs<Bgra32>()                          // convert to Avalonia format
 
-            // copy pixels into managed array
+            // create destination bitmap
         let width = image.Width
         let height = image.Height
-        let bytes =
-            Array.zeroCreate<byte> (width * height * 4)      // 4 bytes per pixel (B, G, R, A)
-        image.CopyPixelDataTo(bytes)
-
-            // create destination bitmap
         let wb =
             let size = PixelSize(width, height)
             let dpi = Vector(96.0, 96.0)
@@ -65,7 +60,15 @@ module private ImageSharp =
             // copy pixel data to bitmap
         do
             use fbLock = wb.Lock()
-            Marshal.Copy(bytes, 0, fbLock.Address, bytes.Length)
+            image.ProcessPixelRows(fun accessor ->
+                for y = 0 to height - 1 do
+                    let row = accessor.GetRowSpan(y)
+                    let destAddress =
+                        fbLock.Address + nativeint (y * fbLock.RowBytes)
+                    let byteRow = MemoryMarshal.AsBytes(row)
+                    Marshal.Copy(
+                        byteRow.ToArray(), 0,
+                        destAddress, byteRow.Length))
 
         wb :> Bitmap
 
