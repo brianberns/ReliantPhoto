@@ -57,9 +57,13 @@ module Message =
 
     /// Loads the given image.
     let private loadImage file dirModelOpt imgModel =
-        let imgCmd = ImageMessage.loadImageCommand file
         ImageMode (dirModelOpt, imgModel),
-        Cmd.map MkImageMessage imgCmd
+        [
+            Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
+            ImageMessage.loadImageCommand file
+        ]
+            |> Cmd.batch
+            |> Cmd.map MkImageMessage
 
     /// Loads the given image.
     let private onLoadImage file = function
