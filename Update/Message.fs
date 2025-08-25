@@ -65,18 +65,16 @@ module Message =
             Cmd.map MkImageMessage imgCmd
         | _ -> failwith "Invalid state"
 
+    /// Reuses the given directory model, if possible.
+    let private tryReuseDirectoryModel
+        (file : FileInfo) dirModel =
+        if FileSystemInfo.same
+            dirModel.Directory file.Directory then
+            Some dirModel
+        else None
+
     /// Loads the given image.
     let private loadImage (file : FileInfo) dirModelOpt imgModel =
-
-            // reuse directory model?
-        let dirModelOpt =
-            option {
-                let! dirModel = dirModelOpt
-                if FileSystemInfo.same
-                    dirModel.Directory file.Directory then
-                    return dirModel
-            }
-
         ImageMode (dirModelOpt, imgModel),
         [
             Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
@@ -90,14 +88,22 @@ module Message =
 
             // create image model
         | DirectoryMode (dirModel, None) ->
-            initImage file (Some dirModel)
+            let dirModelOpt =
+                tryReuseDirectoryModel file dirModel
+            initImage file dirModelOpt
 
             // reuse image model
         | DirectoryMode (dirModel, Some imgModel) ->
-            loadImage file (Some dirModel) imgModel
+            let dirModelOpt =
+                tryReuseDirectoryModel file dirModel
+            loadImage file dirModelOpt imgModel
 
             // reuse image model
         | ImageMode (dirModelOpt, imgModel) ->
+            let dirModelOpt =
+                dirModelOpt
+                    |> Option.bind (
+                        tryReuseDirectoryModel file)
             loadImage file dirModelOpt imgModel
 
     /// Switches to directory mode.
