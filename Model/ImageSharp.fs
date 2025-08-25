@@ -1,14 +1,17 @@
 ﻿namespace Reliant.Photo
 
 open System.IO
+open System.Runtime.InteropServices
 
+open Avalonia
 open Avalonia.Media.Imaging
+open Avalonia.Platform
 
 open SixLabors.ImageSharp
-open SixLabors.ImageSharp.Processing
 open SixLabors.ImageSharp.Formats
-open SixLabors.ImageSharp.Formats.Png
 open SixLabors.ImageSharp.Metadata.Profiles.Exif
+open SixLabors.ImageSharp.PixelFormats
+open SixLabors.ImageSharp.Processing
 
 module private ImageSharp =
 
@@ -35,35 +38,36 @@ module private ImageSharp =
             | _ ->
                 Size(0, targetHeight)
 
-    /// PNG encoder.
-    let private pngEncoder =
-        PngEncoder(
-            CompressionLevel =
-                PngCompressionLevel.NoCompression)
-
     /// Loads an image from the given file.
     let private loadImageImpl options (file : FileInfo) =
 
-        use stream = new MemoryStream()
+            // load image
+        use image =
+            use image = Image.Load(options, file.FullName)   // load image
+            image.Mutate(_.AutoOrient() >> ignore)           // rotate, if necessary
+            image.CloneAs<Bgra32>()                          // convert to Avalonia format
+
+            // copy pixels into managed array
+        let width = image.Width
+        let height = image.Height
+        let bytes =
+            Array.zeroCreate<byte> (width * height * 4)      // 4 bytes per pixel (B, G, R, A)
+        image.CopyPixelDataTo(bytes)
+
+            // create destination bitmap
+        let wb =
+            let size = PixelSize(width, height)
+            let dpi = Vector(96.0, 96.0)
+            let format = PixelFormat.Bgra8888
+            let alphaFormat = AlphaFormat.Unpremul
+            new WriteableBitmap(size, dpi, format, alphaFormat)
+
+            // copy pixel data to bitmap
         do
-                // load image
-            use image = Image.Load(options, file.FullName)
-            image.Mutate(_.AutoOrient() >> ignore)
+            use fbLock = wb.Lock()
+            Marshal.Copy(bytes, 0, fbLock.Address, bytes.Length)
 
-                // re-encode image to stream
-            let encoder =
-                match image.Metadata.DecodedImageFormat.Name.ToLower() with
-                    | "tiff" -> pngEncoder :> IImageEncoder
-                    | _ ->
-                        image.Configuration
-                            .ImageFormatsManager
-                            .GetEncoder(
-                                image.Metadata.DecodedImageFormat)
-            image.Save(stream, encoder)
-            stream.Position <- 0
-
-            // create Avalonia bitmap
-        new Bitmap(stream)
+        wb :> Bitmap
 
     module private DecoderOptions =
 
