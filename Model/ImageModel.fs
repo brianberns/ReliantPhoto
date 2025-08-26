@@ -68,48 +68,6 @@ module InitializedContainer =
             Some inited.ZoomScale
         else None
 
-/// A browsed image file.
-type BrowsedImage =
-    {
-        /// Initialized container.
-        Initialized : InitializedContainer
-
-        /// Image file.
-        File : FileInfo
-
-        /// Can browse to previous image?
-        HasPreviousImage : bool
-
-        /// Can browse to next image?
-        HasNextImage : bool
-    }
-
-    /// Initialized container lens.
-    static member Initialized_ : Lens<_, _> =
-        _.Initialized,
-        fun inited browsed ->
-            { browsed with Initialized = inited }
-
-    /// Container size lens.
-    static member ContainerSize_ =
-        BrowsedImage.Initialized_
-            >-> InitializedContainer.ContainerSize_
-
-    /// Zoom scale lens.
-    static member ZoomScale_ =
-        BrowsedImage.Initialized_
-            >-> InitializedContainer.ZoomScale_
-
-    /// Zoom scale lock lens.
-    static member ZoomScaleLock_ =
-        BrowsedImage.Initialized_
-            >-> InitializedContainer.ZoomScaleLock_
-
-    /// Offset prism.
-    static member Offset_ =
-        BrowsedImage.Initialized_
-            >-> InitializedContainer.Offset_
-
 /// Image pan.
 type Pan =
     {
@@ -123,8 +81,11 @@ type Pan =
 /// A loaded image.
 type LoadedImage =
     {
-        /// Browsed image.
-        Browsed : BrowsedImage
+        /// Initialized container.
+        Initialized : InitializedContainer
+
+        /// Image file.
+        File : FileInfo
 
         /// Loaded bitmap.
         Bitmap : Bitmap
@@ -136,21 +97,11 @@ type LoadedImage =
         PanOpt : Option<Pan>
     }
 
-    /// Loaded image offset.
-    member this.Offset =
-        match this ^. LoadedImage.Offset_ with
-            | Some offset -> offset
-            | None -> failwith "Invalid state"
-
-    /// Browsed image lens.
-    static member Browsed_ : Lens<_, _> =
-        _.Browsed,
-        fun browsed loaded ->
-            { loaded with Browsed = browsed }
-
     /// Initialized container lens.
-    static member Initialized_ =
-        LoadedImage.Browsed_ >-> BrowsedImage.Initialized_
+    static member Initialized_ : Lens<_, _> =
+        _.Initialized,
+        fun inited loaded ->
+            { loaded with Initialized = inited }
 
     /// Container size lens.
     static member ContainerSize_ =
@@ -172,13 +123,63 @@ type LoadedImage =
         LoadedImage.Initialized_
             >-> InitializedContainer.Offset_
 
-/// An image file that could not be browsed.
-type BrowseError =
+    /// Loaded image offset.
+    member this.Offset =
+        match this ^. LoadedImage.Offset_ with
+            | Some offset -> offset
+            | None -> failwith "Invalid state"
+
+/// A browsed image.
+type BrowsedImage =
+    {
+        /// Loaded image.
+        Loaded : LoadedImage
+
+        /// Can browse to previous image?
+        HasPreviousImage : bool
+
+        /// Can browse to next image?
+        HasNextImage : bool
+    }
+
+    /// Loaded image lens.
+    static member Loaded_ : Lens<_, _> =
+        _.Loaded,
+        fun loaded browsed ->
+            { browsed with Loaded = loaded }
+
+    /// Container size lens.
+    static member Initialized_ =
+        BrowsedImage.Loaded_
+            >-> LoadedImage.Initialized_
+
+    /// Container size lens.
+    static member ContainerSize_ =
+        BrowsedImage.Loaded_
+            >-> LoadedImage.ContainerSize_
+
+    /// Zoom scale lens.
+    static member ZoomScale_ =
+        BrowsedImage.Loaded_
+            >-> LoadedImage.ZoomScale_
+
+    /// Zoom scale lock lens.
+    static member ZoomScaleLock_ =
+        BrowsedImage.Loaded_
+            >-> LoadedImage.ZoomScaleLock_
+
+    /// Offset prism.
+    static member Offset_ =
+        BrowsedImage.Loaded_
+            >-> LoadedImage.Offset_
+
+/// An image file that could not be loaded.
+type LoadError =
     {
         /// Initialized container.
         Initialized : InitializedContainer
 
-        /// Image file that couldn't be browsed.
+        /// Image file that couldn't be loaded.
         File : FileInfo
 
         /// Error message.
@@ -190,26 +191,6 @@ type BrowseError =
         _.Initialized,
         fun inited errored ->
             { errored with Initialized = inited }
-
-/// An image file that could not be loaded.
-type LoadError =
-    {
-        /// Browsed file.
-        Browsed : BrowsedImage
-
-        /// Error message.
-        Message : string
-    }
-
-    /// Browsed image lens.
-    static member Browsed_ : Lens<_, _> =
-        _.Browsed,
-        fun browsed errored ->
-            { errored with Browsed = browsed }
-
-    /// Initialized container lens.
-    static member Initialized_ =
-        LoadError.Browsed_>-> BrowsedImage.Initialized_
 
     /// Container size lens.
     static member ContainerSize_ =
@@ -230,9 +211,6 @@ type ImageModel =
     /// Loaded image.
     | Loaded of LoadedImage
 
-    /// File could not be browsed.
-    | BrowseError of BrowseError
-
     /// Image could not be loaded.
     | LoadError of LoadError
 
@@ -241,36 +219,29 @@ type ImageModel =
 
         (function
             | Initialized inited -> Some inited
-            | Browsed browsed ->
-                Some (browsed ^. BrowsedImage.Initialized_)
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Initialized_)
-            | BrowseError errored ->
-                Some (errored ^. BrowseError.Initialized_)
+            | Browsed browsed ->
+                Some (browsed ^. BrowsedImage.Initialized_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Initialized_)
             | Uninitialized -> None),
 
         (fun inited -> function
             | Initialized _ -> Initialized inited
-            | Browsed browsed ->
-                browsed
-                    |> inited ^= BrowsedImage.Initialized_
-                    |> Browsed
             | Loaded loaded ->
                 loaded
                     |> inited ^= LoadedImage.Initialized_
                     |> Loaded
-            | BrowseError errored ->
-                errored
-                    |> inited ^= BrowseError.Initialized_
-                    |> BrowseError
+            | Browsed browsed ->
+                browsed
+                    |> inited ^= BrowsedImage.Initialized_
+                    |> Browsed
             | LoadError errored ->
                 errored
                     |> inited ^= LoadError.Initialized_
                     |> LoadError
-            | Uninitialized
-            | BrowseError _ as model -> model)
+            | Uninitialized -> Uninitialized)
 
     /// Initialized container lens.
     static member Initialized_ : Lens<_, _> =
@@ -289,50 +260,44 @@ type ImageModel =
         ImageModel.Initialized_
             >-> InitializedContainer.ContainerSize_
 
-    /// Browsed image prism.
-    static member TryBrowsed_ : Prism<_, _> =
+    /// Loaded image prism.
+    static member TryLoaded_ : Prism<_, _> =
 
         (function
-            | Browsed browsed -> Some browsed
-            | Loaded loaded ->
-                Some (loaded ^. LoadedImage.Browsed_)
-            | LoadError errored ->
-                Some (errored ^. LoadError.Browsed_)
+            | Loaded loaded -> Some loaded
+            | Browsed browsed ->
+                Some (browsed ^. BrowsedImage.Loaded_)
             | Uninitialized
             | Initialized _
-            | BrowseError _ -> None),
+            | LoadError _ -> None),
 
-        (fun browsed -> function
-            | Browsed _ -> Browsed browsed
-            | Loaded loaded ->
-                loaded
-                    |> browsed ^= LoadedImage.Browsed_
-                    |> Loaded
-            | LoadError errored ->
-                errored
-                    |> browsed ^= LoadError.Browsed_
-                    |> LoadError
+        (fun loaded -> function
+            | Loaded _ -> Loaded loaded
+            | Browsed browsed ->
+                browsed
+                    |> loaded ^= BrowsedImage.Loaded_
+                    |> Browsed
             | Uninitialized
             | Initialized _
-            | BrowseError _ as model -> model)
+            | LoadError _ as model -> model)
 
-    /// Browsed image lens.
-    static member Browsed_ : Lens<_, _> =
+    /// Loaded image lens.
+    static member Loaded_ : Lens<_, _> =
 
         (fun model ->
-            match model ^. ImageModel.TryBrowsed_ with
-                | Some browsed -> browsed
+            match model ^. ImageModel.TryLoaded_ with
+                | Some loaded -> loaded
                 | None -> failwith "Invalid state"),
 
-        (fun browsed model ->
+        (fun loaded model ->
             model
-                |> browsed ^= ImageModel.TryBrowsed_)
+                |> loaded ^= ImageModel.TryLoaded_)
 
     /// Image file.
     member this.File =
         match this with
-            | BrowseError errored -> errored.File
-            | _ -> (this ^. ImageModel.Browsed_).File
+            | LoadError errored -> errored.File
+            | _ -> (this ^. ImageModel.Loaded_).File
 
 module ImageModel =
 
@@ -349,7 +314,7 @@ module ImageModel =
         Comparer.Create(compareFiles)
 
     /// Browses to a file, if possible.
-    let browse inited incr (fromFile : FileInfo) =
+    let browse loaded incr (fromFile : FileInfo) =
 
             // get all candidate files for browsing
         let files =
@@ -374,8 +339,7 @@ module ImageModel =
                 let toIdx = fromIdx + incr
                 if toIdx >= 0 && toIdx < files.Length then
                     return Browsed {
-                        Initialized = inited
-                        File = files[toIdx]
+                        Loaded = loaded
                         HasPreviousImage = toIdx > 0
                         HasNextImage = toIdx < files.Length - 1
                     }
@@ -383,12 +347,7 @@ module ImageModel =
 
             // could not browse to file?
         modelOpt
-            |> Option.defaultValue
-                (BrowseError {
-                    Initialized = inited
-                    File = fromFile
-                    Message = "Could not browse file"
-                })
+            |> Option.defaultValue (Loaded loaded)
 
     /// Initial model.
     let init () = Uninitialized

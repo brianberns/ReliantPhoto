@@ -66,7 +66,7 @@ module ImageMessage =
         loadImageCommand file
 
     /// Updates layout due to container resize.
-    let private resize loaded =
+    let private resize containerSize loaded =
 
             // keep zoom scale?
         let zoomScaleOpt =
@@ -77,12 +77,13 @@ module ImageMessage =
             // get layout for new container size
         let offset, zoomScale =
             ImageLayout.getImageLayout
-                (loaded ^. LoadedImage.ContainerSize_)
+                containerSize
                 loaded.BitmapSize
                 (Some loaded.Offset)
                 zoomScaleOpt
 
         loaded
+            |> containerSize ^= LoadedImage.ContainerSize_
             |> offset ^= LoadedImage.Offset_
             |> zoomScale ^= LoadedImage.ZoomScale_
 
@@ -101,9 +102,7 @@ module ImageMessage =
 
                     // resize: update container size and layout
                 | Loaded loaded ->
-                    loaded
-                        |> containerSize ^= LoadedImage.ContainerSize_
-                        |> resize
+                    resize containerSize loaded
                         |> Loaded
 
                     // resize: just update container size
