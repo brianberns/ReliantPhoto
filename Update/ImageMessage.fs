@@ -25,7 +25,7 @@ type ImageMessage =
     | UnloadImage
 
     /// Load error occurred.
-    | HandleLoadError of string
+    | HandleLoadError of FileInfo * string
 
     /// Browse to previous/next image in directory, if possible.
     | Browse of int (*increment*)
@@ -112,6 +112,7 @@ module ImageMessage =
                         |> containerSize ^= ImageModel.ContainerSize_
         model, Cmd.none
 
+    (*
     /// Browses to and starts loading a file, if possible.
     let private browse inited incr fromFile =
         let model = ImageModel.browse inited incr fromFile
@@ -128,11 +129,18 @@ module ImageMessage =
                 | BrowseError _ -> Cmd.none
                 | _ -> failwith "Invalid state"
         model, cmd
+    *)
 
     /// Starts loading an image from the given file.
-    let private onLoadImage file model =
-        let inited = model ^. ImageModel.Initialized_
-        browse inited 0 file
+    let private onLoadImage file (model : ImageModel) =
+        let cmd =
+            Cmd.OfAsync.perform
+                ImageFile.tryLoadImage
+                file
+                (function
+                    | Ok bitmap -> ImageLoaded (file, bitmap)
+                    | Error msg -> HandleLoadError (file, msg))
+        model, cmd
 
     /// Unloads the current image, if any.
     let private onUnloadImage model =
