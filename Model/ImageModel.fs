@@ -352,6 +352,9 @@ module ImageModel =
     /// Initial model.
     let init () = Uninitialized
 
+[<AutoOpen>]
+module ImageModelExt =
+
     /// Initialized container active pattern.
     let (|Initialized_|_|) model =
         model ^. ImageModel.TryInitialized_
