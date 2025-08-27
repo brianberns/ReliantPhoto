@@ -112,25 +112,6 @@ module ImageMessage =
                         |> containerSize ^= ImageModel.ContainerSize_
         model, Cmd.none
 
-    (*
-    /// Browses to and starts loading a file, if possible.
-    let private browse inited incr fromFile =
-        let model = ImageModel.browse inited incr fromFile
-        let cmd =
-            match model with
-                | Browsed browsed ->
-                    Cmd.OfAsync.perform
-                        ImageFile.tryLoadImage
-                        browsed.File
-                        (function
-                            | Ok bitmap ->
-                                ImageLoaded (browsed.File, bitmap)
-                            | Error msg -> HandleLoadError msg)
-                | BrowseError _ -> Cmd.none
-                | _ -> failwith "Invalid state"
-        model, cmd
-    *)
-
     /// Starts loading an image from the given file.
     let private onLoadImage file (model : ImageModel) =
         let cmd =
@@ -203,15 +184,6 @@ module ImageMessage =
             layoutImage dpiScale file bitmap inited
         model, Cmd.none
 
-            (*
-            match model with
-                | Browsed browsed
-                    when FileSystemInfo.same file model.File ->
-                    layoutImage dpiScale file bitmap browsed
-                | _ -> model   // ignore stale message
-        model, Cmd.none
-            *)
-
     /// Handles a load error.
     let private onHandleLoadError file message model =
         let model =
@@ -222,11 +194,6 @@ module ImageMessage =
                 Message = message
             }
         model, Cmd.none
-
-    /// Browses to a file, if possible.
-    let private onBrowse incr model =
-        let inited = model ^. ImageModel.Initialized_
-        browse inited incr model.File
 
     /// Zooms the current image.
     let private zoom
@@ -310,10 +277,48 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
+    /// Browses to a file, if possible.
+    let private onBrowse incr model =
+        model, Cmd.none
+
     /// Deletes the current image.
     let private onDeleteFile model =
-        match model ^. ImageModel.TryBrowsed_ with
-            | Some browsed ->
+        model, Cmd.none
+
+    (*
+    /// Browses to and starts loading a file, if possible.
+    let private browse inited incr fromFile =
+        let model = ImageModel.browse inited incr fromFile
+        let cmd =
+            match model with
+                | Browsed browsed ->
+                    Cmd.OfAsync.perform
+                        ImageFile.tryLoadImage
+                        browsed.File
+                        (function
+                            | Ok bitmap ->
+                                ImageLoaded (browsed.File, bitmap)
+                            | Error msg -> HandleLoadError msg)
+                | BrowseError _ -> Cmd.none
+                | _ -> failwith "Invalid state"
+        model, cmd
+
+    /// Browses to a file, if possible.
+    let private onBrowse incr model =
+        let inited = model ^. ImageModel.Initialized_
+        browse inited incr model.File
+
+            match model with
+                | Browsed browsed
+                    when FileSystemInfo.same file model.File ->
+                    layoutImage dpiScale file bitmap browsed
+                | _ -> model   // ignore stale message
+        model, Cmd.none
+
+    /// Deletes the current image.
+    let private onDeleteFile model =
+        match model with
+            | Browsed browsed ->
 
                 try
                         // browse first
@@ -340,7 +345,8 @@ module ImageMessage =
                         Message = exn.Message
                     }, Cmd.none
 
-            | None -> failwith "Invalid state"
+            | _ -> failwith "Invalid state"
+            *)
 
     /// Updates the given model based on the given message.
     let update dpiScale message model =
@@ -366,10 +372,6 @@ module ImageMessage =
             | HandleLoadError (file, message) ->
                 onHandleLoadError file message model
 
-                // browse to previous/next image
-            | Browse incr ->
-                onBrowse incr model
-
                 // update zoom
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
@@ -389,6 +391,10 @@ module ImageMessage =
                 // finish pan
             | PanEnd ->
                 onPanEnd model
+
+                // browse to previous/next image
+            | Browse incr ->
+                onBrowse incr model
 
                 // delete file
             | DeleteFile ->

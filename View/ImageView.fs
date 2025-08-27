@@ -42,7 +42,7 @@ module ImageView =
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
                     match model with
-                        | Loaded loaded ->
+                        | Loaded_ loaded ->
                             let pct =
                                 (loaded ^. LoadedImage.ZoomScale_) * 100.0
                             TextBlock.text $"%0.1f{pct}%%"
@@ -65,21 +65,12 @@ module ImageView =
         ]
 
     /// Creates browse panels, with or without buttons.
-    let private createBrowsePanels model dispatch =
-
-            // browse buttons?
-        let hasPrev, hasNext =
-            model ^. ImageModel.TryBrowsed_
-                |> Option.map (fun browsed ->
-                    browsed.HasPreviousImage,
-                    browsed.HasNextImage)
-                |> Option.defaultValue (false, false)
-
+    let private createBrowsePanels browsed dispatch =
         [
                 // "previous image" button
             createBrowsePanel
                 Dock.Left "◀" "Previous image"
-                hasPrev
+                browsed.HasPreviousImage
                 (Browse -1)
                 dispatch
                 :> IView
@@ -87,7 +78,7 @@ module ImageView =
                 // "next image" button
             createBrowsePanel
                 Dock.Right "▶" "Next image"
-                hasNext
+                browsed.HasNextImage
                 (Browse 1)
                 dispatch
         ]
@@ -101,8 +92,7 @@ module ImageView =
 
             Image.init (fun image ->
                 let mode =
-                    ImageFile.getInterpolationMode
-                        loaded.Browsed.File
+                    ImageFile.getInterpolationMode loaded.File
                 RenderOptions.SetBitmapInterpolationMode(
                     image, mode))
 
@@ -118,7 +108,7 @@ module ImageView =
         ]
 
     /// Creates a zoomable image.
-    let private createZoomableImage model dispatch =
+    let private createZoomableImage loaded dispatch =
 
         /// Gets the pointer position relative to the canvas.
         let getPointerPosition (args : PointerEventArgs) =
@@ -136,54 +126,49 @@ module ImageView =
                     |> MkImageMessage
                     |> dispatch)
 
-            match model with
-                | Loaded loaded ->
+            let image = createImage loaded
+            Canvas.children [ image ]
+            Canvas.clipToBounds true
+            Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
-                    let image = createImage loaded
-                    Canvas.children [ image ]
-                    Canvas.clipToBounds true
-                    Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
+                // zoom
+            Canvas.onPointerWheelChanged (fun args ->
+                if args.Delta.Y <> 0 then   // y-coord: vertical wheel movement
+                    let pointerPos = getPointerPosition args
+                    args.Handled <- true
+                    (sign args.Delta.Y, pointerPos)
+                        |> WheelZoom
+                        |> MkImageMessage
+                        |> dispatch)
 
-                        // zoom
-                    Canvas.onPointerWheelChanged (fun args ->
-                        if args.Delta.Y <> 0 then   // y-coord: vertical wheel movement
-                            let pointerPos = getPointerPosition args
-                            args.Handled <- true
-                            (sign args.Delta.Y, pointerPos)
-                                |> WheelZoom
-                                |> MkImageMessage
-                                |> dispatch)
+            if loaded.PanOpt.IsNone then
 
-                    if loaded.PanOpt.IsNone then
+                    // start pan
+                Canvas.onPointerPressed (fun args ->
+                    let pointerPos = getPointerPosition args
+                    args.Handled <- true
+                    pointerPos
+                        |> PanStart
+                        |> MkImageMessage
+                        |> dispatch)
 
-                            // start pan
-                        Canvas.onPointerPressed (fun args ->
-                            let pointerPos = getPointerPosition args
-                            args.Handled <- true
-                            pointerPos
-                                |> PanStart
-                                |> MkImageMessage
-                                |> dispatch)
+            else
+                    // continue pan
+                Canvas.onPointerMoved (fun args ->
+                    let pointerPos = getPointerPosition args
+                    printfn $"{pointerPos}"
+                    args.Handled <- true
+                    pointerPos
+                        |> PanMove
+                        |> MkImageMessage
+                        |> dispatch)
 
-                    else
-                            // continue pan
-                        Canvas.onPointerMoved (fun args ->
-                            let pointerPos = getPointerPosition args
-                            printfn $"{pointerPos}"
-                            args.Handled <- true
-                            pointerPos
-                                |> PanMove
-                                |> MkImageMessage
-                                |> dispatch)
-
-                            // end pan
-                        Canvas.onPointerReleased (fun args ->
-                            args.Handled <- true
-                            PanEnd
-                                |> MkImageMessage
-                                |> dispatch)
-
-                | _ -> ()
+                    // end pan
+                Canvas.onPointerReleased (fun args ->
+                    args.Handled <- true
+                    PanEnd
+                        |> MkImageMessage
+                        |> dispatch)
         ]
 
     /// Creates an error message.
@@ -200,27 +185,28 @@ module ImageView =
 
     /// Creates a panel that can browse and display images.
     let private createBrowseDisplayPanel model dispatch =
-        let background =
-            match model with
-                | Loaded loaded
-                    when loaded ^. LoadedImage.ZoomScaleLock_ ->
-                        Color.darkGray
-                | _ -> "Black"
         DockPanel.create [
-            DockPanel.background background
-            DockPanel.children [
 
-                    // prev/next browse panels
-                yield! createBrowsePanels model dispatch
-
-                    // image or error message
+                // background color
+            let background =
                 match model with
-                    | BrowseError errored ->
-                        createErrorMessage errored.Message
+                    | Loaded_ loaded
+                        when loaded ^. LoadedImage.ZoomScaleLock_ ->
+                            Color.darkGray
+                    | _ -> "Black"
+            DockPanel.background background
+
+                // content
+            DockPanel.children [
+                match model with
                     | LoadError errored ->
                         createErrorMessage errored.Message
-                    | _ ->
-                        createZoomableImage model dispatch
+                    | Loaded loaded ->
+                        createZoomableImage loaded dispatch
+                    | Browsed browsed ->
+                        yield! createBrowsePanels browsed dispatch
+                        createZoomableImage browsed.Loaded dispatch
+                    | _ -> ()
             ]
         ]
 
@@ -241,44 +227,40 @@ module ImageView =
         ]
 
     /// Creates an invisible border that handles key bindings.
-    let private createKeyBindingBorder
-        (model : ImageModel) dispatch child =
+    let private createKeyBindingBorder browsed dispatch child =
         Border.create [
 
             Border.focusable true
             Border.focusAdorner null
             Border.background "Transparent"
 
-            match model ^. ImageModel.TryBrowsed_ with
-                | Some browsed ->
-                    Border.keyBindings [
+            Border.keyBindings [
 
-                            // previous image
-                        if browsed.HasPreviousImage then
-                            for key in [ Key.Left; Key.PageUp ] do
-                                KeyBinding.create [
-                                    KeyBinding.key key
-                                    KeyBinding.execute (fun _ ->
-                                        dispatch (MkImageMessage (Browse -1)))
-                                ]
-
-                            // next image
-                        if browsed.HasNextImage then
-                            for key in [ Key.Right; Key.PageDown ] do
-                                KeyBinding.create [
-                                    KeyBinding.key key
-                                    KeyBinding.execute (fun _ ->
-                                        dispatch (MkImageMessage (Browse 1)))
-                                ]
-
-                            // delete file
+                    // previous image
+                if browsed.HasPreviousImage then
+                    for key in [ Key.Left; Key.PageUp ] do
                         KeyBinding.create [
-                            KeyBinding.key Key.Delete
+                            KeyBinding.key key
                             KeyBinding.execute (fun _ ->
-                                dispatch (MkImageMessage DeleteFile))
+                                dispatch (MkImageMessage (Browse -1)))
                         ]
-                    ]
-                | None -> ()
+
+                    // next image
+                if browsed.HasNextImage then
+                    for key in [ Key.Right; Key.PageDown ] do
+                        KeyBinding.create [
+                            KeyBinding.key key
+                            KeyBinding.execute (fun _ ->
+                                dispatch (MkImageMessage (Browse 1)))
+                        ]
+
+                    // delete file
+                KeyBinding.create [
+                    KeyBinding.key Key.Delete
+                    KeyBinding.execute (fun _ ->
+                        dispatch (MkImageMessage DeleteFile))
+                ]
+            ]
 
             Border.onLoaded (fun e ->
                 let border = e.Source :?> Border   // grab focus
@@ -289,5 +271,9 @@ module ImageView =
 
     /// Creates a view of the given model.
     let view model dispatch =
-        createWorkPanel model dispatch
-            |> createKeyBindingBorder model dispatch
+        let panel = createWorkPanel model dispatch
+        match model with
+            | Browsed browsed ->
+                createKeyBindingBorder browsed dispatch panel
+                    :> IView
+            | _ -> panel
