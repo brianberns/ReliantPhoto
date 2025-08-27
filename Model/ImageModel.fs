@@ -351,3 +351,11 @@ module ImageModel =
 
     /// Initial model.
     let init () = Uninitialized
+
+    /// Initialized container active pattern.
+    let (|Initialized_|_|) model =
+        model ^. ImageModel.TryInitialized_
+
+    /// Loaded image active pattern.
+    let (|Loaded_|_|) model =
+        model ^. ImageModel.TryLoaded_

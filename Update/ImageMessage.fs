@@ -101,9 +101,10 @@ module ImageMessage =
                         InitializedContainer.create containerSize)
 
                     // resize: update container size and layout
-                | Loaded loaded ->
-                    resize containerSize loaded
-                        |> Loaded
+                | ImageModel.Loaded_ loaded ->
+                    let loaded = resize containerSize loaded
+                    model
+                        |> loaded ^= ImageModel.Loaded_
 
                     // resize: just update container size
                 | _ ->
