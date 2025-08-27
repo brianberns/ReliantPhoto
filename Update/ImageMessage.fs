@@ -155,7 +155,7 @@ module ImageMessage =
 
     /// Applies default layout rules to the given bitmap.
     let private layoutImage
-        (dpiScale : float) (bitmap : Bitmap) browsed =
+        (dpiScale : float) file (bitmap : Bitmap) inited =
 
             // get size of bitmap, adjusted for DPI scale
         let bitmapSize =
@@ -163,59 +163,65 @@ module ImageMessage =
 
             // keep zoom scale and offset?
         let zoomScaleOpt =
-            browsed
-                ^. BrowsedImage.Initialized_
-                |> InitializedContainer.tryGetLockedZoomScale
+            InitializedContainer.tryGetLockedZoomScale inited
         let offsetOpt =
-            if zoomScaleOpt.IsSome then
-                browsed ^. BrowsedImage.Offset_
+            if zoomScaleOpt.IsSome then inited.OffsetOpt
             else None
 
             // layout image
         let offset, zoomScale =
-            let containerSize =
-                browsed ^. BrowsedImage.ContainerSize_
             ImageLayout.getImageLayout
-                containerSize bitmapSize offsetOpt zoomScaleOpt
+                inited.ContainerSize
+                bitmapSize
+                offsetOpt
+                zoomScaleOpt
 
             // zoom scale lock succeeded?
         let zoomScaleLock = (Some zoomScale = zoomScaleOpt)
 
             // update offset/zoom
-        let browsed =
-            browsed
-                |> offset ^= BrowsedImage.Offset_
-                |> zoomScale ^= BrowsedImage.ZoomScale_
-                |> zoomScaleLock ^= BrowsedImage.ZoomScaleLock_
+        let inited =
+            {
+                inited with
+                    OffsetOpt = Some offset
+                    ZoomScale = zoomScale
+                    ZoomScaleLock = zoomScaleLock
+            }
 
         Loaded {
-            Browsed = browsed
+            Initialized = inited
+            File = file
             Bitmap = bitmap
             BitmapSize = bitmapSize
             PanOpt = None
         }
 
-    /// Sets image's bitmap.
-    let private onImageLoaded
-        dpiScale (file : FileInfo) bitmap model =
+    /// Handles a loaded image.
+    let private onImageLoaded dpiScale file bitmap model =
         let model =
+            let inited = model ^. ImageModel.Initialized_
+            layoutImage dpiScale file bitmap inited
+        model, Cmd.none
+
+            (*
             match model with
                 | Browsed browsed
                     when FileSystemInfo.same file model.File ->
-                    layoutImage dpiScale bitmap browsed
+                    layoutImage dpiScale file bitmap browsed
                 | _ -> model   // ignore stale message
         model, Cmd.none
+            *)
 
     /// Handles a load error.
-    let private onHandleLoadError error = function
-        | Browsed browsed ->
-            let model =
-                LoadError {
-                    Browsed = browsed
-                    Message = error
-                }
-            model, Cmd.none
-        | _ -> failwith "Invalid state"
+    let private onHandleLoadError file message model =
+        let model =
+            let inited = model ^. ImageModel.Initialized_
+            LoadError {
+                Initialized = inited
+                File = file
+                Message = message
+            }
+        model, Cmd.none
 
     /// Browses to a file, if possible.
     let private onBrowse incr model =
@@ -357,8 +363,8 @@ module ImageMessage =
                 onUnloadImage model
 
                 // handle load error
-            | HandleLoadError error ->
-                onHandleLoadError error model
+            | HandleLoadError (file, message) ->
+                onHandleLoadError file message model
 
                 // browse to previous/next image
             | Browse incr ->
