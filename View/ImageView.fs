@@ -65,12 +65,21 @@ module ImageView =
         ]
 
     /// Creates browse panels, with or without buttons.
-    let private createBrowsePanels browsed dispatch =
+    let private createBrowsePanels model dispatch =
+
+            // browse buttons?
+        let hasPrev, hasNext =
+            match model with
+                | Browsed browsed ->
+                    browsed.HasPreviousImage,
+                    browsed.HasNextImage
+                | _ -> false, false
+
         [
                 // "previous image" button
             createBrowsePanel
                 Dock.Left "◀" "Previous image"
-                browsed.HasPreviousImage
+                hasPrev
                 (Browse -1)
                 dispatch
                 :> IView
@@ -78,7 +87,7 @@ module ImageView =
                 // "next image" button
             createBrowsePanel
                 Dock.Right "▶" "Next image"
-                browsed.HasNextImage
+                hasNext
                 (Browse 1)
                 dispatch
         ]
@@ -107,8 +116,8 @@ module ImageView =
             Image.top loaded.Offset.Y
         ]
 
-    /// Creates a zoomable image.
-    let private createZoomableImage loaded dispatch =
+    /// Image canvas attributes.
+    let private getImageCanvasAttributes loaded dispatch =
 
         /// Gets the pointer position relative to the canvas.
         let getPointerPosition (args : PointerEventArgs) =
@@ -116,16 +125,7 @@ module ImageView =
                 .FindAncestorOfType<Canvas>()
                 |> args.GetPosition
 
-        Canvas.create [
-
-                // canvas size
-            Canvas.onSizeChanged (fun args ->
-                args.Handled <- true
-                args.NewSize
-                    |> ContainerSized
-                    |> MkImageMessage
-                    |> dispatch)
-
+        [
             let image = createImage loaded
             Canvas.children [ image ]
             Canvas.clipToBounds true
@@ -171,6 +171,25 @@ module ImageView =
                         |> dispatch)
         ]
 
+    /// Creates a canvas in which an image can be displayed.
+    let private createImageCanvas model dispatch =
+        Canvas.create [
+
+                // canvas size
+            Canvas.onSizeChanged (fun args ->
+                args.Handled <- true
+                args.NewSize
+                    |> ContainerSized
+                    |> MkImageMessage
+                    |> dispatch)
+
+                // canvas content
+            match model with
+                | Loaded_ loaded ->
+                    yield! getImageCanvasAttributes loaded dispatch
+                | _ -> ()   // trigger canvas size event on creation
+        ]
+
     /// Creates an error message.
     let private createErrorMessage str =
         TextBlock.create [
@@ -196,17 +215,17 @@ module ImageView =
                     | _ -> "Black"
             DockPanel.background background
 
-                // content
             DockPanel.children [
+
+                    // prev/next browse panels
+                yield! createBrowsePanels model dispatch
+
+                    // image canvas
                 match model with
                     | LoadError errored ->
                         createErrorMessage errored.Message
-                    | Loaded loaded ->
-                        createZoomableImage loaded dispatch
-                    | Browsed browsed ->
-                        yield! createBrowsePanels browsed dispatch
-                        createZoomableImage browsed.Loaded dispatch
-                    | _ -> ()
+                    | _ ->
+                        createImageCanvas model dispatch
             ]
         ]
 
