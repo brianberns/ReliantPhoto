@@ -1,15 +1,17 @@
 namespace Reliant.Photo
 
-open Elmish
-
 open System
 open System.IO
 open System.Reflection
+
+open Elmish
 
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
+
+open Aether.Operators
 
 module Window =
 
@@ -64,12 +66,11 @@ module Window =
                         dirModel.Directory,
                         dirModel.Directory.FullName
                     | ImageMode (_, imgModel) ->
-                        if imgModel.IsBrowsed
-                            || imgModel.IsLoaded then
-                            imgModel.File.Directory,
-                            imgModel.File.Name
-                        else
-                            directory, window.Title
+                        match imgModel ^. ImageModel.TrySituated_ with
+                            | Some situated ->
+                                situated.File.Directory,
+                                situated.File.Name
+                            | None -> directory, window.Title
             directory <- dir
             window.Title <- title
 

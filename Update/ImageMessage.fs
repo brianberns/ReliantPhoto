@@ -173,31 +173,28 @@ module ImageMessage =
 
         {
             Initialized = inited
-            File = file
+            Situated = SituatedFile.initialize file
             Bitmap = bitmap
             BitmapSize = bitmapSize
             PanOpt = None
         }
 
+    /// Situates a file for browsing.
+    let private situate file =
+        Cmd.ofEffect (fun dispatch ->
+            async {
+                ImageFile.situate file
+                    |> ImageSituated
+                    |> dispatch
+            } |> Async.Start)
+
     /// Handles a loaded image.
     let private onImageLoaded dpiScale file bitmap model =
-
-            // layout the image
         let model =
             model ^. ImageModel.Initialized_
                 |> layoutImage dpiScale file bitmap
                 |> Loaded
-
-            // situate image for browsing
-        let cmd =
-            Cmd.ofEffect (fun dispatch ->
-                async {
-                    ImageFile.situate file
-                        |> ImageSituated
-                        |> dispatch
-                } |> Async.Start)
-
-        model, cmd
+        model, situate file
 
     /// Handles a load error.
     let private onHandleLoadError file message model =
@@ -205,10 +202,10 @@ module ImageMessage =
             let inited = model ^. ImageModel.Initialized_
             LoadError {
                 Initialized = inited
-                File = file
+                Situated = SituatedFile.initialize file
                 Message = message
             }
-        model, Cmd.none
+        model, situate file
 
     /// Zooms the current image.
     let private zoom
@@ -314,16 +311,15 @@ module ImageMessage =
         let model =
             match model with
                 | Loaded loaded ->
-                    Browsed {
-                        Loaded = loaded
-                        PreviousFileOpt = previousFileOpt
-                        NextFileOpt = nextFileOpt
-                    }
+                    let situated =
+                        SituatedFile.update
+                            previousFileOpt
+                            nextFileOpt
+                            loaded.Situated
+                    Loaded {
+                        loaded with
+                            Situated = situated }
                 | _ -> failwith "Invalid state"
-        model, Cmd.none
-
-    /// Browses to another image in the current directory.
-    let private onBrowse incr model =
         model, Cmd.none
 
     /// Deletes the current image.
@@ -331,35 +327,6 @@ module ImageMessage =
         model, Cmd.none
 
     (*
-    /// Browses to and starts loading a file, if possible.
-    let private browse inited incr fromFile =
-        let model = ImageModel.browse inited incr fromFile
-        let cmd =
-            match model with
-                | Browsed browsed ->
-                    Cmd.OfAsync.perform
-                        ImageFile.tryLoadImage
-                        browsed.File
-                        (function
-                            | Ok bitmap ->
-                                ImageLoaded (browsed.File, bitmap)
-                            | Error msg -> HandleLoadError msg)
-                | BrowseError _ -> Cmd.none
-                | _ -> failwith "Invalid state"
-        model, cmd
-
-    /// Browses to a file, if possible.
-    let private onBrowse incr model =
-        let inited = model ^. ImageModel.Initialized_
-        browse inited incr model.File
-
-            match model with
-                | Browsed browsed
-                    when FileSystemInfo.same file model.File ->
-                    layoutImage dpiScale file bitmap browsed
-                | _ -> model   // ignore stale message
-        model, Cmd.none
-
     /// Deletes the current image.
     let private onDeleteFile model =
         match model with

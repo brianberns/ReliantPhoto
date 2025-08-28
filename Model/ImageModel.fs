@@ -66,6 +66,42 @@ module InitializedContainer =
             Some inited.ZoomScale
         else None
 
+/// A file situated in a directory.
+type SituatedFile =
+    {
+        /// File.
+        File : FileInfo
+
+        /// Previous file, if any.
+        PreviousFileOpt : Option<FileInfo>
+
+        /// Next file, if any.
+        NextFileOpt : Option<FileInfo>
+    }
+
+module SituatedFile =
+
+    /// Creates a situated file.
+    let private create file previousFileOpt nextFileOpt =
+        {
+            File = file
+            PreviousFileOpt = previousFileOpt
+            NextFileOpt = nextFileOpt
+        }
+
+    /// Initializes a situated file with no previous/next
+    /// file.
+    let initialize file =
+        create file None None
+
+    /// Updates a situated file.
+    let update previousFileOpt nextFileOpt situated =
+        {
+            situated with
+                PreviousFileOpt = previousFileOpt
+                NextFileOpt = nextFileOpt
+        }
+
 /// Image pan.
 type Pan =
     {
@@ -83,7 +119,7 @@ type LoadedImage =
         Initialized : InitializedContainer
 
         /// Image file.
-        File : FileInfo
+        Situated : SituatedFile
 
         /// Loaded bitmap.
         Bitmap : Bitmap
@@ -127,50 +163,6 @@ type LoadedImage =
             | Some offset -> offset
             | None -> failwith "Invalid state"
 
-/// A browsed image.
-type BrowsedImage =
-    {
-        /// Loaded image.
-        Loaded : LoadedImage
-
-        /// Can browse to previous image?
-        PreviousFileOpt : Option<FileInfo>
-
-        /// Can browse to next image?
-        NextFileOpt : Option<FileInfo>
-    }
-
-    /// Loaded image lens.
-    static member Loaded_ : Lens<_, _> =
-        _.Loaded,
-        fun loaded browsed ->
-            { browsed with Loaded = loaded }
-
-    /// Container size lens.
-    static member Initialized_ =
-        BrowsedImage.Loaded_
-            >-> LoadedImage.Initialized_
-
-    /// Container size lens.
-    static member ContainerSize_ =
-        BrowsedImage.Loaded_
-            >-> LoadedImage.ContainerSize_
-
-    /// Zoom scale lens.
-    static member ZoomScale_ =
-        BrowsedImage.Loaded_
-            >-> LoadedImage.ZoomScale_
-
-    /// Zoom scale lock lens.
-    static member ZoomScaleLock_ =
-        BrowsedImage.Loaded_
-            >-> LoadedImage.ZoomScaleLock_
-
-    /// Offset prism.
-    static member Offset_ =
-        BrowsedImage.Loaded_
-            >-> LoadedImage.Offset_
-
 /// An image file that could not be loaded.
 type LoadError =
     {
@@ -178,7 +170,7 @@ type LoadError =
         Initialized : InitializedContainer
 
         /// Image file that couldn't be loaded.
-        File : FileInfo
+        Situated : SituatedFile
 
         /// Error message.
         Message : string
@@ -203,9 +195,6 @@ type ImageModel =
     /// Initialized container.
     | Initialized of InitializedContainer
 
-    /// Browsed file.
-    | Browsed of BrowsedImage
-
     /// Loaded image.
     | Loaded of LoadedImage
 
@@ -219,8 +208,6 @@ type ImageModel =
             | Initialized inited -> Some inited
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Initialized_)
-            | Browsed browsed ->
-                Some (browsed ^. BrowsedImage.Initialized_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Initialized_)
             | Uninitialized -> None),
@@ -231,10 +218,6 @@ type ImageModel =
                 loaded
                     |> inited ^= LoadedImage.Initialized_
                     |> Loaded
-            | Browsed browsed ->
-                browsed
-                    |> inited ^= BrowsedImage.Initialized_
-                    |> Browsed
             | LoadError errored ->
                 errored
                     |> inited ^= LoadError.Initialized_
@@ -263,18 +246,12 @@ type ImageModel =
 
         (function
             | Loaded loaded -> Some loaded
-            | Browsed browsed ->
-                Some (browsed ^. BrowsedImage.Loaded_)
             | Uninitialized
             | Initialized _
             | LoadError _ -> None),
 
         (fun loaded -> function
             | Loaded _ -> Loaded loaded
-            | Browsed browsed ->
-                browsed
-                    |> loaded ^= BrowsedImage.Loaded_
-                    |> Browsed
             | Uninitialized
             | Initialized _
             | LoadError _ as model -> model)
@@ -291,11 +268,44 @@ type ImageModel =
             model
                 |> loaded ^= ImageModel.TryLoaded_)
 
+    /// Situated file prism.
+    static member TrySituated_ : Prism<_, _> =
+
+        (function
+            | Loaded loaded -> Some loaded.Situated
+            | LoadError errored -> Some errored.Situated
+            | _ -> None),
+
+        (fun situated -> function
+            | Loaded loaded ->
+                Loaded {
+                    loaded with
+                        Situated = situated }
+            | LoadError errored ->
+                LoadError {
+                    errored with
+                        Situated = situated }
+            | model -> model)
+
+    /// Situated file lens.
+    static member Situated_ : Lens<_, _> =
+
+        (fun model ->
+            match model ^. ImageModel.TrySituated_ with
+                | Some situated -> situated
+                | None -> failwith "Invalid state"),
+
+        (fun situated model ->
+            model
+                |> situated ^= ImageModel.TrySituated_)
+
     /// Image file.
     member this.File =
-        match this with
-            | LoadError errored -> errored.File
-            | _ -> (this ^. ImageModel.Loaded_).File
+        let situated =
+            match this with
+                | LoadError errored -> errored.Situated
+                | _ -> (this ^. ImageModel.Loaded_).Situated
+        situated.File
 
 module ImageModel =
 

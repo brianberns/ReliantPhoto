@@ -69,12 +69,12 @@ module ImageView =
     /// Creates browse panels, with or without buttons.
     let private createBrowsePanels model dispatch =
 
-            // browse buttons?
+            // get previous/next files
         let prevFileOpt, nextFileOpt =
-            match model with
-                | Browsed browsed ->
-                    browsed.PreviousFileOpt,
-                    browsed.NextFileOpt
+            match model ^. ImageModel.TrySituated_ with
+                | Some situated ->
+                    situated.PreviousFileOpt,
+                    situated.NextFileOpt
                 | _ -> None, None
 
         [
@@ -101,7 +101,8 @@ module ImageView =
 
             Image.init (fun image ->
                 let mode =
-                    ImageFile.getInterpolationMode loaded.File
+                    ImageFile.getInterpolationMode
+                        loaded.Situated.File
                 RenderOptions.SetBitmapInterpolationMode(
                     image, mode))
 
@@ -242,7 +243,7 @@ module ImageView =
         ]
 
     /// Creates an invisible border that handles key bindings.
-    let private createKeyBindingBorder browsed dispatch child =
+    let private createKeyBindingBorder situated dispatch child =
         Border.create [
 
             Border.focusable true
@@ -252,7 +253,7 @@ module ImageView =
             Border.keyBindings [
 
                     // previous image
-                match browsed.PreviousFileOpt with
+                match situated.PreviousFileOpt with
                     | Some file ->
                         for key in [ Key.Left; Key.PageUp ] do
                             KeyBinding.create [
@@ -263,7 +264,7 @@ module ImageView =
                     | None -> ()
 
                     // next image
-                match browsed.NextFileOpt with
+                match situated.NextFileOpt with
                     | Some file ->
                         for key in [ Key.Right; Key.PageDown ] do
                             KeyBinding.create [
@@ -291,8 +292,8 @@ module ImageView =
     /// Creates a view of the given model.
     let view model dispatch =
         let panel = createWorkPanel model dispatch
-        match model with
-            | Browsed browsed ->
-                createKeyBindingBorder browsed dispatch panel
+        match model ^. ImageModel.TrySituated_ with
+            | Some situated ->
+                createKeyBindingBorder situated dispatch panel
                     :> IView
             | _ -> panel
