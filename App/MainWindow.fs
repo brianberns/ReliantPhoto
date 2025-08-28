@@ -65,12 +65,10 @@ module Window =
                     | DirectoryMode (dirModel, _) ->
                         dirModel.Directory,
                         dirModel.Directory.FullName
-                    | ImageMode (_, imgModel) ->
-                        match imgModel ^. ImageModel.TrySituated_ with
-                            | Some situated ->
-                                situated.File.Directory,
-                                situated.File.Name
-                            | None -> directory, window.Title
+                    | ImageMode (_, Situated_ situated) ->
+                        situated.File.Directory,
+                        situated.File.Name
+                    | _ -> directory, window.Title
             directory <- dir
             window.Title <- title
 

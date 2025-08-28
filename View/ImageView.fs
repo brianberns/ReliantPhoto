@@ -74,8 +74,8 @@ module ImageView =
 
             // get previous/next files
         let prevFileOpt, nextFileOpt =
-            match model ^. ImageModel.TrySituated_ with
-                | Some situated ->
+            match model with
+                | Situated_ situated ->
                     situated.PreviousFileOpt,
                     situated.NextFileOpt
                 | _ -> None, None
