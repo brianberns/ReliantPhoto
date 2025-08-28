@@ -94,12 +94,12 @@ module ImageFile =
     let private fileComparer =
         Comparer.Create(compareFiles)
 
-    /// Browses to a file, if possible.
-    let tryBrowse (fromFile : FileInfo) incr =
+    /// Situates a file within its directory, if possible.
+    let trySituate (file : FileInfo) =
 
-            // get all candidate files for browsing
+            // get candidate files
         let files =
-            fromFile.Directory.GetFiles()
+            file.Directory.GetFiles()
                 |> Seq.where (fun file ->
                     file.Attributes
                         &&& (FileAttributes.Hidden
@@ -108,17 +108,16 @@ module ImageFile =
                 |> Seq.sortWith compareFiles
                 |> Seq.toArray
 
-            // find file we're browsing to, if possible
+            // situate given file, if possible
         option {
-            let! fromIdx =
+            let! idx =
                 let idx =
                     Array.BinarySearch(
-                        files, fromFile, fileComparer)
+                        files, file, fileComparer)
                 if idx >= 0 then Some idx
                 else None
-            let toIdx = fromIdx + incr
-            if toIdx >= 0 && toIdx < files.Length then
-                let hasPreviousImage = toIdx > 0
-                let hasNextImage = toIdx < files.Length - 1
+            if idx >= 0 && idx < files.Length then
+                let hasPreviousImage = idx > 0
+                let hasNextImage = idx < files.Length - 1
                 return hasPreviousImage, hasNextImage
         }

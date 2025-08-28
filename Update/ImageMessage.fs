@@ -193,7 +193,7 @@ module ImageMessage =
         let cmd =
             Cmd.ofEffect (fun dispatch ->
                 async {
-                    ImageFile.tryBrowse file 0
+                    ImageFile.trySituate file
                         |> Option.map (ImageSituated >> dispatch)
                         |> Option.defaultValue ()
                 } |> Async.Start)
