@@ -213,7 +213,7 @@ module ImageMessage =
 
     /// Zooms the current image.
     let private zoom
-        zoomScale zoomScaleLock pointerPosOpt loaded =
+        zoomScale zoomScaleLock pointerPosOpt loaded model =
 
             // adjust offset
         let offset =
@@ -221,33 +221,31 @@ module ImageMessage =
                 pointerPosOpt zoomScale loaded
 
             // update offset/zoom
-        loaded
-            |> offset ^= LoadedImage.Offset_
-            |> zoomScale ^= LoadedImage.ZoomScale_
-            |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
+        let loaded =
+            loaded
+                |> offset ^= LoadedImage.Offset_
+                |> zoomScale ^= LoadedImage.ZoomScale_
+                |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
+
+            // update model
+        let model =
+            model
+                |> loaded ^= ImageModel.Loaded_
+        model, Cmd.none
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
         | Loaded_ loaded as model ->
-            let loaded =
-                let zoomScale, zoomScaleLock =
-                    ImageLayout.incrementZoomScale sign loaded
-                zoom zoomScale zoomScaleLock (Some pointerPos) loaded
-            let model =
-                model
-                    |> loaded ^= ImageModel.Loaded_
-            model, Cmd.none
+            let zoomScale, zoomScaleLock =
+                ImageLayout.incrementZoomScale sign loaded
+            zoom zoomScale zoomScaleLock
+                (Some pointerPos) loaded model
         | _ -> failwith "Invalid state"
 
     /// Zoom to actual size.
     let private onZoomToActualSize = function
         | Loaded_ loaded as model ->
-            let loaded =
-                zoom 1.0 true None loaded
-            let model =
-                model
-                    |> loaded ^= ImageModel.Loaded_
-            model, Cmd.none
+            zoom 1.0 true None loaded model
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
