@@ -190,13 +190,13 @@ module ImageMessage =
                 |> Loaded
 
             // locate image for browsing
-        let bind dispatch =
-            async {
-                ImageModel.tryBrowse file 0
-                    |> Option.map (ImageLocated >> dispatch)
-                    |> Option.defaultValue ()
-            }
-        let cmd : Cmd<_> = [ bind >> Cmd.OfAsync.start ]
+        let cmd =
+            Cmd.ofEffect (fun dispatch ->
+                async {
+                    ImageModel.tryBrowse file 0
+                        |> Option.map (ImageLocated >> dispatch)
+                        |> Option.defaultValue ()
+                } |> Async.Start)
 
         model, cmd
 
