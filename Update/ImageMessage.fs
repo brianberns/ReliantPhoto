@@ -184,10 +184,10 @@ module ImageMessage =
     let private onImageLoaded dpiScale file bitmap model =
 
             // layout the image
-        let loaded =
+        let model =
             model ^. ImageModel.Initialized_
                 |> layoutImage dpiScale file bitmap
-        let model = Loaded loaded
+                |> Loaded
 
             // locate image for browsing
         let bind dispatch =
@@ -197,6 +197,7 @@ module ImageMessage =
                     |> Option.defaultValue ()
             }
         let cmd : Cmd<_> = [ bind >> Cmd.OfAsync.start ]
+
         model, cmd
 
     /// Handles a load error.
@@ -294,7 +295,8 @@ module ImageMessage =
 
     /// The loaded image has been located in the current
     /// directory.
-    let private onImageLocated hasPrevImage hasNextImage model =
+    let private onImageLocated
+        hasPrevImage hasNextImage model =
         let model =
             match model with
                 | Loaded loaded ->
