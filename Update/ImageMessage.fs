@@ -43,10 +43,9 @@ type ImageMessage =
     | PanEnd
 
     /// Loaded image has been situated in the current directory.
-    | ImageSituated of bool (*has previous image*) * bool (*has next image*)
-
-    /// Browse to another image in the current directory.
-    | Browse of int (*increment*)
+    | ImageSituated
+        of Option<FileInfo> (*previous image*)
+            * Option<FileInfo> (*next image*)
 
     /// Delete the current file.
     | DeleteFile
@@ -193,9 +192,9 @@ module ImageMessage =
         let cmd =
             Cmd.ofEffect (fun dispatch ->
                 async {
-                    ImageFile.trySituate file
-                        |> Option.map (ImageSituated >> dispatch)
-                        |> Option.defaultValue ()
+                    ImageFile.situate file
+                        |> ImageSituated
+                        |> dispatch
                 } |> Async.Start)
 
         model, cmd
@@ -311,14 +310,14 @@ module ImageMessage =
     /// A loaded image has been situated in the current
     /// directory.
     let private onImageSituated
-        hasPrevImage hasNextImage model =
+        previousFileOpt nextFileOpt model =
         let model =
             match model with
                 | Loaded loaded ->
                     Browsed {
                         Loaded = loaded
-                        HasPreviousImage = hasPrevImage
-                        HasNextImage = hasNextImage
+                        PreviousFileOpt = previousFileOpt
+                        NextFileOpt = nextFileOpt
                     }
                 | _ -> failwith "Invalid state"
         model, Cmd.none
@@ -439,12 +438,8 @@ module ImageMessage =
                 onPanEnd model
 
                 // situate image in directory
-            | ImageSituated (hasPrev, hasNext) ->
-                onImageSituated hasPrev hasNext model
-
-                // browse to another image
-            | Browse incr ->
-                onBrowse incr model
+            | ImageSituated (prevFileOpt, nextFileOpt) ->
+                onImageSituated prevFileOpt nextFileOpt model
 
                 // delete file
             | DeleteFile ->

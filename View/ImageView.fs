@@ -53,14 +53,16 @@ module ImageView =
 
     /// Creates a browse panel, with or without a button.
     let private createBrowsePanel
-        dock text tooltip hasButton message dispatch =
+        dock text tooltip fileOpt dispatch =
         DockPanel.create [
             DockPanel.width Button.buttonSize
             DockPanel.dock dock
             DockPanel.children [
-                if hasButton then
-                    Button.createText text tooltip (fun _ ->
-                        MkImageMessage message |> dispatch)
+                match fileOpt with
+                    | Some file ->
+                        Button.createText text tooltip (fun _ ->
+                            dispatch (LoadImage file))
+                    | None -> ()
             ]
         ]
 
@@ -68,27 +70,25 @@ module ImageView =
     let private createBrowsePanels model dispatch =
 
             // browse buttons?
-        let hasPrev, hasNext =
+        let prevFileOpt, nextFileOpt =
             match model with
                 | Browsed browsed ->
-                    browsed.HasPreviousImage,
-                    browsed.HasNextImage
-                | _ -> false, false
+                    browsed.PreviousFileOpt,
+                    browsed.NextFileOpt
+                | _ -> None, None
 
         [
                 // "previous image" button
             createBrowsePanel
                 Dock.Left "◀" "Previous image"
-                hasPrev
-                (Browse -1)
+                prevFileOpt
                 dispatch
                 :> IView
 
                 // "next image" button
             createBrowsePanel
                 Dock.Right "▶" "Next image"
-                hasNext
-                (Browse 1)
+                nextFileOpt
                 dispatch
         ]
 
@@ -252,22 +252,26 @@ module ImageView =
             Border.keyBindings [
 
                     // previous image
-                if browsed.HasPreviousImage then
-                    for key in [ Key.Left; Key.PageUp ] do
-                        KeyBinding.create [
-                            KeyBinding.key key
-                            KeyBinding.execute (fun _ ->
-                                dispatch (MkImageMessage (Browse -1)))
-                        ]
+                match browsed.PreviousFileOpt with
+                    | Some file ->
+                        for key in [ Key.Left; Key.PageUp ] do
+                            KeyBinding.create [
+                                KeyBinding.key key
+                                KeyBinding.execute (fun _ ->
+                                    dispatch (LoadImage file))
+                            ]
+                    | None -> ()
 
                     // next image
-                if browsed.HasNextImage then
-                    for key in [ Key.Right; Key.PageDown ] do
-                        KeyBinding.create [
-                            KeyBinding.key key
-                            KeyBinding.execute (fun _ ->
-                                dispatch (MkImageMessage (Browse 1)))
-                        ]
+                match browsed.NextFileOpt with
+                    | Some file ->
+                        for key in [ Key.Right; Key.PageDown ] do
+                            KeyBinding.create [
+                                KeyBinding.key key
+                                KeyBinding.execute (fun _ ->
+                                    dispatch (LoadImage file))
+                            ]
+                    | None -> ()
 
                     // delete file
                 KeyBinding.create [

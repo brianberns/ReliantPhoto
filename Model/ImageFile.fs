@@ -94,8 +94,8 @@ module ImageFile =
     let private fileComparer =
         Comparer.Create(compareFiles)
 
-    /// Situates a file within its directory, if possible.
-    let trySituate (file : FileInfo) =
+    /// Situates a file within its directory.
+    let situate (file : FileInfo) =
 
             // get candidate files
         let files =
@@ -108,16 +108,18 @@ module ImageFile =
                 |> Seq.sortWith compareFiles
                 |> Seq.toArray
 
-            // situate given file, if possible
-        option {
-            let! idx =
-                let idx =
-                    Array.BinarySearch(
-                        files, file, fileComparer)
-                if idx >= 0 then Some idx
+            // situate given file
+        let idx =
+            Array.BinarySearch(
+                files, file, fileComparer)
+        if idx >= 0 then
+            let previousFileOpt =
+                if idx > 0 then
+                    Some files[idx - 1]
                 else None
-            if idx >= 0 && idx < files.Length then
-                let hasPreviousImage = idx > 0
-                let hasNextImage = idx < files.Length - 1
-                return hasPreviousImage, hasNextImage
-        }
+            let nextFileOpt =
+                if idx < files.Length - 1 then
+                    Some files[idx + 1]
+                else None
+            previousFileOpt, nextFileOpt
+        else None, None   // file not found

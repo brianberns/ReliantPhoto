@@ -134,10 +134,10 @@ type BrowsedImage =
         Loaded : LoadedImage
 
         /// Can browse to previous image?
-        HasPreviousImage : bool
+        PreviousFileOpt : Option<FileInfo>
 
         /// Can browse to next image?
-        HasNextImage : bool
+        NextFileOpt : Option<FileInfo>
     }
 
     /// Loaded image lens.
