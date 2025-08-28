@@ -20,7 +20,7 @@ module Cursor =
 module Color =
 
     /// Dark gray.
-    let darkGray = "#181818"
+    let darkGray = Color.Parse "#181818"
 
 module Button =
 

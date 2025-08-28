@@ -213,7 +213,7 @@ module ImageView =
                     | Loaded loaded
                         when loaded ^. LoadedImage.ZoomScaleLock_ ->
                             Color.darkGray
-                    | _ -> "Black"
+                    | _ -> Colors.Black
             DockPanel.background background
 
             DockPanel.children [
