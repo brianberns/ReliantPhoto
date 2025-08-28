@@ -250,14 +250,18 @@ module ImageMessage =
 
     /// Starts panning.
     let private onPanStart pointerPos = function
-        | Loaded_ loaded ->
-            let pan =
-                {
-                    ImageOffset = loaded.Offset
-                    PointerPos = pointerPos
-                }
-            Loaded { loaded with PanOpt = Some pan },
-            Cmd.none
+        | Loaded_ loaded as model ->
+            let loaded =
+                let pan =
+                    {
+                        ImageOffset = loaded.Offset
+                        PointerPos = pointerPos
+                    }
+                { loaded with PanOpt = Some pan }
+            let model =
+                model
+                    |> loaded ^= ImageModel.Loaded_
+            model, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Moves the image during a pan.
@@ -284,24 +288,27 @@ module ImageMessage =
         | Loaded_ loaded as model ->
             match loaded.PanOpt with
                 | Some pan ->
+                    let loaded =
+                        panImage pointerPos pan loaded
                     let model =
-                        loaded
-                            |> panImage pointerPos pan
-                            |> Loaded
+                        model
+                            |> loaded ^= ImageModel.Loaded_
                     model, Cmd.none
                 | None -> model, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Ends panning.
     let private onPanEnd = function
-        | Loaded_ loaded ->
+        | Loaded_ loaded as model ->
+            let loaded =
+                { loaded with PanOpt = None }
             let model =
-                Loaded {
-                    loaded with PanOpt = None }
+                model
+                    |> loaded ^= ImageModel.Loaded_
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// The loaded image has been situated in the current
+    /// A loaded image has been situated in the current
     /// directory.
     let private onImageSituated
         hasPrevImage hasNextImage model =
