@@ -42,8 +42,8 @@ type ImageMessage =
     /// Pointer pan has ended.
     | PanEnd
 
-    /// Loaded image has been situated in the current directory.
-    | ImageSituated
+    /// File has been situated in its directory.
+    | Situated
         of Option<FileInfo> (*previous image*)
             * Option<FileInfo> (*next image*)
 
@@ -184,7 +184,7 @@ module ImageMessage =
         Cmd.ofEffect (fun dispatch ->
             async {
                 ImageFile.situate file
-                    |> ImageSituated
+                    |> Situated
                     |> dispatch
             } |> Async.Start)
 
@@ -304,8 +304,8 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// An image file has been situated in its directory.
-    let private onImageSituated
+    /// A file has been situated in its directory.
+    let private onSituated
         previousFileOpt nextFileOpt model =
         let model =
             let situated =
@@ -399,9 +399,9 @@ module ImageMessage =
             | PanEnd ->
                 onPanEnd model
 
-                // situate image in directory
-            | ImageSituated (prevFileOpt, nextFileOpt) ->
-                onImageSituated prevFileOpt nextFileOpt model
+                // situate file in directory
+            | Situated (prevFileOpt, nextFileOpt) ->
+                onSituated prevFileOpt nextFileOpt model
 
                 // delete file
             | DeleteFile ->
