@@ -103,10 +103,8 @@ module ImageMessage =
                         InitializedContainer.create containerSize)
 
                     // resize: update container size and layout
-                | Loaded_ loaded ->
-                    let loaded = resize containerSize loaded
-                    model
-                        |> loaded ^= ImageModel.Loaded_
+                | Loaded loaded ->
+                    Loaded (resize containerSize loaded)
 
                     // resize: just update container size
                 | _ ->
@@ -209,7 +207,7 @@ module ImageMessage =
 
     /// Zooms the current image.
     let private zoom
-        zoomScale zoomScaleLock pointerPosOpt loaded model =
+        zoomScale zoomScaleLock pointerPosOpt loaded =
 
             // adjust offset
         let offset =
@@ -223,40 +221,32 @@ module ImageMessage =
                 |> zoomScale ^= LoadedImage.ZoomScale_
                 |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
 
-            // update model
-        let model =
-            model
-                |> loaded ^= ImageModel.Loaded_
-        model, Cmd.none
+        Loaded loaded, Cmd.none
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
-        | Loaded_ loaded as model ->
+        | Loaded loaded ->
             let zoomScale, zoomScaleLock =
                 ImageLayout.incrementZoomScale sign loaded
-            zoom zoomScale zoomScaleLock
-                (Some pointerPos) loaded model
+            zoom zoomScale zoomScaleLock (Some pointerPos) loaded
         | _ -> failwith "Invalid state"
 
     /// Zoom to actual size.
     let private onZoomToActualSize = function
-        | Loaded_ loaded as model ->
-            zoom 1.0 true None loaded model
+        | Loaded loaded ->
+            zoom 1.0 true None loaded
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
     let private onPanStart pointerPos = function
-        | Loaded_ loaded as model ->
-            let loaded =
+        | Loaded loaded ->
+            let model =
                 let pan =
                     {
                         ImageOffset = loaded.Offset
                         PointerPos = pointerPos
                     }
-                { loaded with PanOpt = Some pan }
-            let model =
-                model
-                    |> loaded ^= ImageModel.Loaded_
+                Loaded { loaded with PanOpt = Some pan }
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
@@ -281,27 +271,19 @@ module ImageMessage =
 
     /// Continues panning.
     let private onPanMove pointerPos = function
-        | Loaded_ loaded as model ->
+        | Loaded loaded as model ->
             match loaded.PanOpt with
                 | Some pan ->
-                    let loaded =
-                        panImage pointerPos pan loaded
-                    let model =
-                        model
-                            |> loaded ^= ImageModel.Loaded_
-                    model, Cmd.none
+                    Loaded (panImage pointerPos pan loaded),
+                    Cmd.none
                 | None -> model, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Ends panning.
     let private onPanEnd = function
-        | Loaded_ loaded as model ->
-            let loaded =
-                { loaded with PanOpt = None }
-            let model =
-                model
-                    |> loaded ^= ImageModel.Loaded_
-            model, Cmd.none
+        | Loaded loaded ->
+            Loaded { loaded with PanOpt = None },
+            Cmd.none
         | _ -> failwith "Invalid state"
 
     /// A file has been situated in its directory.

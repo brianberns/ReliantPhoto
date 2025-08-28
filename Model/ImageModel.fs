@@ -241,33 +241,6 @@ type ImageModel =
         ImageModel.Initialized_
             >-> InitializedContainer.ContainerSize_
 
-    /// Loaded image prism.
-    static member TryLoaded_ : Prism<_, _> =
-
-        (function
-            | Loaded loaded -> Some loaded
-            | Uninitialized
-            | Initialized _
-            | LoadError _ -> None),
-
-        (fun loaded -> function
-            | Loaded _ -> Loaded loaded
-            | Uninitialized
-            | Initialized _
-            | LoadError _ as model -> model)
-
-    /// Loaded image lens.
-    static member Loaded_ : Lens<_, _> =
-
-        (fun model ->
-            match model ^. ImageModel.TryLoaded_ with
-                | Some loaded -> loaded
-                | None -> failwith "Invalid state"),
-
-        (fun loaded model ->
-            model
-                |> loaded ^= ImageModel.TryLoaded_)
-
     /// Situated file prism.
     static member TrySituated_ : Prism<_, _> =
 
@@ -314,7 +287,3 @@ module ImageModelExt =
     /// Initialized container active pattern.
     let (|Initialized_|_|) model =
         model ^. ImageModel.TryInitialized_
-
-    /// Loaded image active pattern.
-    let (|Loaded_|_|) model =
-        model ^. ImageModel.TryLoaded_

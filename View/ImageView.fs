@@ -42,7 +42,7 @@ module ImageView =
                 TextBlock.create [
                     TextBlock.verticalAlignment VerticalAlignment.Center
                     match model with
-                        | Loaded_ loaded ->
+                        | Loaded loaded ->
                             let pct =
                                 (loaded ^. LoadedImage.ZoomScale_) * 100.0
                             TextBlock.text $"%0.1f{pct}%%"
@@ -183,7 +183,7 @@ module ImageView =
 
                 // canvas content
             match model with
-                | Loaded_ loaded ->
+                | Loaded loaded ->
                     yield! getImageCanvasAttributes loaded dispatch
                 | _ -> ()   // trigger canvas size event on creation
         ]
@@ -207,7 +207,7 @@ module ImageView =
                 // background color
             let background =
                 match model with
-                    | Loaded_ loaded
+                    | Loaded loaded
                         when loaded ^. LoadedImage.ZoomScaleLock_ ->
                             Color.darkGray
                     | _ -> "Black"
