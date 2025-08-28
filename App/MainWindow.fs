@@ -98,7 +98,9 @@ module Window =
             |> Program.withSubscription (
                 subscribe window)
             |> Program.withHost window
+#if DEBUG
             |> Program.withConsoleTrace
+#endif
             |> Program.runWithAvaloniaSyncDispatch arg
 
 /// Main window.
