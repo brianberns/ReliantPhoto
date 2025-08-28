@@ -314,11 +314,11 @@ module ImageModel =
         Comparer.Create(compareFiles)
 
     /// Browses to a file, if possible.
-    let browse loaded incr (fromFile : FileInfo) =
+    let tryBrowse (file : FileInfo) incr =
 
             // get all candidate files for browsing
         let files =
-            fromFile.Directory.GetFiles()
+            file.Directory.GetFiles()
                 |> Seq.where (fun file ->
                     file.Attributes
                         &&& (FileAttributes.Hidden
@@ -328,26 +328,19 @@ module ImageModel =
                 |> Seq.toArray
 
             // find file we're browsing to, if possible
-        let modelOpt =
-            option {
-                let! fromIdx =
-                    let idx =
-                        Array.BinarySearch(
-                            files, fromFile, fileComparer)
-                    if idx >= 0 then Some idx
-                    else None
-                let toIdx = fromIdx + incr
-                if toIdx >= 0 && toIdx < files.Length then
-                    return Browsed {
-                        Loaded = loaded
-                        HasPreviousImage = toIdx > 0
-                        HasNextImage = toIdx < files.Length - 1
-                    }
-            }
-
-            // could not browse to file?
-        modelOpt
-            |> Option.defaultValue (Loaded loaded)
+        option {
+            let! fromIdx =
+                let idx =
+                    Array.BinarySearch(
+                        files, file, fileComparer)
+                if idx >= 0 then Some idx
+                else None
+            let toIdx = fromIdx + incr
+            if toIdx >= 0 && toIdx < files.Length then
+                let hasPreviousImage = toIdx > 0
+                let hasNextImage = toIdx < files.Length - 1
+                return hasPreviousImage, hasNextImage
+        }
 
     /// Initial model.
     let init () = Uninitialized

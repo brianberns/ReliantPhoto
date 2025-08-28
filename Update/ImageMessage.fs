@@ -42,8 +42,8 @@ type ImageMessage =
     /// Pointer pan has ended.
     | PanEnd
 
-    /// Locate the loaded image in the current directory.
-    | Locate
+    /// Loaded image has been located in the current directory.
+    | ImageLocated of bool (*has previous image*) * bool (*has next image*)
 
     /// Browse to another image in the current directory.
     | Browse of int (*increment*)
@@ -172,7 +172,7 @@ module ImageMessage =
                     ZoomScaleLock = zoomScaleLock
             }
 
-        Loaded {
+        {
             Initialized = inited
             File = file
             Bitmap = bitmap
@@ -182,10 +182,22 @@ module ImageMessage =
 
     /// Handles a loaded image.
     let private onImageLoaded dpiScale file bitmap model =
-        let model =
-            let inited = model ^. ImageModel.Initialized_
-            layoutImage dpiScale file bitmap inited
-        model, Cmd.none
+
+            // layout the image
+        let loaded =
+            model ^. ImageModel.Initialized_
+                |> layoutImage dpiScale file bitmap
+        let model = Loaded loaded
+
+            // locate image for browsing
+        let bind dispatch =
+            async {
+                ImageModel.tryBrowse file 0
+                    |> Option.map (ImageLocated >> dispatch)
+                    |> Option.defaultValue ()
+            }
+        let cmd : Cmd<_> = [ bind >> Cmd.OfAsync.start ]
+        model, cmd
 
     /// Handles a load error.
     let private onHandleLoadError file message model =
@@ -280,8 +292,18 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// Locates the loaded image in the current directory
-    let private onLocate model =
+    /// The loaded image has been located in the current
+    /// directory.
+    let private onImageLocated hasPrevImage hasNextImage model =
+        let model =
+            match model with
+                | Loaded loaded ->
+                    Browsed {
+                        Loaded = loaded
+                        HasPreviousImage = hasPrevImage
+                        HasNextImage = hasNextImage
+                    }
+                | _ -> failwith "Invalid state"
         model, Cmd.none
 
     /// Browses to another image in the current directory.
@@ -400,8 +422,8 @@ module ImageMessage =
                 onPanEnd model
 
                 // locate image in directory
-            | Locate ->
-                onLocate model
+            | ImageLocated (hasPrev, hasNext) ->
+                onImageLocated hasPrev hasNext model
 
                 // browse to another image
             | Browse incr ->
