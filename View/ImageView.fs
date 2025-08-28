@@ -245,6 +245,46 @@ module ImageView =
             ]
         ]
 
+    /// Creates key bindings.
+    let private createKeyBindings situated dispatch =
+        Border.keyBindings [
+
+                // previous image
+            match situated.PreviousFileOpt with
+                | Some file ->
+                    for key in [ Key.Left; Key.PageUp ] do
+                        KeyBinding.create [
+                            KeyBinding.key key
+                            KeyBinding.execute (fun _ ->
+                                file
+                                    |> ImageMessage.LoadImage
+                                    |> MkImageMessage
+                                    |> dispatch)
+                        ]
+                | None -> ()
+
+                // next image
+            match situated.NextFileOpt with
+                | Some file ->
+                    for key in [ Key.Right; Key.PageDown ] do
+                        KeyBinding.create [
+                            KeyBinding.key key
+                            KeyBinding.execute (fun _ ->
+                                file
+                                    |> ImageMessage.LoadImage
+                                    |> MkImageMessage
+                                    |> dispatch)
+                        ]
+                | None -> ()
+
+                // delete file
+            KeyBinding.create [
+                KeyBinding.key Key.Delete
+                KeyBinding.execute (fun _ ->
+                    dispatch (MkImageMessage DeleteFile))
+            ]
+        ]
+
     /// Creates an invisible border that handles key bindings.
     let private createKeyBindingBorder model dispatch child =
         Border.create [
@@ -255,37 +295,7 @@ module ImageView =
 
             match model with
                 | Situated_ situated ->
-                    Border.keyBindings [
-
-                            // previous image
-                        match situated.PreviousFileOpt with
-                            | Some file ->
-                                for key in [ Key.Left; Key.PageUp ] do
-                                    KeyBinding.create [
-                                        KeyBinding.key key
-                                        KeyBinding.execute (fun _ ->
-                                            dispatch (LoadImage file))
-                                    ]
-                            | None -> ()
-
-                            // next image
-                        match situated.NextFileOpt with
-                            | Some file ->
-                                for key in [ Key.Right; Key.PageDown ] do
-                                    KeyBinding.create [
-                                        KeyBinding.key key
-                                        KeyBinding.execute (fun _ ->
-                                            dispatch (LoadImage file))
-                                    ]
-                            | None -> ()
-
-                            // delete file
-                        KeyBinding.create [
-                            KeyBinding.key Key.Delete
-                            KeyBinding.execute (fun _ ->
-                                dispatch (MkImageMessage DeleteFile))
-                        ]
-                    ]
+                    createKeyBindings situated dispatch
                 | _ -> ()
 
             Border.onLoaded (fun e ->
