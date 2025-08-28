@@ -304,22 +304,17 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// A loaded image has been situated in the current
-    /// directory.
+    /// An image file has been situated in its directory.
     let private onImageSituated
         previousFileOpt nextFileOpt model =
         let model =
-            match model with
-                | Loaded loaded ->
-                    let situated =
-                        SituatedFile.update
-                            previousFileOpt
-                            nextFileOpt
-                            loaded.Situated
-                    Loaded {
-                        loaded with
-                            Situated = situated }
-                | _ -> failwith "Invalid state"
+            let situated =
+                SituatedFile.update
+                    previousFileOpt
+                    nextFileOpt
+                    (model ^. ImageModel.Situated_)
+            model
+                |> situated ^= ImageModel.Situated_
         model, Cmd.none
 
     /// Deletes the current image.
