@@ -214,35 +214,45 @@ module ImageMessage =
     /// Zooms the current image.
     let private zoom
         zoomScale zoomScaleLock pointerPosOpt loaded =
+
+            // adjust offset
         let offset =
-            ImageLayout.updateImageOffset
+            ImageLayout.adjustImageOffset
                 pointerPosOpt zoomScale loaded
 
             // update offset/zoom
-        let loaded =
-            loaded
-                |> offset ^= LoadedImage.Offset_
-                |> zoomScale ^= LoadedImage.ZoomScale_
-                |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
-
-        Loaded loaded, Cmd.none
+        loaded
+            |> offset ^= LoadedImage.Offset_
+            |> zoomScale ^= LoadedImage.ZoomScale_
+            |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
-        | Loaded loaded ->
-            let zoomScale, zoomScaleLock =
-                ImageLayout.incrementZoomScale sign loaded
-            zoom zoomScale zoomScaleLock (Some pointerPos) loaded
+        | Loaded_ loaded as model ->
+            let loaded =
+                let zoomScale, zoomScaleLock =
+                    ImageLayout.incrementZoomScale sign loaded
+                zoom zoomScale zoomScaleLock (Some pointerPos) loaded
+            let model =
+                model
+                    |> loaded ^= ImageModel.Loaded_
+            model, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Zoom to actual size.
     let private onZoomToActualSize = function
-        | Loaded loaded -> zoom 1.0 true None loaded
+        | Loaded_ loaded as model ->
+            let loaded =
+                zoom 1.0 true None loaded
+            let model =
+                model
+                    |> loaded ^= ImageModel.Loaded_
+            model, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
     let private onPanStart pointerPos = function
-        | Loaded loaded ->
+        | Loaded_ loaded ->
             let pan =
                 {
                     ImageOffset = loaded.Offset
@@ -273,7 +283,7 @@ module ImageMessage =
 
     /// Continues panning.
     let private onPanMove pointerPos = function
-        | Loaded loaded as model ->
+        | Loaded_ loaded as model ->
             match loaded.PanOpt with
                 | Some pan ->
                     let model =
@@ -286,7 +296,7 @@ module ImageMessage =
 
     /// Ends panning.
     let private onPanEnd = function
-        | Loaded loaded ->
+        | Loaded_ loaded ->
             let model =
                 Loaded {
                     loaded with PanOpt = None }

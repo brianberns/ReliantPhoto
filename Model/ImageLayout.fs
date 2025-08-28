@@ -120,8 +120,8 @@ module ImageLayout =
         else
             newScale, zoomScaleLock
 
-    /// Updates image offset based on a new zoom scale.
-    let updateImageOffset
+    /// Adjusts image offset based on a new zoom scale.
+    let adjustImageOffset
         (pointerPosOpt : Option<Point>) newZoomScale loaded =
 
             // try to keep the point under the cursor stationary
