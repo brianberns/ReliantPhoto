@@ -287,3 +287,7 @@ module ImageModelExt =
     /// Initialized container active pattern.
     let (|Initialized_|_|) model =
         model ^. ImageModel.TryInitialized_
+
+    /// Situated file active pattern.
+    let (|Situated_|_|) model =
+        model ^. ImageModel.TrySituated_

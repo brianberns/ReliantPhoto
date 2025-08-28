@@ -246,44 +246,47 @@ module ImageView =
         ]
 
     /// Creates an invisible border that handles key bindings.
-    let private createKeyBindingBorder situated dispatch child =
+    let private createKeyBindingBorder model dispatch child =
         Border.create [
 
             Border.focusable true
             Border.focusAdorner null
             Border.background "Transparent"
 
-            Border.keyBindings [
+            match model with
+                | Situated_ situated ->
+                    Border.keyBindings [
 
-                    // previous image
-                match situated.PreviousFileOpt with
-                    | Some file ->
-                        for key in [ Key.Left; Key.PageUp ] do
-                            KeyBinding.create [
-                                KeyBinding.key key
-                                KeyBinding.execute (fun _ ->
-                                    dispatch (LoadImage file))
-                            ]
-                    | None -> ()
+                            // previous image
+                        match situated.PreviousFileOpt with
+                            | Some file ->
+                                for key in [ Key.Left; Key.PageUp ] do
+                                    KeyBinding.create [
+                                        KeyBinding.key key
+                                        KeyBinding.execute (fun _ ->
+                                            dispatch (LoadImage file))
+                                    ]
+                            | None -> ()
 
-                    // next image
-                match situated.NextFileOpt with
-                    | Some file ->
-                        for key in [ Key.Right; Key.PageDown ] do
-                            KeyBinding.create [
-                                KeyBinding.key key
-                                KeyBinding.execute (fun _ ->
-                                    dispatch (LoadImage file))
-                            ]
-                    | None -> ()
+                            // next image
+                        match situated.NextFileOpt with
+                            | Some file ->
+                                for key in [ Key.Right; Key.PageDown ] do
+                                    KeyBinding.create [
+                                        KeyBinding.key key
+                                        KeyBinding.execute (fun _ ->
+                                            dispatch (LoadImage file))
+                                    ]
+                            | None -> ()
 
-                    // delete file
-                KeyBinding.create [
-                    KeyBinding.key Key.Delete
-                    KeyBinding.execute (fun _ ->
-                        dispatch (MkImageMessage DeleteFile))
-                ]
-            ]
+                            // delete file
+                        KeyBinding.create [
+                            KeyBinding.key Key.Delete
+                            KeyBinding.execute (fun _ ->
+                                dispatch (MkImageMessage DeleteFile))
+                        ]
+                    ]
+                | _ -> ()
 
             Border.onLoaded (fun e ->
                 let border = e.Source :?> Border   // grab focus
@@ -294,9 +297,5 @@ module ImageView =
 
     /// Creates a view of the given model.
     let view model dispatch =
-        let panel = createWorkPanel model dispatch
-        match model ^. ImageModel.TrySituated_ with
-            | Some situated ->
-                createKeyBindingBorder situated dispatch panel
-                    :> IView
-            | _ -> panel
+        createWorkPanel model dispatch
+            |> createKeyBindingBorder model dispatch
