@@ -27,9 +27,6 @@ type ImageMessage =
     /// Load error occurred.
     | HandleLoadError of FileInfo * string
 
-    /// Browse to previous/next image in directory, if possible.
-    | Browse of int (*increment*)
-
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
@@ -44,6 +41,12 @@ type ImageMessage =
 
     /// Pointer pan has ended.
     | PanEnd
+
+    /// Locate the loaded image in the current directory.
+    | Locate
+
+    /// Browse to another image in the current directory.
+    | Browse of int (*increment*)
 
     /// Delete the current file.
     | DeleteFile
@@ -277,7 +280,11 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// Browses to a file, if possible.
+    /// Locates the loaded image in the current directory
+    let private onLocate model =
+        model, Cmd.none
+
+    /// Browses to another image in the current directory.
     let private onBrowse incr model =
         model, Cmd.none
 
@@ -392,7 +399,11 @@ module ImageMessage =
             | PanEnd ->
                 onPanEnd model
 
-                // browse to previous/next image
+                // locate image in directory
+            | Locate ->
+                onLocate model
+
+                // browse to another image
             | Browse incr ->
                 onBrowse incr model
 
