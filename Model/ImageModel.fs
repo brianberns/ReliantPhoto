@@ -314,11 +314,11 @@ module ImageModel =
         Comparer.Create(compareFiles)
 
     /// Browses to a file, if possible.
-    let tryBrowse (file : FileInfo) incr =
+    let tryBrowse (fromFile : FileInfo) incr =
 
             // get all candidate files for browsing
         let files =
-            file.Directory.GetFiles()
+            fromFile.Directory.GetFiles()
                 |> Seq.where (fun file ->
                     file.Attributes
                         &&& (FileAttributes.Hidden
@@ -332,7 +332,7 @@ module ImageModel =
             let! fromIdx =
                 let idx =
                     Array.BinarySearch(
-                        files, file, fileComparer)
+                        files, fromFile, fileComparer)
                 if idx >= 0 then Some idx
                 else None
             let toIdx = fromIdx + incr
