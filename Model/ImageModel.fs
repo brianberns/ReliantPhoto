@@ -69,6 +69,9 @@ module InitializedContainer =
 /// A file situated in a directory.
 type SituatedFile =
     {
+        /// Initialized container.
+        Initialized : InitializedContainer
+
         /// File.
         File : FileInfo
 
@@ -79,20 +82,43 @@ type SituatedFile =
         NextFileOpt : Option<FileInfo>
     }
 
+    /// Initialized container lens.
+    static member Initialized_ : Lens<_, _> =
+        _.Initialized,
+        fun inited loaded ->
+            { loaded with Initialized = inited }
+
+    /// Container size lens.
+    static member ContainerSize_ =
+        SituatedFile.Initialized_
+            >-> InitializedContainer.ContainerSize_
+
+    /// Zoom scale lens.
+    static member ZoomScale_ =
+        SituatedFile.Initialized_
+            >-> InitializedContainer.ZoomScale_
+
+    /// Zoom scale lock lens.
+    static member ZoomScaleLock_ =
+        SituatedFile.Initialized_
+            >-> InitializedContainer.ZoomScaleLock_
+
+    /// Offset prism.
+    static member Offset_ =
+        SituatedFile.Initialized_
+            >-> InitializedContainer.Offset_
+
 module SituatedFile =
 
-    /// Creates a situated file.
-    let private create file previousFileOpt nextFileOpt =
-        {
-            File = file
-            PreviousFileOpt = previousFileOpt
-            NextFileOpt = nextFileOpt
-        }
-
-    /// Initializes a situated file with no previous/next
+    /// Creates a situated file with no previous/next
     /// file.
-    let initialize file =
-        create file None None
+    let create file inited =
+        {
+            Initialized = inited
+            File = file
+            PreviousFileOpt = None
+            NextFileOpt = None
+        }
 
     /// Updates a situated file.
     let update previousFileOpt nextFileOpt situated =
@@ -115,9 +141,6 @@ type Pan =
 /// A loaded image.
 type LoadedImage =
     {
-        /// Initialized container.
-        Initialized : InitializedContainer
-
         /// Image file.
         Situated : SituatedFile
 
@@ -131,16 +154,21 @@ type LoadedImage =
         PanOpt : Option<Pan>
     }
 
+    /// Situated file lens.
+    static member Situated_ : Lens<_, _> =
+        _.Situated,
+        fun situated loaded ->
+            { loaded with Situated = situated }
+
     /// Initialized container lens.
-    static member Initialized_ : Lens<_, _> =
-        _.Initialized,
-        fun inited loaded ->
-            { loaded with Initialized = inited }
+    static member Initialized_ =
+        LoadedImage.Situated_
+            >-> SituatedFile.Initialized_
 
     /// Container size lens.
     static member ContainerSize_ =
-        LoadedImage.Initialized_
-            >-> InitializedContainer.ContainerSize_
+        LoadedImage.Situated_
+            >-> SituatedFile.ContainerSize_
 
     /// Zoom scale lens.
     static member ZoomScale_ =
@@ -166,9 +194,6 @@ type LoadedImage =
 /// An image file that could not be loaded.
 type LoadError =
     {
-        /// Initialized container.
-        Initialized : InitializedContainer
-
         /// Image file that couldn't be loaded.
         Situated : SituatedFile
 
@@ -176,11 +201,16 @@ type LoadError =
         Message : string
     }
 
+    /// Situated file lens.
+    static member Situated_ : Lens<_, _> =
+        _.Situated,
+        fun situated errored ->
+            { errored with Situated = situated }
+
     /// Initialized container lens.
-    static member Initialized_ : Lens<_, _> =
-        _.Initialized,
-        fun inited errored ->
-            { errored with Initialized = inited }
+    static member Initialized_ =
+        LoadError.Situated_
+            >-> SituatedFile.Initialized_
 
     /// Container size lens.
     static member ContainerSize_ =
@@ -195,6 +225,9 @@ type ImageModel =
     /// Initialized container.
     | Initialized of InitializedContainer
 
+    /// Situated file.
+    | Situated of SituatedFile
+
     /// Loaded image.
     | Loaded of LoadedImage
 
@@ -206,6 +239,8 @@ type ImageModel =
 
         (function
             | Initialized inited -> Some inited
+            | Situated situated ->
+                Some (situated ^.SituatedFile.Initialized_)
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Initialized_)
             | LoadError errored ->
@@ -214,6 +249,10 @@ type ImageModel =
 
         (fun inited -> function
             | Initialized _ -> Initialized inited
+            | Situated situated ->
+                situated
+                    |> inited ^= SituatedFile.Initialized_
+                    |> Situated
             | Loaded loaded ->
                 loaded
                     |> inited ^= LoadedImage.Initialized_

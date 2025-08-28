@@ -170,8 +170,7 @@ module ImageMessage =
             }
 
         {
-            Initialized = inited
-            Situated = SituatedFile.initialize file
+            Situated = SituatedFile.create file inited
             Bitmap = bitmap
             BitmapSize = bitmapSize
             PanOpt = None
@@ -199,8 +198,7 @@ module ImageMessage =
         let model =
             let inited = model ^. ImageModel.Initialized_
             LoadError {
-                Initialized = inited
-                Situated = SituatedFile.initialize file
+                Situated = SituatedFile.create file inited
                 Message = message
             }
         model, situate file
@@ -315,7 +313,6 @@ module ImageMessage =
 
         with exn ->
             LoadError {
-                Initialized = model ^. ImageModel.Initialized_
                 Situated = situated
                 Message = exn.Message
             }, Cmd.none
