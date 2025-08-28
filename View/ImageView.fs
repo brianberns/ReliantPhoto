@@ -61,7 +61,10 @@ module ImageView =
                 match fileOpt with
                     | Some file ->
                         Button.createText text tooltip (fun _ ->
-                            dispatch (LoadImage file))
+                            file
+                                |> ImageMessage.LoadImage
+                                |> MkImageMessage
+                                |> dispatch)
                     | None -> ()
             ]
         ]
