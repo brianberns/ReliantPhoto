@@ -145,9 +145,8 @@ module ImageView =
 
                     // start pan
                 Canvas.onPointerPressed (fun args ->
-                    let pointerPos = getPointerPosition args
                     args.Handled <- true
-                    pointerPos
+                    getPointerPosition args
                         |> PanStart
                         |> MkImageMessage
                         |> dispatch)
@@ -155,10 +154,8 @@ module ImageView =
             else
                     // continue pan
                 Canvas.onPointerMoved (fun args ->
-                    let pointerPos = getPointerPosition args
-                    printfn $"{pointerPos}"
                     args.Handled <- true
-                    pointerPos
+                    getPointerPosition args
                         |> PanMove
                         |> MkImageMessage
                         |> dispatch)
