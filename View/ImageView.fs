@@ -234,8 +234,7 @@ module ImageView =
         DockPanel.create [
 
             if model.IsUninitialized
-                || model.IsInitialized
-                || model.IsBrowsed then
+                || model.IsInitialized then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
