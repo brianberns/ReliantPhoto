@@ -319,41 +319,24 @@ module ImageMessage =
 
     /// Deletes the current image.
     let private onDeleteFile model =
-        model, Cmd.none
+        let situated = model ^. ImageModel.Situated_
 
-    (*
-    /// Deletes the current image.
-    let private onDeleteFile model =
-        match model with
-            | Browsed browsed ->
+        try
+                // delete file
+            situated.File.Delete()
 
-                try
-                        // browse first
-                    let model, cmd =
-                        if browsed.HasNextImage then
-                            onBrowse 1 model
-                        elif browsed.HasPreviousImage then
-                            onBrowse -1 model
-                        else
-                            BrowseError {   // to-do: handle better?
-                                Initialized = browsed.Initialized
-                                File = browsed.File
-                                Message = "No file"
-                            }, Cmd.none
+                // browse to another image
+            match situated.PreviousFileOpt, situated.NextFileOpt with
+                | _, Some file
+                | Some file, _ -> onLoadImage file model
+                | None, None -> failwith "No file"   // to-do: handle better?
 
-                        // then delete file
-                    browsed.File.Delete()
-
-                    model, cmd
-
-                with exn ->
-                    LoadError {   // to-do: handle better?
-                        Browsed = browsed
-                        Message = exn.Message
-                    }, Cmd.none
-
-            | _ -> failwith "Invalid state"
-            *)
+        with exn ->
+            LoadError {
+                Initialized = model ^. ImageModel.Initialized_
+                Situated = situated
+                Message = exn.Message
+            }, Cmd.none
 
     /// Updates the given model based on the given message.
     let update dpiScale message model =
