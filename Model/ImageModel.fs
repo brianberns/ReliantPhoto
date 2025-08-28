@@ -301,11 +301,7 @@ type ImageModel =
 
     /// Image file.
     member this.File =
-        let situated =
-            match this with
-                | LoadError errored -> errored.Situated
-                | _ -> (this ^. ImageModel.Loaded_).Situated
-        situated.File
+        (this ^. ImageModel.Situated_).File
 
 module ImageModel =
 
