@@ -1,7 +1,5 @@
 ﻿namespace Reliant.Photo
 
-open System
-open System.Collections.Generic
 open System.IO
 
 open Avalonia
@@ -300,47 +298,6 @@ type ImageModel =
             | _ -> (this ^. ImageModel.Loaded_).File
 
 module ImageModel =
-
-    /// Compares files by name.
-    let private compareFiles (fileA : FileInfo) (fileB : FileInfo) =
-        assert(fileA.DirectoryName = fileB.DirectoryName)
-        String.Compare(
-            fileA.Name,
-            fileB.Name,
-            StringComparison.CurrentCultureIgnoreCase)
-
-    /// Compares files by name.
-    let private fileComparer =
-        Comparer.Create(compareFiles)
-
-    /// Browses to a file, if possible.
-    let tryBrowse (fromFile : FileInfo) incr =
-
-            // get all candidate files for browsing
-        let files =
-            fromFile.Directory.GetFiles()
-                |> Seq.where (fun file ->
-                    file.Attributes
-                        &&& (FileAttributes.Hidden
-                            ||| FileAttributes.System)
-                        = FileAttributes.None)
-                |> Seq.sortWith compareFiles
-                |> Seq.toArray
-
-            // find file we're browsing to, if possible
-        option {
-            let! fromIdx =
-                let idx =
-                    Array.BinarySearch(
-                        files, fromFile, fileComparer)
-                if idx >= 0 then Some idx
-                else None
-            let toIdx = fromIdx + incr
-            if toIdx >= 0 && toIdx < files.Length then
-                let hasPreviousImage = toIdx > 0
-                let hasNextImage = toIdx < files.Length - 1
-                return hasPreviousImage, hasNextImage
-        }
 
     /// Initial model.
     let init () = Uninitialized
