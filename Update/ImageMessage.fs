@@ -42,8 +42,8 @@ type ImageMessage =
     /// Pointer pan has ended.
     | PanEnd
 
-    /// Loaded image has been located in the current directory.
-    | ImageLocated of bool (*has previous image*) * bool (*has next image*)
+    /// Loaded image has been situated in the current directory.
+    | ImageSituated of bool (*has previous image*) * bool (*has next image*)
 
     /// Browse to another image in the current directory.
     | Browse of int (*increment*)
@@ -189,12 +189,12 @@ module ImageMessage =
                 |> layoutImage dpiScale file bitmap
                 |> Loaded
 
-            // locate image for browsing
+            // situate image for browsing
         let cmd =
             Cmd.ofEffect (fun dispatch ->
                 async {
                     ImageModel.tryBrowse file 0
-                        |> Option.map (ImageLocated >> dispatch)
+                        |> Option.map (ImageSituated >> dispatch)
                         |> Option.defaultValue ()
                 } |> Async.Start)
 
@@ -293,9 +293,9 @@ module ImageMessage =
             model, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// The loaded image has been located in the current
+    /// The loaded image has been situated in the current
     /// directory.
-    let private onImageLocated
+    let private onImageSituated
         hasPrevImage hasNextImage model =
         let model =
             match model with
@@ -423,9 +423,9 @@ module ImageMessage =
             | PanEnd ->
                 onPanEnd model
 
-                // locate image in directory
-            | ImageLocated (hasPrev, hasNext) ->
-                onImageLocated hasPrev hasNext model
+                // situate image in directory
+            | ImageSituated (hasPrev, hasNext) ->
+                onImageSituated hasPrev hasNext model
 
                 // browse to another image
             | Browse incr ->
