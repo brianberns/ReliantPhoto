@@ -2,7 +2,6 @@ namespace Reliant.Photo
 
 open System
 open System.IO
-open System.Reflection
 
 open Elmish
 
@@ -10,8 +9,6 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
-
-open Aether.Operators
 
 module Window =
 
@@ -23,10 +20,7 @@ module Window =
 
     /// Gets the window icon.
     let getIcon () =
-        Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(
-                "ReliantPhoto.icon.png")
+        Resource.get "icon.png"
             |> WindowIcon
 
     /// Loads user settings, if possible.

@@ -12,3 +12,12 @@ module OptionBuilder =
 
     /// Option computation expression builder.
     let option = OptionBuilder()
+
+module Resource =
+
+    open System.Reflection
+
+    let get name =
+        Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream($"ReliantPhoto.{name : string}")

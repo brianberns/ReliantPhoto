@@ -152,6 +152,8 @@ module ImageView =
             if loaded.PanOpt.IsNone then
 
                     // start pan
+                if loaded ^. LoadedImage.ZoomScaleLock_ then   // assume pannable iff locked
+                    Canvas.cursor Cursor.openHand
                 Canvas.onPointerPressed (fun args ->
                     args.Handled <- true
                     getPointerPosition args
@@ -161,6 +163,7 @@ module ImageView =
 
             else
                     // continue pan
+                Canvas.cursor Cursor.closedHand
                 Canvas.onPointerMoved (fun args ->
                     args.Handled <- true
                     getPointerPosition args

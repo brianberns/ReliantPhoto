@@ -6,16 +6,10 @@ open Avalonia.Controls
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
-open Avalonia.Input
 open Avalonia.Interactivity
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Platform.Storage
-
-module Cursor =
-
-    /// Wait cursor.
-    let wait = new Cursor(StandardCursorType.Wait)
 
 module Color =
 
