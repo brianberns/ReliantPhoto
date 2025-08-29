@@ -196,9 +196,11 @@ module ImageMessage =
     /// Handles a load error.
     let private onHandleLoadError file message model =
         let model =
-            let inited = model ^. ImageModel.Initialized_
+            let situated =
+                model ^. ImageModel.Initialized_
+                    |> SituatedFile.create file
             LoadError {
-                Situated = SituatedFile.create file inited
+                Situated = situated
                 Message = message
             }
         model, situate file
