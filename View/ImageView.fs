@@ -66,10 +66,10 @@ module ImageView =
             DockPanel.dock dock
             DockPanel.children [
                 match resultOpt with
-                    | Some ((file, Ok bitmap) : FileImageResult) ->
-                        createButton (ImageLoaded (file, bitmap))
-                    | Some (file, Error msg) ->
-                        createButton (HandleLoadError (file, msg))
+                    | Some ((file, result) : FileImageResult) ->
+                        result
+                            |> ImageMessage.ofResult file
+                            |> createButton
                     | None -> ()
             ]
         ]
@@ -265,12 +265,10 @@ module ImageView =
             ]
 
         let createResultBindings keys = function
-            | Some ((file, Ok bitmap) : FileImageResult) ->
-                createBindings
-                    keys (ImageLoaded (file, bitmap))
-            | Some (file, Error msg) ->
-                createBindings
-                    keys (HandleLoadError (file, msg))
+            | Some ((file, result) : FileImageResult) ->
+                result
+                    |> ImageMessage.ofResult file
+                    |> createBindings keys
             | None -> []
 
         Border.keyBindings [

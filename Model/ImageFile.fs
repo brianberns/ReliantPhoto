@@ -37,8 +37,11 @@ module FileInfo =
 
         loop 100
 
+/// Image result
+type ImageResult = Result<Bitmap, string (*error message*)>
+
 /// An image result for a specific file.
-type FileImageResult = FileInfo * Result<Bitmap, string (*error message*)>
+type FileImageResult = FileInfo * ImageResult
 
 module ImageFile =
 

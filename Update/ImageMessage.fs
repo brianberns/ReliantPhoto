@@ -25,7 +25,7 @@ type ImageMessage =
     | UnloadImage
 
     /// Load error occurred.
-    | HandleLoadError of FileInfo * string
+    | HandleLoadError of FileInfo * string (*error message*)
 
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
@@ -112,15 +112,19 @@ module ImageMessage =
                         |> containerSize ^= ImageModel.ContainerSize_
         model, Cmd.none
 
+    /// Converts the given image result to a message.
+    let ofResult file (result : ImageResult) =
+        match result with
+            | Ok bitmap -> ImageLoaded (file, bitmap)
+            | Error msg -> HandleLoadError (file, msg)
+
     /// Starts loading an image from the given file.
     let private onLoadImage file (model : ImageModel) =
         let cmd =
             Cmd.OfAsync.perform
                 ImageFile.tryLoadImage
                 file
-                (function
-                    | Ok bitmap -> ImageLoaded (file, bitmap)
-                    | Error msg -> HandleLoadError (file, msg))
+                (ofResult file)
         model, cmd
 
     /// Unloads the current image, if any.
@@ -324,12 +328,9 @@ module ImageMessage =
                 // browse to another image
             let message =
                 match situated.PreviousResultOpt, situated.NextResultOpt with
-                    | _, Some (file, Ok bitmap)
-                    | Some (file, Ok bitmap), _ ->
-                        ImageLoaded (file, bitmap)
-                    | _, Some (file, Error msg)
-                    | Some (file, Error msg), _ ->
-                        HandleLoadError (file, msg)
+                    | _, Some (file, result)
+                    | Some (file, result), _ ->
+                        ofResult file result
                     | None, None -> failwith "No file"   // to-do: handle better?
             model, Cmd.ofMsg message
 
