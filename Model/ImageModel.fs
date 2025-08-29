@@ -75,11 +75,11 @@ type SituatedFile =
         /// File.
         File : FileInfo
 
-        /// Previous file, if any.
-        PreviousFileOpt : Option<FileInfo>
+        /// Previous image result, if any.
+        PreviousResultOpt : Option<FileImageResult>
 
-        /// Next file, if any.
-        NextFileOpt : Option<FileInfo>
+        /// Next image result, if any.
+        NextResultOpt : Option<FileImageResult>
     }
 
     /// Initialized container lens.
@@ -91,21 +91,21 @@ type SituatedFile =
 module SituatedFile =
 
     /// Creates a situated file with no previous/next
-    /// file.
+    /// image results.
     let create file inited =
         {
             Initialized = inited
             File = file
-            PreviousFileOpt = None
-            NextFileOpt = None
+            PreviousResultOpt = None
+            NextResultOpt = None
         }
 
     /// Updates a situated file.
-    let update previousFileOpt nextFileOpt situated =
+    let update previousResultOpt nextResultOpt situated =
         {
             situated with
-                PreviousFileOpt = previousFileOpt
-                NextFileOpt = nextFileOpt
+                PreviousResultOpt = previousResultOpt
+                NextResultOpt = nextResultOpt
         }
 
 /// Image pan.

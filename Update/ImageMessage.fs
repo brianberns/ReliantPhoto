@@ -44,8 +44,8 @@ type ImageMessage =
 
     /// File has been situated in its directory.
     | Situated
-        of Option<FileInfo> (*previous image*)
-            * Option<FileInfo> (*next image*)
+        of Option<FileImageResult> (*previous image*)
+            * Option<FileImageResult> (*next image*)
 
     /// Delete the current file.
     | DeleteFile
@@ -176,11 +176,25 @@ module ImageMessage =
             PanOpt = None
         }
 
+    /// Tries to load an image from the given file.
+    let private tryLoadImage fileOpt =
+        async {
+            match fileOpt with
+                | Some file ->
+                    let! result = ImageFile.tryLoadImage file
+                    return Some (file, result)
+                | None -> return None
+        }
+
     /// Situates a file for browsing.
     let private situate file =
         Cmd.ofEffect (fun dispatch ->
             async {
-                ImageFile.situate file
+                let prevFileOpt, nextFileOpt
+                    = ImageFile.situate file
+                let! prevResultOpt = tryLoadImage prevFileOpt
+                let! nextResultOpt = tryLoadImage nextFileOpt
+                (prevResultOpt, nextResultOpt)
                     |> Situated
                     |> dispatch
             } |> Async.Start)
@@ -288,12 +302,12 @@ module ImageMessage =
 
     /// A file has been situated in its directory.
     let private onSituated
-        previousFileOpt nextFileOpt model =
+        previousResultOpt nextResultOpt model =
         let model =
             let situated =
                 SituatedFile.update
-                    previousFileOpt
-                    nextFileOpt
+                    previousResultOpt
+                    nextResultOpt
                     (model ^. ImageModel.Situated_)
             model
                 |> situated ^= ImageModel.Situated_
@@ -308,10 +322,16 @@ module ImageMessage =
             situated.File.Delete()
 
                 // browse to another image
-            match situated.PreviousFileOpt, situated.NextFileOpt with
-                | _, Some file
-                | Some file, _ -> onLoadImage file model
-                | None, None -> failwith "No file"   // to-do: handle better?
+            let message =
+                match situated.PreviousResultOpt, situated.NextResultOpt with
+                    | _, Some (file, Ok bitmap)
+                    | Some (file, Ok bitmap), _ ->
+                        ImageLoaded (file, bitmap)
+                    | _, Some (file, Error msg)
+                    | Some (file, Error msg), _ ->
+                        HandleLoadError (file, msg)
+                    | None, None -> failwith "No file"   // to-do: handle better?
+            model, Cmd.ofMsg message
 
         with exn ->
             LoadError {
@@ -364,8 +384,8 @@ module ImageMessage =
                 onPanEnd model
 
                 // situate file in directory
-            | Situated (prevFileOpt, nextFileOpt) ->
-                onSituated prevFileOpt nextFileOpt model
+            | Situated (prevResultOpt, nextResultOpt) ->
+                onSituated prevResultOpt nextResultOpt model
 
                 // delete file
             | DeleteFile ->
