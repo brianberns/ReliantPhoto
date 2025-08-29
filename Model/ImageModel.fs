@@ -93,21 +93,6 @@ type SituatedFile =
         SituatedFile.Initialized_
             >-> InitializedContainer.ContainerSize_
 
-    /// Zoom scale lens.
-    static member ZoomScale_ =
-        SituatedFile.Initialized_
-            >-> InitializedContainer.ZoomScale_
-
-    /// Zoom scale lock lens.
-    static member ZoomScaleLock_ =
-        SituatedFile.Initialized_
-            >-> InitializedContainer.ZoomScaleLock_
-
-    /// Offset prism.
-    static member Offset_ =
-        SituatedFile.Initialized_
-            >-> InitializedContainer.Offset_
-
 module SituatedFile =
 
     /// Creates a situated file with no previous/next
@@ -167,8 +152,8 @@ type LoadedImage =
 
     /// Container size lens.
     static member ContainerSize_ =
-        LoadedImage.Situated_
-            >-> SituatedFile.ContainerSize_
+        LoadedImage.Initialized_
+            >-> InitializedContainer.ContainerSize_
 
     /// Zoom scale lens.
     static member ZoomScale_ =
@@ -211,11 +196,6 @@ type LoadError =
     static member Initialized_ =
         LoadError.Situated_
             >-> SituatedFile.Initialized_
-
-    /// Container size lens.
-    static member ContainerSize_ =
-        LoadError.Initialized_
-            >-> InitializedContainer.ContainerSize_
 
 type ImageModel =
 
