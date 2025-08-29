@@ -99,8 +99,7 @@ module ImageView =
     let private createImage loaded =
         Image.create [
 
-            let bitmap = loaded.Bitmap
-            Image.source bitmap
+            Image.source loaded.Bitmap
 
             Image.init (fun image ->
                 let mode =
