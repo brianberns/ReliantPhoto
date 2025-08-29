@@ -126,12 +126,12 @@ module ImageMessage =
     /// Unloads the current image, if any.
     let private onUnloadImage model =
         let model =
-            model ^. ImageModel.TryInitialized_
-                |> Option.map (fun inited ->
+            match model with
+                | Initialized_ inited ->
                     inited.ContainerSize   // keep only the container size
                         |> InitializedContainer.create
-                        |> Initialized)
-                |> Option.defaultValue model
+                        |> Initialized
+                | _ -> model
         model, Cmd.none
 
     /// Applies default layout rules to the given bitmap.
