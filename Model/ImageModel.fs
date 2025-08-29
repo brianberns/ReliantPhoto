@@ -88,11 +88,6 @@ type SituatedFile =
         fun inited loaded ->
             { loaded with Initialized = inited }
 
-    /// Container size lens.
-    static member ContainerSize_ =
-        SituatedFile.Initialized_
-            >-> InitializedContainer.ContainerSize_
-
 module SituatedFile =
 
     /// Creates a situated file with no previous/next
