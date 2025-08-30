@@ -35,7 +35,7 @@ module ImageView =
                     dispatch (MkImageMessage DeleteFile))
 
                     // zoom to actual size
-                Button.createText "🠙" "Zoom to actual size" (fun _ ->
+                Button.createText "🔎" "Zoom to actual size" (fun _ ->
                     dispatch (MkImageMessage ZoomToActualSize))
 
                     // zoom scale
