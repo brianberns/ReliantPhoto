@@ -15,9 +15,6 @@ type ImageMessage =
     /// Size of the image container has been set or updated.
     | ContainerSized of Size
 
-    /// Load image from file, if possible.
-    | LoadImage of FileInfo
-
     /// Image has been loaded.
     | ImageLoaded of FileInfo * Bitmap
 
@@ -52,15 +49,18 @@ type ImageMessage =
 
 module ImageMessage =
 
+    /// Converts the given image result to a message.
+    let ofResult file (result : ImageResult) =
+        match result with
+            | Ok bitmap -> ImageLoaded (file, bitmap)
+            | Error msg -> HandleLoadError (file, msg)
+
     /// Creates a command to load an image from the given file.
-    /// This is an asynchronous command to allow the image
-    /// view to create a container before loading its first
-    /// image.
     let loadImageCommand file =
         Cmd.OfAsync.perform
-            async.Return
+            ImageFile.tryLoadImage
             file
-            LoadImage
+            (ofResult file)
 
     /// Initializes model to start loading the given file.
     let init file =
@@ -112,19 +112,9 @@ module ImageMessage =
                         |> containerSize ^= ImageModel.ContainerSize_
         model, Cmd.none
 
-    /// Converts the given image result to a message.
-    let ofResult file (result : ImageResult) =
-        match result with
-            | Ok bitmap -> ImageLoaded (file, bitmap)
-            | Error msg -> HandleLoadError (file, msg)
-
     /// Starts loading an image from the given file.
     let private onLoadImage file (model : ImageModel) =
-        let cmd =
-            Cmd.OfAsync.perform
-                ImageFile.tryLoadImage
-                file
-                (ofResult file)
+        let cmd = loadImageCommand file
         model, cmd
 
     /// Unloads the current image, if any.
@@ -360,10 +350,6 @@ module ImageMessage =
                 // set/update container size
             | ContainerSized containerSize ->
                  onContainerSized containerSize model
-
-                // start loading an image
-            | LoadImage file ->
-                onLoadImage file model
 
                 // finish loading an image
             | ImageLoaded (file, bitmap) ->
