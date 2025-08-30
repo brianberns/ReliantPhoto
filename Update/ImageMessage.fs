@@ -239,7 +239,7 @@ module ImageMessage =
             |> zoomScale ^= LoadedImage.ZoomScale_
             |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
 
-    /// Updates zoom scale and origin.
+    /// Zooms in or out one step.
     let private onWheelZoom sign pointerPos = function
         | Loaded loaded ->
             let zoomScale, zoomScaleLock =
