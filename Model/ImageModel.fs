@@ -8,6 +8,42 @@ open Avalonia.Media.Imaging
 open Aether
 open Aether.Operators
 
+/// Zoom details.
+type Zoom =
+    {
+        /// Zoom scale. This will be 1.0 for an image displayed
+        /// at 1:1 size.
+        Scale : float
+
+        /// Lock zoom scale when resizing?
+        ScaleLock : bool
+    }
+
+    /// Scale lens.
+    static member Scale_ : Lens<_, _> =
+        _.Scale,
+        fun scale zoom ->
+            { zoom with Scale = scale }
+
+    /// Scale lock lens.
+    static member ScaleLock_ : Lens<_, _> =
+        _.ScaleLock,
+        fun scaleLock zoom ->
+            { zoom with ScaleLock = scaleLock }
+
+module Zoom =
+
+    /// Creates a zoom.
+    let create scale scaleLock =
+        {
+            Scale = scale
+            ScaleLock = scaleLock
+        }
+
+    /// 1:1 zoom.
+    let actualSize =
+        create 1.0 true
+
 /// Initialized container.
 type InitializedContainer =
     {
@@ -17,12 +53,8 @@ type InitializedContainer =
         /// Image location offset, if any.
         OffsetOpt : Option<Point>
 
-        /// Zoom scale. This will be 1.0 for an image displayed
-        /// at 1:1 size.
-        ZoomScale : float
-
-        /// Lock zoom scale when resizing?
-        ZoomScaleLock : bool
+        /// Zoom details.
+        Zoom : Zoom
     }
 
     /// Container size lens.
@@ -37,33 +69,39 @@ type InitializedContainer =
         fun offset inited ->
             { inited with OffsetOpt = Some offset }
 
+    /// Zoom lens. (Hah!)
+    static member Zoom_ : Lens<_, _> =
+        _.Zoom,
+        fun zoom inited ->
+            { inited with Zoom = zoom }
+
     /// Zoom scale lens.
-    static member ZoomScale_ : Lens<_, _> =
-        _.ZoomScale,
-        fun zoomScale inited ->
-            { inited with ZoomScale = zoomScale }
+    static member ZoomScale_ =
+        InitializedContainer.Zoom_
+            >-> Zoom.Scale_
 
     /// Zoom scale lock lens.
-    static member ZoomScaleLock_ : Lens<_, _> =
-        _.ZoomScaleLock,
-        fun zoomScaleLock inited ->
-            { inited with ZoomScaleLock = zoomScaleLock }
+    static member ZoomScaleLock_ =
+        InitializedContainer.Zoom_
+            >-> Zoom.ScaleLock_
 
 module InitializedContainer =
+
+    /// Dummy zoom.
+    let private dummyZoom = Zoom.create 0.0 false
 
     /// Creates an initialized container.
     let create containerSize =
         {
             ContainerSize = containerSize
             OffsetOpt = None
-            ZoomScale = 1.0
-            ZoomScaleLock = false
+            Zoom = dummyZoom
         }
 
     /// Get locked zoom scale, if any.
     let tryGetLockedZoomScale inited =
-        if inited.ZoomScaleLock then
-            Some inited.ZoomScale
+        if inited.Zoom.ScaleLock then
+            Some inited.Zoom.Scale
         else None
 
 /// A file situated in a directory.
@@ -130,8 +168,8 @@ type LoadedImage =
         /// Bitmap size, adjusted for system DPI scale.
         BitmapSize : Size
 
-        /// Saved zoom scale, if any.
-        SavedZoomScaleOpt : Option<float>
+        /// Saved zoom, if any.
+        SavedZoomOpt : Option<Zoom>
 
         /// Pan location, when panning.
         PanOpt : Option<Pan>
@@ -152,6 +190,11 @@ type LoadedImage =
     static member ContainerSize_ =
         LoadedImage.Initialized_
             >-> InitializedContainer.ContainerSize_
+
+    /// Zoom lens.
+    static member Zoom_ =
+        LoadedImage.Initialized_
+            >-> InitializedContainer.Zoom_
 
     /// Zoom scale lens.
     static member ZoomScale_ =

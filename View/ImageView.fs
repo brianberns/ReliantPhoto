@@ -39,13 +39,13 @@ module ImageView =
 
                             // zoom to specific size
                         let curZoomScale = loaded ^. LoadedImage.ZoomScale_
-                        match curZoomScale, loaded.SavedZoomScaleOpt with
-                            | 1.0, Some savedZoomScale ->
+                        match curZoomScale, loaded.SavedZoomOpt with
+                            | 1.0, Some savedZoom ->
                                 Button.createText "🧿" "Zoom to previous size" (fun _ ->
-                                    dispatch (MkImageMessage (ZoomTo savedZoomScale)))
+                                    dispatch (MkImageMessage (ZoomTo savedZoom)))
                             | _ ->
                                 Button.createText "🧿" "Zoom to actual size" (fun _ ->
-                                    dispatch (MkImageMessage (ZoomTo 1.0)))
+                                    dispatch (MkImageMessage (ZoomTo Zoom.actualSize)))
 
                             // zoom scale
                         TextBlock.create [

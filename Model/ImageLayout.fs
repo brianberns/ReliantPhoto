@@ -116,9 +116,9 @@ module ImageLayout =
             // snap to 1.0 instead?
         if newScale > 1.0 && zoomScale < 1.0
             || newScale < 1.0 && zoomScale > 1.0 then
-            1.0, true
+            Zoom.actualSize
         else
-            newScale, zoomScaleLock
+            Zoom.create newScale zoomScaleLock
 
     /// Adjusts image offset based on a new zoom scale.
     let adjustImageOffset
