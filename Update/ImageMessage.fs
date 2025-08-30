@@ -30,8 +30,8 @@ type ImageMessage =
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
-    /// Zoom image to actual size.
-    | ZoomToActualSize
+    /// Zoom image to given size. (Full size is 1.0.)
+    | ZoomTo of float
 
     /// Pointer pan has started.
     | PanStart of Point
@@ -177,6 +177,7 @@ module ImageMessage =
             Situated = SituatedFile.create file inited
             Bitmap = bitmap
             BitmapSize = bitmapSize
+            SavedZoomScaleOpt = None
             PanOpt = None
         }
 
@@ -233,26 +234,40 @@ module ImageMessage =
                 pointerPosOpt zoomScale loaded
 
             // update offset/zoom
-        let loaded =
-            loaded
-                |> offset ^= LoadedImage.Offset_
-                |> zoomScale ^= LoadedImage.ZoomScale_
-                |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
-
-        Loaded loaded, Cmd.none
+        loaded
+            |> offset ^= LoadedImage.Offset_
+            |> zoomScale ^= LoadedImage.ZoomScale_
+            |> zoomScaleLock ^= LoadedImage.ZoomScaleLock_
 
     /// Updates zoom scale and origin.
     let private onWheelZoom sign pointerPos = function
         | Loaded loaded ->
             let zoomScale, zoomScaleLock =
                 ImageLayout.incrementZoomScale sign loaded
-            zoom zoomScale zoomScaleLock (Some pointerPos) loaded
+            let loaded =
+                zoom zoomScale zoomScaleLock (Some pointerPos) loaded
+            Loaded loaded, Cmd.none
         | _ -> failwith "Invalid state"
 
-    /// Zoom to actual size.
-    let private onZoomToActualSize = function
+    /// Zoom to given size.
+    let private onZoomTo zoomScale = function
         | Loaded loaded ->
-            zoom 1.0 true None loaded
+
+                // save current zoom scale?
+            let loaded =
+                let curZoomScale =
+                    loaded ^. LoadedImage.ZoomScale_
+                let savedZoomScaleOpt =
+                    if curZoomScale = 1.0 then None
+                    else Some curZoomScale
+                { loaded with
+                    SavedZoomScaleOpt = savedZoomScaleOpt }
+
+                // zoom to given size
+            let loaded = zoom zoomScale true None loaded
+
+            Loaded loaded, Cmd.none
+
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
@@ -368,9 +383,9 @@ module ImageMessage =
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
 
-                // zoom to actual size
-            | ZoomToActualSize ->
-                onZoomToActualSize model
+                // zoom to given size
+            | ZoomTo zoomScale ->
+                onZoomTo zoomScale model
 
                 // start pan
             | PanStart pointerPos ->

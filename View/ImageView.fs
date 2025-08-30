@@ -34,20 +34,26 @@ module ImageView =
                 Button.createText "🗑" "Delete file" (fun _ ->
                     dispatch (MkImageMessage DeleteFile))
 
-                    // zoom to actual size
-                Button.createText "🧿" "Zoom to actual size" (fun _ ->
-                    dispatch (MkImageMessage ZoomToActualSize))
+                match model with
+                    | Loaded loaded ->
 
-                    // zoom scale
-                TextBlock.create [
-                    TextBlock.verticalAlignment VerticalAlignment.Center
-                    match model with
-                        | Loaded loaded ->
-                            let pct =
-                                (loaded ^. LoadedImage.ZoomScale_) * 100.0
-                            TextBlock.text $"%0.1f{pct}%%"
-                        | _ -> ()
-                ]
+                            // zoom to specific size
+                        let curZoomScale = loaded ^. LoadedImage.ZoomScale_
+                        match curZoomScale, loaded.SavedZoomScaleOpt with
+                            | 1.0, Some savedZoomScale ->
+                                Button.createText "🧿" "Zoom to previous size" (fun _ ->
+                                    dispatch (MkImageMessage (ZoomTo savedZoomScale)))
+                            | _ ->
+                                Button.createText "🧿" "Zoom to actual size" (fun _ ->
+                                    dispatch (MkImageMessage (ZoomTo 1.0)))
+
+                            // zoom scale
+                        TextBlock.create [
+                            TextBlock.verticalAlignment VerticalAlignment.Center
+                            TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
+                        ]
+
+                    | _ -> ()
             ]
         ]
 
