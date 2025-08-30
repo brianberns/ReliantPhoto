@@ -40,6 +40,7 @@ module Button =
             )
             ToolTip.tip tooltip
             Button.height buttonSize
+            Button.minWidth buttonSize
             Button.horizontalAlignment HorizontalAlignment.Stretch
             Button.verticalAlignment VerticalAlignment.Stretch
             Button.horizontalContentAlignment HorizontalAlignment.Center
