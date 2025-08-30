@@ -27,8 +27,6 @@
     <Compile Include="Update\DirectoryMessage.fs" />
     <Compile Include="Update\ImageMessage.fs" />
     <Compile Include="Update\Message.fs" />
-    <EmbeddedResource Include="View\hold.png" />
-    <EmbeddedResource Include="View\palm.png" />
     <Compile Include="View\KeyBinding.fs" />
     <Compile Include="View\Cursor.fs" />
     <Compile Include="View\DirectoryView.fs" />
