@@ -22,7 +22,7 @@ module Button =
     let buttonSize = 50
 
     /// Creates a text button.
-    let createText text (tooltip : string) onClick =
+    let createTextImpl text (tooltip : string) enabled onClick =
         Button.create [
             Button.content (
                 Viewbox.create [
@@ -38,7 +38,8 @@ module Button =
                     )
                 ]
             )
-            ToolTip.tip tooltip
+            Button.tip tooltip
+            Button.isEnabled enabled
             Button.height buttonSize
             Button.minWidth buttonSize
             Button.horizontalAlignment HorizontalAlignment.Stretch
@@ -47,6 +48,10 @@ module Button =
             Button.verticalContentAlignment VerticalAlignment.Center
             Button.onClick onClick
         ]
+
+    /// Creates a text button.
+    let createText text tooltip onClick =
+        createTextImpl text tooltip true onClick
 
 module FileSystemView =
 
