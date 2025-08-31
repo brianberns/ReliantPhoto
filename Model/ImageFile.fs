@@ -69,8 +69,11 @@ module ImageFile =
     let private enumerateFiles (dir : DirectoryInfo) =
         dir.EnumerateFiles("*", EnumerationOptions())   // ignore hidden and system files
             |> Seq.sortBy (fun file ->
-                ImageSharp.tryGetDateTaken file,
-                file.Name)
+                let dateTaken =
+                    file
+                        |> ImageSharp.tryGetDateTaken 
+                        |> Option.defaultValue DateTime.MaxValue   // sort missing dates to the end
+                dateTaken, file.Name)
 
     /// Tries to load thumbnails of images the given directory.
     let tryLoadDirectory height dir =
