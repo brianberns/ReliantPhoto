@@ -101,22 +101,28 @@ module ImageFile =
     let situate (file : FileInfo) =
 
             // get candidate files
-        let files =
+        let filePairs =
             file.Directory
                 |> enumerateFiles
                 |> Seq.toArray
 
-            // situate given file
-        let idx =
-            Array.BinarySearch(files, file)
-        if idx >= 0 then
-            let previousFileOpt =
-                if idx > 0 then
-                    Some files[idx - 1]
-                else None
-            let nextFileOpt =
-                if idx < files.Length - 1 then
-                    Some files[idx + 1]
-                else None
-            previousFileOpt, nextFileOpt
-        else None, None   // file not found
+        filePairs
+
+                // find target file
+            |> Array.tryFindIndex (fun file_ ->
+                FileSystemInfo.same file_ file)
+
+                // find previous/next files
+            |> Option.map (fun idx ->
+                let previousFileOpt =
+                    if idx > 0 then
+                        Some (filePairs[idx - 1])
+                    else None
+                let nextFileOpt =
+                    if idx < filePairs.Length - 1 then
+                        Some (filePairs[idx + 1])
+                    else None
+                previousFileOpt, nextFileOpt)
+
+                // file not found?
+            |> Option.defaultValue (None, None)
