@@ -215,12 +215,12 @@ module ImageMessage =
         model, situate file
 
     /// Zooms the current image.
-    let private zoomTo zoom pointerPosOpt loaded =
+    let private zoomTo zoom pointerPos loaded =
 
             // adjust offset
         let offset =
             ImageLayout.adjustImageOffset
-                pointerPosOpt zoom.Scale loaded
+                pointerPos zoom.Scale loaded
 
             // update offset/zoom
         loaded
@@ -232,8 +232,7 @@ module ImageMessage =
         | Loaded loaded ->
             let zoom =
                 ImageLayout.incrementZoomScale sign loaded
-            let loaded =
-                zoomTo zoom (Some pointerPos) loaded
+            let loaded = zoomTo zoom pointerPos loaded
             Loaded loaded, Cmd.none
         | _ -> failwith "Invalid state"
 
@@ -251,8 +250,14 @@ module ImageMessage =
                 { loaded with
                     SavedZoomOpt = savedZoomOpt }
 
+                // find container center
+            let pointerPos =
+                let size =
+                    (loaded ^. LoadedImage.ContainerSize_) / 2.0
+                Point(size.Width, size.Height)
+
                 // zoom to given size
-            let loaded = zoomTo zoom None loaded
+            let loaded = zoomTo zoom pointerPos loaded
 
             Loaded loaded, Cmd.none
 
