@@ -41,10 +41,10 @@ module ImageView =
                         let curZoomScale = loaded ^. LoadedImage.ZoomScale_
                         match curZoomScale, loaded.SavedZoomOpt with   // to-do: why doesn't refactoring this work?
                             | 1.0, Some savedZoom ->
-                                Button.createText "🧿" "Zoom to previous size" (fun _ ->
+                                Button.createText "🔍" "Zoom to previous size" (fun _ ->
                                     dispatch (MkImageMessage (ZoomTo savedZoom)))
                             | _ ->
-                                Button.createText "🧿" "Zoom to actual size" (fun _ ->
+                                Button.createText "🔎" "Zoom to actual size" (fun _ ->
                                     dispatch (MkImageMessage (ZoomTo Zoom.actualSize)))
 
                             // zoom scale
