@@ -155,34 +155,35 @@ module ImageView =
                         |> MkImageMessage
                         |> dispatch)
 
-            if loaded.PanOpt.IsNone then
+            if loaded ^. LoadedImage.ZoomScaleLock_ then
+                if loaded.PanOpt.IsNone then
 
-                    // start pan
-                if loaded ^. LoadedImage.ZoomScaleLock_ then   // assume pannable iff locked
+                        // start pan
+                    if loaded ^. LoadedImage.ZoomScaleLock_ then   // assume pannable iff locked
+                        Canvas.cursor Cursor.hand
+                    Canvas.onPointerPressed (fun args ->
+                        args.Handled <- true
+                        getPointerPosition args
+                            |> PanStart
+                            |> MkImageMessage
+                            |> dispatch)
+
+                else
+                        // continue pan
                     Canvas.cursor Cursor.hand
-                Canvas.onPointerPressed (fun args ->
-                    args.Handled <- true
-                    getPointerPosition args
-                        |> PanStart
-                        |> MkImageMessage
-                        |> dispatch)
+                    Canvas.onPointerMoved (fun args ->
+                        args.Handled <- true
+                        getPointerPosition args
+                            |> PanMove
+                            |> MkImageMessage
+                            |> dispatch)
 
-            else
-                    // continue pan
-                Canvas.cursor Cursor.hand
-                Canvas.onPointerMoved (fun args ->
-                    args.Handled <- true
-                    getPointerPosition args
-                        |> PanMove
-                        |> MkImageMessage
-                        |> dispatch)
-
-                    // end pan
-                Canvas.onPointerReleased (fun args ->
-                    args.Handled <- true
-                    PanEnd
-                        |> MkImageMessage
-                        |> dispatch)
+                        // end pan
+                    Canvas.onPointerReleased (fun args ->
+                        args.Handled <- true
+                        PanEnd
+                            |> MkImageMessage
+                            |> dispatch)
         ]
 
     /// Creates a canvas in which an image can be displayed.
