@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Globalization
 open System.Runtime.InteropServices
 
 open Avalonia
@@ -15,6 +16,44 @@ open SixLabors.ImageSharp.PixelFormats
 open SixLabors.ImageSharp.Processing
 
 module private ImageSharp =
+
+    /// Tries to get the time at which the given photo
+    /// image file was taken.
+    let tryGetDateTaken (file : FileInfo) =
+
+        let tags =
+            [
+                ExifTag.DateTimeOriginal
+                ExifTag.DateTime
+            ]
+
+        let toOption (flag, value) =
+            if flag then Some value
+            else None
+
+        try
+            option {
+                let! metadata =
+                    Image.Identify(file.FullName)
+                        .Metadata
+                        |> Option.ofObj
+                let! profile =
+                    metadata.ExifProfile
+                        |> Option.ofObj
+                let! value =
+                    tags
+                        |> Seq.choose (
+                            profile.TryGetValue >> toOption)
+                        |> Seq.tryHead
+                return!
+                    DateTime.TryParseExact(
+                        value.Value,
+                        "yyyy:MM:dd HH:mm:ss",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None)
+                        |> toOption
+            }
+        with _ -> None
 
     /// Gets the orientation of the given image.
     let private getOrientation (imageInfo : ImageInfo) =

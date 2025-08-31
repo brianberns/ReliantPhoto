@@ -65,9 +65,17 @@ module ImageFile =
                 return Error exn.Message
         }
 
-    /// Tries to load thumbnails of images the given directory.
-    let tryLoadDirectory height (dir : DirectoryInfo) =
+    /// Enumerates files in the given directory.
+    let private enumerateFiles (dir : DirectoryInfo) =
         dir.EnumerateFiles("*", EnumerationOptions())   // ignore hidden and system files
+            |> Seq.sortBy (fun file ->
+                ImageSharp.tryGetDateTaken file,
+                file.Name)
+
+    /// Tries to load thumbnails of images the given directory.
+    let tryLoadDirectory height dir =
+        dir
+            |> enumerateFiles
             |> Seq.map (fun file ->
                 async {
                     let! result =
@@ -85,36 +93,18 @@ module ImageFile =
                 BitmapInterpolationMode.None
             | _ -> BitmapInterpolationMode.HighQuality
 
-    /// Compares files by name.
-    let private compareFiles (fileA : FileInfo) (fileB : FileInfo) =
-        assert(fileA.DirectoryName = fileB.DirectoryName)
-        String.Compare(
-            fileA.Name,
-            fileB.Name,
-            StringComparison.CurrentCultureIgnoreCase)
-
-    /// Compares files by name.
-    let private fileComparer =
-        Comparer.Create(compareFiles)
-
     /// Situates a file within its directory.
     let situate (file : FileInfo) =
 
             // get candidate files
         let files =
-            file.Directory.EnumerateFiles()
-                |> Seq.where (fun file ->
-                    file.Attributes
-                        &&& (FileAttributes.Hidden
-                            ||| FileAttributes.System)
-                        = FileAttributes.None)
-                |> Seq.sortWith compareFiles
+            file.Directory
+                |> enumerateFiles
                 |> Seq.toArray
 
             // situate given file
         let idx =
-            Array.BinarySearch(
-                files, file, fileComparer)
+            Array.BinarySearch(files, file)
         if idx >= 0 then
             let previousFileOpt =
                 if idx > 0 then

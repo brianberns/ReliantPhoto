@@ -122,7 +122,7 @@ module DirectoryView =
                 let isHovered = ctx.useState false
                 Border.create [
                     Border.child (createImage source)
-                    ToolTip.tip file.Name
+                    Border.tip file.Name
                     Border.background (
                         if isHovered.Current then "#808080"
                         else "Transparent")
