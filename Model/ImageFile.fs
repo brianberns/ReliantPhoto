@@ -75,7 +75,8 @@ module ImageFile =
                         |> Option.defaultValue DateTime.MaxValue   // sort missing dates to the end
                 dateTaken, file.Name)
 
-    /// Tries to load thumbnails of images the given directory.
+    /// Tries to load thumbnails of images in the given
+    /// directory.
     let tryLoadDirectory height dir =
         dir
             |> enumerateFiles
