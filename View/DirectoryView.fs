@@ -164,6 +164,8 @@ module DirectoryView =
                             WrapPanel.children images
                         ]
                     )
+                    if images.IsEmpty && model.IsLoading then
+                        ScrollViewer.cursor Cursor.wait
                 ]
             ]
         ]
