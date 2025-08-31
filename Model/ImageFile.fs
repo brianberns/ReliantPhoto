@@ -102,7 +102,7 @@ module ImageFile =
 
             // get candidate files
         let files =
-            file.Directory.GetFiles()
+            file.Directory.EnumerateFiles()
                 |> Seq.where (fun file ->
                     file.Attributes
                         &&& (FileAttributes.Hidden
