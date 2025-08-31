@@ -230,10 +230,17 @@ module ImageMessage =
     /// Zooms in or out one step.
     let private onWheelZoom sign pointerPos = function
         | Loaded loaded ->
+
+                // zoom in/out
             let zoom =
                 ImageLayout.incrementZoomScale sign loaded
             let loaded = zoomTo zoom pointerPos loaded
+
+                // clear saved zoom
+            let loaded = { loaded with SavedZoomOpt = None }
+
             Loaded loaded, Cmd.none
+
         | _ -> failwith "Invalid state"
 
     /// Zoom to given size.
