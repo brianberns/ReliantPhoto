@@ -61,6 +61,15 @@ module ImageView =
                 | _ -> ()
         ]
 
+    /// Number of bytes in a kilobyte.
+    let private kb = pown 2 10
+
+    /// Number of bytes in a megabyte.
+    let private mb = pown 2 20
+
+    /// Number of bytes in a gigabyte.
+    let private gb = pown 2 30
+
     /// Creates a status bar.
     let private createStatusBar model =
         StatusBar.create [
@@ -74,9 +83,6 @@ module ImageView =
 
                         // file size
                     let sizeStr =
-                        let kb = 1024
-                        let mb = pown kb 2
-                        let gb = pown kb 3
                         let nBytes = file.Length
                         if nBytes < kb then $"{nBytes} bytes"
                         elif nBytes < mb then $"%.2f{float nBytes / float kb} KB"
