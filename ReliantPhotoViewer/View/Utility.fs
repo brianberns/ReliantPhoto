@@ -85,6 +85,15 @@ module StatusBar =
             StackPanel.children children
         ]
 
+    /// Creates a selectable text block.
+    let createSelectableTextBlock text (tooltip : string) =
+        SelectableTextBlock.create [
+            SelectableTextBlock.text text
+            SelectableTextBlock.background Color.darkGray
+            SelectableTextBlock.padding 5.0
+            SelectableTextBlock.tip tooltip
+        ]
+
 module FileSystemView =
 
     /// Allows user to select an image.

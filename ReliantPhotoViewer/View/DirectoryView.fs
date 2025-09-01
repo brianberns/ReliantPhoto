@@ -19,8 +19,13 @@ module DirectoryView =
         ]
 
     /// Creates a status bar.
-    let private createStatusBar (numImages : int) =
+    let private createStatusBar
+        (dir : DirectoryInfo) (numImages : int) =
         StatusBar.create [
+
+                // directory path
+            StatusBar.createSelectableTextBlock
+                dir.FullName "Directory path"
 
                 // number of images
             TextBlock.create [
@@ -78,7 +83,7 @@ module DirectoryView =
             DockPanel.children [
 
                 createToolbar dispatch
-                createStatusBar images.Length
+                createStatusBar model.Directory images.Length
 
                 ScrollViewer.create [
                     ScrollViewer.background Color.darkGray
