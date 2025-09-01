@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
 
 open Elmish
@@ -41,7 +42,8 @@ type ImageMessage =
 
     /// File has been situated in its directory.
     | Situated
-        of Option<FileImageResult> (*previous image*)
+        of Option<DateTime>           (*date taken*)
+            * Option<FileImageResult> (*previous image*)
             * Option<FileImageResult> (*next image*)
 
     /// Delete the current file.
@@ -185,11 +187,11 @@ module ImageMessage =
     let private situate file =
         Cmd.ofEffect (fun dispatch ->
             async {
-                let prevFileOpt, nextFileOpt
+                let dateTakenOpt, prevFileOpt, nextFileOpt
                     = ImageFile.situate file
                 let! prevResultOpt = tryLoadImage prevFileOpt
                 let! nextResultOpt = tryLoadImage nextFileOpt
-                (prevResultOpt, nextResultOpt)
+                (dateTakenOpt, prevResultOpt, nextResultOpt)
                     |> Situated
                     |> dispatch
             } |> Async.Start)
@@ -323,10 +325,11 @@ module ImageMessage =
 
     /// A file has been situated in its directory.
     let private onSituated
-        previousResultOpt nextResultOpt model =
+        dateTakenOpt previousResultOpt nextResultOpt model =
         let model =
             let situated =
                 SituatedFile.update
+                    dateTakenOpt
                     previousResultOpt
                     nextResultOpt
                     (model ^. ImageModel.Situated_)
@@ -398,8 +401,9 @@ module ImageMessage =
                 onPanEnd model
 
                 // situate file in directory
-            | Situated (prevResultOpt, nextResultOpt) ->
-                onSituated prevResultOpt nextResultOpt model
+            | Situated (dateTakenOpt, prevResultOpt, nextResultOpt) ->
+                onSituated
+                    dateTakenOpt prevResultOpt nextResultOpt model
 
                 // delete file
             | DeleteFile ->

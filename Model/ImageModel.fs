@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
 
 open Avalonia
@@ -113,6 +114,9 @@ type SituatedFile =
         /// File.
         File : FileInfo
 
+        /// Date taken, if any.
+        DateTakenOpt : Option<DateTime>
+
         /// Previous image result, if any.
         PreviousResultOpt : Option<FileImageResult>
 
@@ -134,14 +138,17 @@ module SituatedFile =
         {
             Initialized = inited
             File = file
+            DateTakenOpt = None
             PreviousResultOpt = None
             NextResultOpt = None
         }
 
     /// Updates a situated file.
-    let update previousResultOpt nextResultOpt situated =
+    let update
+        dateTakenOpt previousResultOpt nextResultOpt situated =
         {
             situated with
+                DateTakenOpt = dateTakenOpt
                 PreviousResultOpt = previousResultOpt
                 NextResultOpt = nextResultOpt
         }

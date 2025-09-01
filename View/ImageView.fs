@@ -77,18 +77,17 @@ module ImageView =
             StackPanel.fontSize 12.0
             StackPanel.children [
                 match model with
-                    | Loaded loaded ->
+                    | Situated_ situated ->
 
-                        let file =
-                            (loaded ^. LoadedImage.Situated_).File
+                            // file name
                         SelectableTextBlock.create [
-                            SelectableTextBlock.text file.Name
+                            SelectableTextBlock.text situated.File.Name
                             SelectableTextBlock.background Color.darkGray
                             SelectableTextBlock.padding 5.0
                             SelectableTextBlock.tip "File name"
                         ]
-
-                        match ImageFile.tryGetDateTaken file with
+                            // date taken
+                        match situated.DateTakenOpt with
                             | Some dateTaken ->
                                 SelectableTextBlock.create [
                                     SelectableTextBlock.text $"{dateTaken}"

@@ -65,11 +65,6 @@ module ImageFile =
                 return Error exn.Message
         }
 
-    /// Tries to get the time at which the given photo
-    /// image file was taken.
-    let tryGetDateTaken file =
-        ImageSharp.tryGetDateTaken file
-
     /// Enumerates files in the given directory.
     let private enumerateFiles (dir : DirectoryInfo) =
         dir.EnumerateFiles("*", EnumerationOptions())   // ignore hidden and system files
@@ -77,13 +72,16 @@ module ImageFile =
     /// File sort key.
     type private SortKey = DateTime (*date taken*) * string (*file name*)
 
-    /// Gets the sort key of the given file.
-    let private getSortKey file : SortKey =
+    /// Creates a sort key.
+    let private toSortKey dateTakenOpt (file : FileInfo) : SortKey =
         let dateTaken =
-            file
-                |> tryGetDateTaken 
+            dateTakenOpt
                 |> Option.defaultValue DateTime.MaxValue   // sort missing dates to the end
         dateTaken, file.Name
+
+    /// Gets the sort key of the given file.
+    let private getSortKey file : SortKey =
+        toSortKey (ImageSharp.tryGetDateTaken file) file
 
     /// Tries to load thumbnails of images in the given
     /// directory.
@@ -112,7 +110,8 @@ module ImageFile =
     let situate file =
 
             // get key of target file
-        let targetKey = getSortKey file
+        let dateTakenOpt = ImageSharp.tryGetDateTaken file
+        let targetKey = toSortKey dateTakenOpt file
 
             // examine all files in target's directory
         let files = enumerateFiles file.Directory
@@ -147,5 +146,6 @@ module ImageFile =
 
                     prevPairOpt, nextPairOpt)
 
+        dateTakenOpt,
         Option.map snd prevPairOpt,
         Option.map snd nextPairOpt
