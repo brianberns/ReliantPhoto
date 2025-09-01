@@ -111,22 +111,30 @@ module ImageFile =
 
         let prevPairOpt, nextPairOpt =
             ((None, None), files)
-                ||> Seq.fold (fun (prevPairOpt, nextPairOpt) file ->
-                    let key = getSortKey file
+                ||> Seq.fold (fun (prevPairOpt, nextPairOpt) curFile ->
+
+                    let curKey = getSortKey curFile
+                    assert(curKey <> targetKey
+                        || FileSystemInfo.same curFile file)
+
                     let prevPairOpt =
-                        if key < targetKey then
+                        if curKey < targetKey then
                             match prevPairOpt with
-                                | Some (prevKey, _) when key < prevKey ->
+                                | Some (prevKey, _)
+                                    when curKey < prevKey ->
                                     prevPairOpt
-                                | _ -> Some (key, file)
+                                | _ -> Some (curKey, curFile)
                         else prevPairOpt
+
                     let nextPairOpt =
-                        if key > targetKey then
+                        if curKey > targetKey then
                             match nextPairOpt with
-                                | Some (nextKey, _) when key > nextKey ->
+                                | Some (nextKey, _)
+                                    when curKey > nextKey ->
                                     nextPairOpt
-                                | _ -> Some (key, file)
+                                | _ -> Some (curKey, curFile)
                         else nextPairOpt
+
                     prevPairOpt, nextPairOpt)
 
         Option.map snd prevPairOpt,
