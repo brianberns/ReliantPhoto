@@ -81,8 +81,9 @@ module ImageView =
                             (loaded ^. LoadedImage.Situated_).File
                         match ImageFile.tryGetDateTaken file with
                             | Some dateTaken ->
-                                TextBlock.create [
-                                    TextBlock.text $"{dateTaken}"
+                                SelectableTextBlock.create [
+                                    SelectableTextBlock.text $"{dateTaken}"
+                                    SelectableTextBlock.tip "Date taken"
                                 ]
                             | _ -> ()
                     | _ -> ()
