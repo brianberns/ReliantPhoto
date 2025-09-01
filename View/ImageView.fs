@@ -74,6 +74,7 @@ module ImageView =
             StackPanel.orientation Orientation.Horizontal
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
+            StackPanel.fontSize 12.0
             StackPanel.children [
                 match model with
                     | Loaded loaded ->

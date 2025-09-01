@@ -31,6 +31,7 @@ module DirectoryView =
             StackPanel.orientation Orientation.Horizontal
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
+            StackPanel.fontSize 12.0
             StackPanel.children [
                 TextBlock.create [
                     TextBlock.text $"{numImages} images"
