@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18 d17.14
+VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReliantPhoto", "ReliantPhoto.fsproj", "{DB42273D-EE89-E720-3C7B-C68E6CEAAB4F}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReliantPhotoViewer", "ReliantPhotoViewer\ReliantPhotoViewer.fsproj", "{0A40F760-C523-3A06-1FA9-EBFADE4600E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.md = Readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +16,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DB42273D-EE89-E720-3C7B-C68E6CEAAB4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DB42273D-EE89-E720-3C7B-C68E6CEAAB4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DB42273D-EE89-E720-3C7B-C68E6CEAAB4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DB42273D-EE89-E720-3C7B-C68E6CEAAB4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A40F760-C523-3A06-1FA9-EBFADE4600E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A40F760-C523-3A06-1FA9-EBFADE4600E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A40F760-C523-3A06-1FA9-EBFADE4600E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A40F760-C523-3A06-1FA9-EBFADE4600E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

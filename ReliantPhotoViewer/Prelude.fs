@@ -17,7 +17,8 @@ module Resource =
 
     open System.Reflection
 
+    /// Gets a resource by name.
     let get name =
         Assembly
             .GetExecutingAssembly()
-            .GetManifestResourceStream($"ReliantPhoto.{name : string}")
+            .GetManifestResourceStream($"ReliantPhotoViewer.{name : string}")

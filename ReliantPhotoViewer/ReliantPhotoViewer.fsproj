@@ -8,14 +8,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <AssemblyName>ReliantPhotoViewer</AssemblyName>
     <PublishReadyToRun>true</PublishReadyToRun>
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
 	<PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Readme.md" />
     <EmbeddedResource Include="icon.png" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Model\ImageSharp.fs" />
