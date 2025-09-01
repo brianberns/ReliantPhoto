@@ -43,12 +43,16 @@ module ImageView =
                             | 1.0, Some savedZoom ->
                                 Button.createText
                                     "🔍" "Zoom to previous size" (fun _ ->
-                                    dispatch (MkImageMessage (ZoomTo savedZoom)))
+                                    ZoomTo savedZoom
+                                        |> MkImageMessage
+                                        |> dispatch)
                             | _ ->
                                 let enabled = (curZoomScale <> 1.0)
                                 Button.createTextImpl
                                     "🔎" "Zoom to actual size" enabled (fun _ ->
-                                    dispatch (MkImageMessage (ZoomTo Zoom.actualSize)))
+                                    ZoomTo Zoom.actualSize
+                                        |> MkImageMessage
+                                        |> dispatch)
 
                             // zoom scale
                         TextBlock.create [
@@ -148,7 +152,7 @@ module ImageView =
             Canvas.clipToBounds true
             Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
 
-                // zoom
+                // zoom in/out
             Canvas.onPointerWheelChanged (fun args ->
                 if args.Delta.Y <> 0 then   // y-coord: vertical wheel movement
                     let pointerPos = getPointerPosition args
@@ -186,6 +190,14 @@ module ImageView =
                         PanEnd
                             |> MkImageMessage
                             |> dispatch)
+
+                // zoom to actual size
+            else
+                Canvas.onDoubleTapped(fun args ->
+                    args.Handled <- true
+                    ZoomTo Zoom.actualSize
+                        |> MkImageMessage
+                        |> dispatch)
         ]
 
     /// Creates a canvas in which an image can be displayed.
