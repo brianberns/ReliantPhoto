@@ -41,10 +41,7 @@ type ImageMessage =
     | PanEnd
 
     /// File has been situated in its directory.
-    | Situated
-        of Option<DateTime>           (*date taken*)
-            * Option<FileImageResult> (*previous image*)
-            * Option<FileImageResult> (*next image*)
+    | Situated of Situation
 
     /// Delete the current file.
     | DeleteFile
@@ -191,9 +188,12 @@ module ImageMessage =
                     = ImageFile.situate file
                 let! prevResultOpt = tryLoadImage prevFileOpt
                 let! nextResultOpt = tryLoadImage nextFileOpt
-                (dateTakenOpt, prevResultOpt, nextResultOpt)
-                    |> Situated
-                    |> dispatch
+                Situation.create
+                    dateTakenOpt
+                    prevResultOpt
+                    nextResultOpt
+                        |> Situated
+                        |> dispatch
             } |> Async.Start)
 
     /// Handles a loaded image.
@@ -324,15 +324,11 @@ module ImageMessage =
         | _ -> failwith "Invalid state"
 
     /// A file has been situated in its directory.
-    let private onSituated
-        dateTakenOpt previousResultOpt nextResultOpt model =
+    let private onSituated situation model =
         let model =
             let situated =
-                SituatedFile.update
-                    dateTakenOpt
-                    previousResultOpt
-                    nextResultOpt
-                    (model ^. ImageModel.Situated_)
+                { (model ^. ImageModel.Situated_) with
+                    Situation = situation }
             model
                 |> situated ^= ImageModel.Situated_
         model, Cmd.none
@@ -347,7 +343,9 @@ module ImageMessage =
 
                 // browse to another image
             let message =
-                match situated.PreviousResultOpt, situated.NextResultOpt with
+                let situation = situated.Situation
+                match situation.PreviousResultOpt,
+                    situation.NextResultOpt with
                     | _, Some (file, result)
                     | Some (file, result), _ ->
                         ofResult file result
@@ -401,9 +399,8 @@ module ImageMessage =
                 onPanEnd model
 
                 // situate file in directory
-            | Situated (dateTakenOpt, prevResultOpt, nextResultOpt) ->
-                onSituated
-                    dateTakenOpt prevResultOpt nextResultOpt model
+            | Situated situation ->
+                onSituated situation model
 
                 // delete file
             | DeleteFile ->

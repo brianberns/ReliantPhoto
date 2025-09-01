@@ -105,15 +105,9 @@ module InitializedContainer =
             Some inited.Zoom.Scale
         else None
 
-/// A file situated in a directory.
-type SituatedFile =
+/// Situation of a file in a directory.
+type Situation =
     {
-        /// Initialized container.
-        Initialized : InitializedContainer
-
-        /// File.
-        File : FileInfo
-
         /// Date taken, if any.
         DateTakenOpt : Option<DateTime>
 
@@ -124,6 +118,33 @@ type SituatedFile =
         NextResultOpt : Option<FileImageResult>
     }
 
+module Situation =
+
+    /// Creates a situation.
+    let create dateTakenOpt previousResultOpt nextResultOpt =
+        {
+            DateTakenOpt = dateTakenOpt
+            PreviousResultOpt = previousResultOpt
+            NextResultOpt = nextResultOpt
+        }
+
+    /// Unknown situation.
+    let unknown =
+        create None None None
+
+/// A file situated in a directory.
+type SituatedFile =
+    {
+        /// Initialized container.
+        Initialized : InitializedContainer
+
+        /// File.
+        File : FileInfo
+
+        /// File situation.
+        Situation : Situation
+    }
+
     /// Initialized container lens.
     static member Initialized_ : Lens<_, _> =
         _.Initialized,
@@ -132,25 +153,12 @@ type SituatedFile =
 
 module SituatedFile =
 
-    /// Creates a situated file with no previous/next
-    /// image results.
+    /// Creates a situated file with unknown situation.
     let create file inited =
         {
             Initialized = inited
             File = file
-            DateTakenOpt = None
-            PreviousResultOpt = None
-            NextResultOpt = None
-        }
-
-    /// Updates a situated file.
-    let update
-        dateTakenOpt previousResultOpt nextResultOpt situated =
-        {
-            situated with
-                DateTakenOpt = dateTakenOpt
-                PreviousResultOpt = previousResultOpt
-                NextResultOpt = nextResultOpt
+            Situation = Situation.unknown
         }
 
 /// Image pan.

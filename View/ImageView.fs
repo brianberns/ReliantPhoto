@@ -87,7 +87,7 @@ module ImageView =
                             SelectableTextBlock.tip "File name"
                         ]
                             // date taken
-                        match situated.DateTakenOpt with
+                        match situated.Situation.DateTakenOpt with
                             | Some dateTaken ->
                                 SelectableTextBlock.create [
                                     SelectableTextBlock.text $"{dateTaken}"
@@ -130,8 +130,8 @@ module ImageView =
         let prevResultOpt, nextResultOpt =
             match model with
                 | Situated_ situated ->
-                    situated.PreviousResultOpt,
-                    situated.NextResultOpt
+                    situated.Situation.PreviousResultOpt,
+                    situated.Situation.NextResultOpt
                 | _ -> None, None
 
         [
@@ -340,12 +340,12 @@ module ImageView =
                 // previous image
             yield! createResultBindings
                 [ Key.Left; Key.PageUp ]
-                situated.PreviousResultOpt
+                situated.Situation.PreviousResultOpt
 
                 // next image
             yield! createResultBindings
                 [ Key.Right; Key.PageDown ]
-                situated.NextResultOpt
+                situated.Situation.NextResultOpt
 
                 // delete file
             yield! createBindings
