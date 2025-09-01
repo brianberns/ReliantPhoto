@@ -106,17 +106,21 @@ module ImageFile =
     /// Situates a file within its directory.
     let situate file =
 
+            // get key of target file
         let targetKey = getSortKey file
-        let files = enumerateFiles file.Directory
 
+            // examine all files in target's directory
+        let files = enumerateFiles file.Directory
         let prevPairOpt, nextPairOpt =
             ((None, None), files)
                 ||> Seq.fold (fun (prevPairOpt, nextPairOpt) curFile ->
 
+                        // get key of current file
                     let curKey = getSortKey curFile
                     assert(curKey <> targetKey
                         || FileSystemInfo.same curFile file)
 
+                        // find nearest inferior neighbor
                     let prevPairOpt =
                         if curKey < targetKey then
                             prevPairOpt
@@ -126,6 +130,7 @@ module ImageFile =
                                     Some (curKey, curFile))
                         else prevPairOpt
 
+                        // find nearest superior neighbor
                     let nextPairOpt =
                         if curKey > targetKey then
                             nextPairOpt
