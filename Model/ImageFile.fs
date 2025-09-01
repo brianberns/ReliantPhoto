@@ -68,18 +68,24 @@ module ImageFile =
     /// Enumerates files in the given directory.
     let private enumerateFiles (dir : DirectoryInfo) =
         dir.EnumerateFiles("*", EnumerationOptions())   // ignore hidden and system files
-            |> Seq.sortBy (fun file ->
-                let dateTaken =
-                    file
-                        |> ImageSharp.tryGetDateTaken 
-                        |> Option.defaultValue DateTime.MaxValue   // sort missing dates to the end
-                dateTaken, file.Name)
+
+    /// File sort key.
+    type private SortKey = DateTime (*date taken*) * string (*file name*)
+
+    /// Gets the sort key of the given file.
+    let private getSortKey file : SortKey =
+        let dateTaken =
+            file
+                |> ImageSharp.tryGetDateTaken 
+                |> Option.defaultValue DateTime.MaxValue   // sort missing dates to the end
+        dateTaken, file.Name
 
     /// Tries to load thumbnails of images in the given
     /// directory.
     let tryLoadDirectory height dir =
         dir
             |> enumerateFiles
+            |> Seq.sortBy getSortKey
             |> Seq.map (fun file ->
                 async {
                     let! result =
@@ -98,31 +104,30 @@ module ImageFile =
             | _ -> BitmapInterpolationMode.HighQuality
 
     /// Situates a file within its directory.
-    let situate (file : FileInfo) =
+    let situate file =
 
-            // get candidate files
-        let filePairs =
-            file.Directory
-                |> enumerateFiles
-                |> Seq.toArray
+        let targetKey = getSortKey file
+        let files = enumerateFiles file.Directory
 
-        filePairs
+        let prevPairOpt, nextPairOpt =
+            ((None, None), files)
+                ||> Seq.fold (fun (prevPairOpt, nextPairOpt) file ->
+                    let key = getSortKey file
+                    let prevPairOpt =
+                        if key < targetKey then
+                            match prevPairOpt with
+                                | Some (prevKey, _) when key < prevKey ->
+                                    prevPairOpt
+                                | _ -> Some (key, file)
+                        else prevPairOpt
+                    let nextPairOpt =
+                        if key > targetKey then
+                            match nextPairOpt with
+                                | Some (nextKey, _) when key > nextKey ->
+                                    nextPairOpt
+                                | _ -> Some (key, file)
+                        else nextPairOpt
+                    prevPairOpt, nextPairOpt)
 
-                // find target file
-            |> Array.tryFindIndex (fun file_ ->
-                FileSystemInfo.same file_ file)
-
-                // find previous/next files
-            |> Option.map (fun idx ->
-                let previousFileOpt =
-                    if idx > 0 then
-                        Some (filePairs[idx - 1])
-                    else None
-                let nextFileOpt =
-                    if idx < filePairs.Length - 1 then
-                        Some (filePairs[idx + 1])
-                    else None
-                previousFileOpt, nextFileOpt)
-
-                // file not found?
-            |> Option.defaultValue (None, None)
+        Option.map snd prevPairOpt,
+        Option.map snd nextPairOpt
