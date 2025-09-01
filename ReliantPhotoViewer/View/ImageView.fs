@@ -68,14 +68,27 @@ module ImageView =
                 | Loaded loaded ->
 
                         // file name
+                    let file = loaded.Situated.File
                     StatusBar.createSelectableTextBlock
-                        loaded.Situated.File.Name
-                        "File name"
+                        file.Name "File name"
 
-                        // dimensions
-                    let size = loaded.Bitmap.Size
+                        // file size
+                    let sizeStr =
+                        let kb = 1024.0
+                        let mb = kb ** 2
+                        let gb = kb ** 3
+                        let nBytes = float file.Length
+                        if nBytes < kb then $"%.2f{nBytes} bytes"
+                        elif nBytes < mb then $"%.2f{nBytes / kb} KB"
+                        elif nBytes < gb then $"%.2f{nBytes / mb} MB"
+                        else $"%.2f{nBytes / gb} GB"
                     StatusBar.createSelectableTextBlock
-                        $"{size.Width} x {size.Height}" "Dimensions"
+                        sizeStr "File size"
+
+                        // image dimensions
+                    let dims = loaded.Bitmap.Size
+                    StatusBar.createSelectableTextBlock
+                        $"{dims.Width} x {dims.Height}" "Dimensions"
 
                         // date taken
                     match loaded.Situated.Situation.DateTakenOpt with
