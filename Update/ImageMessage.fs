@@ -28,7 +28,7 @@ type ImageMessage =
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
     /// Zoom image to given size. (Full size is 1.0.)
-    | ZoomTo of Zoom
+    | ZoomTo of Zoom * Option<Point> (*pointer position*)
 
     /// Pointer pan has started.
     | PanStart of Point
@@ -244,7 +244,7 @@ module ImageMessage =
         | _ -> failwith "Invalid state"
 
     /// Zoom to given size.
-    let private onZoomTo zoom = function
+    let private onZoomTo zoom pointerPosOpt = function
         | Loaded loaded ->
 
                 // save current zoom scale?
@@ -257,11 +257,13 @@ module ImageMessage =
                 { loaded with
                     SavedZoomOpt = savedZoomOpt }
 
-                // find container center
+                // find container center?
             let pointerPos =
-                let size =
-                    (loaded ^. LoadedImage.ContainerSize_) / 2.0
-                Point(size.Width, size.Height)
+                pointerPosOpt
+                    |> Option.defaultWith (fun () ->
+                    let size =
+                        (loaded ^. LoadedImage.ContainerSize_) / 2.0
+                    Point(size.Width, size.Height))
 
                 // zoom to given size
             let loaded = zoomTo zoom pointerPos loaded
@@ -380,8 +382,8 @@ module ImageMessage =
                 onWheelZoom sign pointerPos model
 
                 // zoom to given size
-            | ZoomTo zoom ->
-                onZoomTo zoom model
+            | ZoomTo (zoom, pointerPosOpt) ->
+                onZoomTo zoom pointerPosOpt model
 
                 // start pan
             | PanStart pointerPos ->

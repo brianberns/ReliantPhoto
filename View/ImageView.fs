@@ -43,14 +43,14 @@ module ImageView =
                             | 1.0, Some savedZoom ->
                                 Button.createText
                                     "🔍" "Zoom to previous size" (fun _ ->
-                                    ZoomTo savedZoom
+                                    ZoomTo (savedZoom, None)
                                         |> MkImageMessage
                                         |> dispatch)
                             | _ ->
                                 let enabled = (curZoomScale <> 1.0)
                                 Button.createTextImpl
                                     "🔎" "Zoom to actual size" enabled (fun _ ->
-                                    ZoomTo Zoom.actualSize
+                                    ZoomTo (Zoom.actualSize, None)
                                         |> MkImageMessage
                                         |> dispatch)
 
@@ -137,14 +137,16 @@ module ImageView =
             Image.top loaded.Offset.Y
         ]
 
+    /// Gets the pointer position relative to the canvas.
+    let inline private getPointerPosition<'t
+        when 't :> Avalonia.Interactivity.RoutedEventArgs
+        and 't : (member GetPosition : Canvas -> Point)> (args : 't) =
+        (args.Source :?> Visual)
+            .FindAncestorOfType<Canvas>()
+            |> args.GetPosition
+
     /// Image canvas attributes.
     let private getImageCanvasAttributes loaded dispatch =
-
-        /// Gets the pointer position relative to the canvas.
-        let getPointerPosition (args : PointerEventArgs) =
-            (args.Source :?> Visual)
-                .FindAncestorOfType<Canvas>()
-                |> args.GetPosition
 
         [
             let image = createImage loaded
@@ -155,7 +157,7 @@ module ImageView =
                 // zoom in/out
             Canvas.onPointerWheelChanged (fun args ->
                 if args.Delta.Y <> 0 then   // y-coord: vertical wheel movement
-                    let pointerPos = getPointerPosition args
+                    let pointerPos = getPointerPosition<PointerWheelEventArgs> args
                     args.Handled <- true
                     (sign args.Delta.Y, pointerPos)
                         |> WheelZoom
@@ -195,7 +197,8 @@ module ImageView =
             else
                 Canvas.onDoubleTapped(fun args ->
                     args.Handled <- true
-                    ZoomTo Zoom.actualSize
+                    let pointerPos = getPointerPosition args
+                    ZoomTo (Zoom.actualSize, Some pointerPos)
                         |> MkImageMessage
                         |> dispatch)
         ]
