@@ -5,6 +5,7 @@ open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Input
+open Avalonia.Interactivity
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.VisualTree
@@ -139,8 +140,8 @@ module ImageView =
 
     /// Gets the pointer position relative to the canvas.
     let inline private getPointerPosition<'t
-        when 't :> Avalonia.Interactivity.RoutedEventArgs
-        and 't : (member GetPosition : Canvas -> Point)> (args : 't) =
+        when 't :> RoutedEventArgs
+        and 't : (member GetPosition : Canvas -> Point)>(args : 't) =
         (args.Source :?> Visual)
             .FindAncestorOfType<Canvas>()
             |> args.GetPosition
