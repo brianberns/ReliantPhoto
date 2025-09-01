@@ -61,6 +61,15 @@ module ImageView =
                 | _ -> ()
         ]
 
+    /// Creates a selectable text block.
+    let private createSelectableTextBlock text (tooltip : string) =
+        SelectableTextBlock.create [
+            SelectableTextBlock.text text
+            SelectableTextBlock.background Color.darkGray
+            SelectableTextBlock.padding 5.0
+            SelectableTextBlock.tip tooltip
+        ]
+
     /// Creates a status bar.
     let private createStatusBar model =
         StatusBar.create [
@@ -68,22 +77,18 @@ module ImageView =
                 | Situated_ situated ->
 
                         // file name
-                    SelectableTextBlock.create [
-                        SelectableTextBlock.text situated.File.Name
-                        SelectableTextBlock.background Color.darkGray
-                        SelectableTextBlock.padding 5.0
-                        SelectableTextBlock.tip "File name"
-                    ]
+                    createSelectableTextBlock
+                        situated.File.Name "File name"
+
                         // date taken
                     match situated.Situation.DateTakenOpt with
                         | Some dateTaken ->
-                            SelectableTextBlock.create [
-                                SelectableTextBlock.text $"{dateTaken}"
-                                SelectableTextBlock.background Color.darkGray
-                                SelectableTextBlock.padding 5.0
-                                SelectableTextBlock.tip "Date taken"
-                            ]
+                            createSelectableTextBlock
+                                $"{dateTaken}" "Date taken"
                         | _ -> ()
+
+                        // image resolution
+                    createSelectableTextBlock "todo" "todo"
                 | _ -> ()
         ]
 

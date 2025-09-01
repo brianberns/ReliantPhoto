@@ -19,12 +19,12 @@ module DirectoryView =
         ]
 
     /// Creates a status bar.
-    let private createStatusBar numImages =
+    let private createStatusBar (numImages : int) =
         StatusBar.create [
 
                 // number of images
             TextBlock.create [
-                TextBlock.text $"{numImages : int} images"
+                TextBlock.text $"{numImages} images"
                 TextBlock.background Color.darkGray
                 TextBlock.padding 5.0
             ]
