@@ -13,15 +13,9 @@ module DirectoryView =
 
     /// Creates a toolbar.
     let private createToolbar dispatch =
-        StackPanel.create [
-            StackPanel.dock Dock.Top
-            StackPanel.orientation Orientation.Horizontal
-            StackPanel.spacing 5.0
-            StackPanel.margin 5.0
-            StackPanel.children [
+        Toolbar.create [
                 Button.createText "🗀" "Open image file" (
                     FileSystemView.onSelectImage dispatch)
-            ]
         ]
 
     /// Creates a status bar.

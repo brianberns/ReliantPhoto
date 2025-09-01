@@ -23,6 +23,18 @@ module Cursor =
     /// Hand cursor.
     let hand = new Cursor(StandardCursorType.Hand)
 
+module Toolbar =
+
+    /// Creates a toolbar.
+    let create children =
+        StackPanel.create [
+            StackPanel.dock Dock.Top
+            StackPanel.orientation Orientation.Horizontal
+            StackPanel.spacing 5.0
+            StackPanel.margin 5.0
+            StackPanel.children children
+        ]
+
 module Button =
 
     /// Button height and width.

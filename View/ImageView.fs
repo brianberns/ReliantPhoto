@@ -18,53 +18,47 @@ module ImageView =
 
     /// Creates a toolbar.
     let private createToolbar model dispatch =
-        StackPanel.create [
-            StackPanel.dock Dock.Top
-            StackPanel.orientation Orientation.Horizontal
-            StackPanel.spacing 5.0
-            StackPanel.margin 5.0
-            StackPanel.children [
+        Toolbar.create [
 
-                    // switch to directory mode
-                Button.createText "↩" "View folder contents" (fun _ ->
-                    dispatch SwitchToDirectory)
+                // switch to directory mode
+            Button.createText "↩" "View folder contents" (fun _ ->
+                dispatch SwitchToDirectory)
 
-                    // open file
-                Button.createText "🗀" "Open image file" (
-                    FileSystemView.onSelectImage dispatch)
+                // open file
+            Button.createText "🗀" "Open image file" (
+                FileSystemView.onSelectImage dispatch)
 
-                    // delete file
-                Button.createText "🗑" "Delete file" (fun _ ->
-                    dispatch (MkImageMessage DeleteFile))
+                // delete file
+            Button.createText "🗑" "Delete file" (fun _ ->
+                dispatch (MkImageMessage DeleteFile))
 
-                match model with
-                    | Loaded loaded ->
+            match model with
+                | Loaded loaded ->
 
-                            // zoom to specific size
-                        let curZoomScale = loaded ^. LoadedImage.ZoomScale_
-                        match curZoomScale, loaded.SavedZoomOpt with   // to-do: why doesn't refactoring this work?
-                            | 1.0, Some savedZoom ->
-                                Button.createText
-                                    "🔍" "Zoom to previous size" (fun _ ->
-                                    ZoomTo (savedZoom, None)
-                                        |> MkImageMessage
-                                        |> dispatch)
-                            | _ ->
-                                let enabled = (curZoomScale <> 1.0)
-                                Button.createTextImpl
-                                    "🔎" "Zoom to actual size" enabled (fun _ ->
-                                    ZoomTo (Zoom.actualSize, None)
-                                        |> MkImageMessage
-                                        |> dispatch)
+                        // zoom to specific size
+                    let curZoomScale = loaded ^. LoadedImage.ZoomScale_
+                    match curZoomScale, loaded.SavedZoomOpt with   // to-do: why doesn't refactoring this work?
+                        | 1.0, Some savedZoom ->
+                            Button.createText
+                                "🔍" "Zoom to previous size" (fun _ ->
+                                ZoomTo (savedZoom, None)
+                                    |> MkImageMessage
+                                    |> dispatch)
+                        | _ ->
+                            let enabled = (curZoomScale <> 1.0)
+                            Button.createTextImpl
+                                "🔎" "Zoom to actual size" enabled (fun _ ->
+                                ZoomTo (Zoom.actualSize, None)
+                                    |> MkImageMessage
+                                    |> dispatch)
 
-                            // zoom scale
-                        TextBlock.create [
-                            TextBlock.verticalAlignment VerticalAlignment.Center
-                            TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
-                        ]
+                        // zoom scale
+                    TextBlock.create [
+                        TextBlock.verticalAlignment VerticalAlignment.Center
+                        TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
+                    ]
 
-                    | _ -> ()
-            ]
+                | _ -> ()
         ]
 
     /// Creates a status bar.
