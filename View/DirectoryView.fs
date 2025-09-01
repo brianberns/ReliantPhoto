@@ -34,6 +34,8 @@ module DirectoryView =
             StackPanel.children [
                 TextBlock.create [
                     TextBlock.text $"{numImages} images"
+                    TextBlock.background Color.darkGray
+                    TextBlock.padding 5.0
                 ]
             ]
         ]

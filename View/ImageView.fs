@@ -77,12 +77,22 @@ module ImageView =
             StackPanel.children [
                 match model with
                     | Loaded loaded ->
+
                         let file =
                             (loaded ^. LoadedImage.Situated_).File
+                        SelectableTextBlock.create [
+                            SelectableTextBlock.text file.Name
+                            SelectableTextBlock.background Color.darkGray
+                            SelectableTextBlock.padding 5.0
+                            SelectableTextBlock.tip "File name"
+                        ]
+
                         match ImageFile.tryGetDateTaken file with
                             | Some dateTaken ->
                                 SelectableTextBlock.create [
                                     SelectableTextBlock.text $"{dateTaken}"
+                                    SelectableTextBlock.background Color.darkGray
+                                    SelectableTextBlock.padding 5.0
                                     SelectableTextBlock.tip "Date taken"
                                 ]
                             | _ -> ()
