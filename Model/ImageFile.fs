@@ -119,20 +119,20 @@ module ImageFile =
 
                     let prevPairOpt =
                         if curKey < targetKey then
-                            match prevPairOpt with
-                                | Some (prevKey, _)
-                                    when curKey < prevKey ->
-                                    prevPairOpt
-                                | _ -> Some (curKey, curFile)
+                            prevPairOpt
+                                |> Option.filter (fun (prevKey, _) ->
+                                    prevKey > curKey)
+                                |> Option.orElse (
+                                    Some (curKey, curFile))
                         else prevPairOpt
 
                     let nextPairOpt =
                         if curKey > targetKey then
-                            match nextPairOpt with
-                                | Some (nextKey, _)
-                                    when curKey > nextKey ->
-                                    nextPairOpt
-                                | _ -> Some (curKey, curFile)
+                            nextPairOpt
+                                |> Option.filter (fun (nextKey, _) ->
+                                    nextKey < curKey)
+                                |> Option.orElse (
+                                    Some (curKey, curFile))
                         else nextPairOpt
 
                     prevPairOpt, nextPairOpt)
