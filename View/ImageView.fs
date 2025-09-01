@@ -158,12 +158,12 @@ module ImageView =
                         |> MkImageMessage
                         |> dispatch)
 
+                // panning
             if loaded ^. LoadedImage.ZoomScaleLock_ then
+                Canvas.cursor Cursor.hand
                 if loaded.PanOpt.IsNone then
 
                         // start pan
-                    if loaded ^. LoadedImage.ZoomScaleLock_ then   // assume pannable iff locked
-                        Canvas.cursor Cursor.hand
                     Canvas.onPointerPressed (fun args ->
                         args.Handled <- true
                         getPointerPosition args
@@ -173,7 +173,6 @@ module ImageView =
 
                 else
                         // continue pan
-                    Canvas.cursor Cursor.hand
                     Canvas.onPointerMoved (fun args ->
                         args.Handled <- true
                         getPointerPosition args
