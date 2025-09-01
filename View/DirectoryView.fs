@@ -12,9 +12,9 @@ open Avalonia.Media
 module DirectoryView =
 
     /// Creates a toolbar.
-    let private createToolbar dock dispatch =
+    let private createToolbar dispatch =
         StackPanel.create [
-            StackPanel.dock dock
+            StackPanel.dock Dock.Top
             StackPanel.orientation Orientation.Horizontal
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
@@ -25,19 +25,14 @@ module DirectoryView =
         ]
 
     /// Creates a status bar.
-    let private createStatusBar dock (numImages : int) =
-        StackPanel.create [
-            StackPanel.dock dock
-            StackPanel.orientation Orientation.Horizontal
-            StackPanel.spacing 5.0
-            StackPanel.margin 5.0
-            StackPanel.fontSize 12.0
-            StackPanel.children [
-                TextBlock.create [
-                    TextBlock.text $"{numImages} images"
-                    TextBlock.background Color.darkGray
-                    TextBlock.padding 5.0
-                ]
+    let private createStatusBar numImages =
+        StatusBar.create [
+
+                // number of images
+            TextBlock.create [
+                TextBlock.text $"{numImages : int} images"
+                TextBlock.background Color.darkGray
+                TextBlock.padding 5.0
             ]
         ]
 
@@ -88,8 +83,8 @@ module DirectoryView =
         DockPanel.create [
             DockPanel.children [
 
-                createToolbar Dock.Top dispatch
-                createStatusBar Dock.Bottom images.Length
+                createToolbar dispatch
+                createStatusBar images.Length
 
                 ScrollViewer.create [
                     ScrollViewer.background Color.darkGray

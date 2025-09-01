@@ -60,6 +60,19 @@ module Button =
     let createText text tooltip onClick =
         createTextImpl text tooltip true onClick
 
+module StatusBar =
+
+    /// Creates a status bar.
+    let create children =
+        StackPanel.create [
+            StackPanel.dock Dock.Bottom
+            StackPanel.orientation Orientation.Horizontal
+            StackPanel.spacing 5.0
+            StackPanel.margin 5.0
+            StackPanel.fontSize 12.0
+            StackPanel.children children
+        ]
+
 module FileSystemView =
 
     /// Allows user to select an image.

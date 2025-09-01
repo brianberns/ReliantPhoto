@@ -17,9 +17,9 @@ open Aether.Operators
 module ImageView =
 
     /// Creates a toolbar.
-    let private createToolbar dock model dispatch =
+    let private createToolbar model dispatch =
         StackPanel.create [
-            StackPanel.dock dock
+            StackPanel.dock Dock.Top
             StackPanel.orientation Orientation.Horizontal
             StackPanel.spacing 5.0
             StackPanel.margin 5.0
@@ -68,36 +68,29 @@ module ImageView =
         ]
 
     /// Creates a status bar.
-    let private createStatusBar dock model =
-        StackPanel.create [
-            StackPanel.dock dock
-            StackPanel.orientation Orientation.Horizontal
-            StackPanel.spacing 5.0
-            StackPanel.margin 5.0
-            StackPanel.fontSize 12.0
-            StackPanel.children [
-                match model with
-                    | Situated_ situated ->
+    let private createStatusBar model =
+        StatusBar.create [
+            match model with
+                | Situated_ situated ->
 
-                            // file name
-                        SelectableTextBlock.create [
-                            SelectableTextBlock.text situated.File.Name
-                            SelectableTextBlock.background Color.darkGray
-                            SelectableTextBlock.padding 5.0
-                            SelectableTextBlock.tip "File name"
-                        ]
-                            // date taken
-                        match situated.Situation.DateTakenOpt with
-                            | Some dateTaken ->
-                                SelectableTextBlock.create [
-                                    SelectableTextBlock.text $"{dateTaken}"
-                                    SelectableTextBlock.background Color.darkGray
-                                    SelectableTextBlock.padding 5.0
-                                    SelectableTextBlock.tip "Date taken"
-                                ]
-                            | _ -> ()
-                    | _ -> ()
-            ]
+                        // file name
+                    SelectableTextBlock.create [
+                        SelectableTextBlock.text situated.File.Name
+                        SelectableTextBlock.background Color.darkGray
+                        SelectableTextBlock.padding 5.0
+                        SelectableTextBlock.tip "File name"
+                    ]
+                        // date taken
+                    match situated.Situation.DateTakenOpt with
+                        | Some dateTaken ->
+                            SelectableTextBlock.create [
+                                SelectableTextBlock.text $"{dateTaken}"
+                                SelectableTextBlock.background Color.darkGray
+                                SelectableTextBlock.padding 5.0
+                                SelectableTextBlock.tip "Date taken"
+                            ]
+                        | _ -> ()
+                | _ -> ()
         ]
 
     /// Creates a browse panel, with or without a button.
@@ -307,8 +300,8 @@ module ImageView =
                 DockPanel.background "Transparent"   // needed to force the cursor change for some reason
 
             DockPanel.children [
-                createToolbar Dock.Top model dispatch
-                createStatusBar Dock.Bottom model
+                createToolbar model dispatch
+                createStatusBar model
                 createBrowseDisplayPanel model dispatch
             ]
         ]
