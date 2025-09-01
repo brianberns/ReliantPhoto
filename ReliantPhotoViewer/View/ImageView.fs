@@ -65,22 +65,24 @@ module ImageView =
     let private createStatusBar model =
         StatusBar.create [
             match model with
-                | Situated_ situated ->
+                | Loaded loaded ->
 
                         // file name
                     StatusBar.createSelectableTextBlock
-                        situated.File.Name "File name"
+                        loaded.Situated.File.Name
+                        "File name"
+
+                        // dimensions
+                    let size = loaded.Bitmap.Size
+                    StatusBar.createSelectableTextBlock
+                        $"{size.Width} x {size.Height}" "Dimensions"
 
                         // date taken
-                    match situated.Situation.DateTakenOpt with
+                    match loaded.Situated.Situation.DateTakenOpt with
                         | Some dateTaken ->
                             StatusBar.createSelectableTextBlock
                                 $"{dateTaken}" "Date taken"
                         | _ -> ()
-
-                        // image resolution
-                    StatusBar.createSelectableTextBlock
-                        "todo" "todo"
                 | _ -> ()
         ]
 
