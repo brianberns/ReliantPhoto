@@ -1,5 +1,7 @@
 ﻿namespace Reliant.Photo
 
+open System
+
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
@@ -61,6 +63,28 @@ module ImageView =
                             TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
                         ]
 
+                    | _ -> ()
+            ]
+        ]
+
+    /// Creates a status bar.
+    let private createStatusBar dock model =
+        StackPanel.create [
+            StackPanel.dock dock
+            StackPanel.orientation Orientation.Horizontal
+            StackPanel.spacing 5.0
+            StackPanel.margin 5.0
+            StackPanel.children [
+                match model with
+                    | Loaded loaded ->
+                        let file =
+                            (loaded ^. LoadedImage.Situated_).File
+                        match ImageFile.tryGetDateTaken file with
+                            | Some dateTaken ->
+                                TextBlock.create [
+                                    TextBlock.text $"{dateTaken}"
+                                ]
+                            | _ -> ()
                     | _ -> ()
             ]
         ]
@@ -273,6 +297,7 @@ module ImageView =
 
             DockPanel.children [
                 createToolbar Dock.Top model dispatch
+                createStatusBar Dock.Bottom model
                 createBrowseDisplayPanel model dispatch
             ]
         ]
