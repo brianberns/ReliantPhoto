@@ -19,16 +19,22 @@ module ImageView =
         Toolbar.create [
 
                 // switch to directory mode
-            Button.createIcon Icon.switchAccess "View folder contents" (fun _ ->
-                dispatch SwitchToDirectory)
+            Button.createIcon
+                Icon.switchAccess
+                "View folder contents"
+                (fun _ -> dispatch SwitchToDirectory)
 
                 // open file
-            Button.createIcon Icon.folderOpen "Open image file" (
-                FileSystemView.onSelectImage dispatch)
+            Button.createIcon
+                Icon.folderOpen
+                "Open image file"
+                (FileSystemView.onSelectImage dispatch)
 
                 // delete file
-            Button.createIcon Icon.delete "Delete file" (fun _ ->
-                dispatch (MkImageMessage DeleteFile))
+            Button.createIcon
+                Icon.delete
+                "Delete file"
+                (fun _ -> dispatch (MkImageMessage DeleteFile))
 
             match model with
                 | Loaded loaded ->
