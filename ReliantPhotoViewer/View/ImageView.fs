@@ -43,8 +43,11 @@ module ImageView =
                     let curZoomScale = loaded ^. LoadedImage.ZoomScale_
                     match curZoomScale, loaded.SavedZoomOpt with   // to-do: why doesn't refactoring this work?
                         | 1.0, Some savedZoom ->
+                            let icon =
+                                if savedZoom.Scale > 1.0 then Icon.zoomOutMap   // reversed usage
+                                else Icon.zoomInMap
                             Button.createIcon
-                                Icon.folderOpen
+                                icon
                                 "Zoom to previous size"
                                 (fun _ ->
                                     ZoomTo (savedZoom, None)

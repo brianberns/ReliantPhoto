@@ -64,6 +64,12 @@ module Icon =
     /// View real size.
     let viewRealSize = create "view_real_size"
 
+    /// Zoom in map.
+    let zoomInMap = create "zoom_in_map"
+
+    /// Zoom out map.
+    let zoomOutMap = create "zoom_out_map"
+
 module Button =
 
     /// Button height and width.

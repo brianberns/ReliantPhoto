@@ -42,6 +42,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\switch_access_shortcut_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\view_real_size_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
+    <EmbeddedResource Include="Assets\zoom_in_map_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
+    <EmbeddedResource Include="Assets\zoom_out_map_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
   </ItemGroup>
 
   <ItemGroup>
