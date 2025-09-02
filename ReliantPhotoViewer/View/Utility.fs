@@ -52,6 +52,12 @@ module Icon =
                 |> Resource.get
         new Bitmap(stream)
 
+    /// Arrow left.
+    let arrowLeft = create "arrow_left_alt"
+
+    /// Arrow right.
+    let arrowRight = create "arrow_right_alt"
+
     /// Delete.
     let delete = create "delete"
 

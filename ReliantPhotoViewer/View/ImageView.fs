@@ -225,16 +225,14 @@ module ImageView =
         [
                 // "previous image" button
             createBrowsePanel
-                Dock.Left Icon.folderOpen "Previous image"
-                prevResultOpt
-                dispatch
+                Dock.Left Icon.arrowLeft "Previous image"
+                prevResultOpt dispatch
                 :> IView
 
                 // "next image" button
             createBrowsePanel
-                Dock.Right Icon.folderOpen "Next image"
-                nextResultOpt
-                dispatch
+                Dock.Right Icon.arrowRight "Next image"
+                nextResultOpt dispatch
         ]
 
     /// Creates an image.

@@ -25,6 +25,8 @@
     <Compile Include="Update\ImageMessage.fs" />
     <Compile Include="Update\Message.fs" />
     <EmbeddedResource Include="Assets\ReliantPhoto.png" />
+    <EmbeddedResource Include="Assets\arrow_left_alt_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
+    <EmbeddedResource Include="Assets\arrow_right_alt_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\delete_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <Compile Include="View\KeyBinding.fs" />
