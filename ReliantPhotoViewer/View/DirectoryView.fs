@@ -30,7 +30,7 @@ module DirectoryView =
                 // number of images
             TextBlock.create [
                 TextBlock.text $"{numImages} images"
-                TextBlock.background Color.darkGray
+                TextBlock.background Brush.darkGray
                 TextBlock.padding 5.0
             ]
         ]
@@ -55,8 +55,8 @@ module DirectoryView =
                     Border.child (createImage source)
                     Border.tip file.Name
                     Border.background (
-                        if isHovered.Current then "#808080"
-                        else "Transparent")
+                        if isHovered.Current then Brush.lightGray
+                        else Brushes.Transparent)
                     Border.onPointerEntered (fun _ ->
                         isHovered.Set true)
                     Border.onPointerExited (fun _ ->
@@ -86,7 +86,7 @@ module DirectoryView =
                 createStatusBar model.Directory images.Length
 
                 ScrollViewer.create [
-                    ScrollViewer.background Color.darkGray
+                    ScrollViewer.background Brush.darkGray
                     ScrollViewer.content (
                         WrapPanel.create [
                             WrapPanel.orientation

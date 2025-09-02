@@ -10,10 +10,19 @@ open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Platform.Storage
 
-module Color =
+module Brush =
+
+    /// Creates a brush.
+    let private create (colorName : string) =
+        Color.Parse colorName
+            |> SolidColorBrush
+            :> IBrush
 
     /// Dark gray.
-    let darkGray = Color.Parse "#181818"
+    let darkGray = create "#181818"
+
+    /// Light gray.
+    let lightGray = create "#808080"
 
 module Cursor =
 
@@ -89,7 +98,7 @@ module StatusBar =
     let createSelectableTextBlock text (tooltip : string) =
         SelectableTextBlock.create [
             SelectableTextBlock.text text
-            SelectableTextBlock.background Color.darkGray
+            SelectableTextBlock.background Brush.darkGray
             SelectableTextBlock.padding 5.0
             SelectableTextBlock.tip tooltip
         ]

@@ -261,7 +261,7 @@ module ImageView =
             let image = createImage loaded
             Canvas.children [ image ]
             Canvas.clipToBounds true
-            Canvas.background "Transparent"   // needed to trigger wheel events when the pointer is not over the image
+            Canvas.background Brushes.Transparent   // needed to trigger wheel events when the pointer is not over the image
 
                 // zoom in/out
             Canvas.onPointerWheelChanged (fun args ->
@@ -352,8 +352,8 @@ module ImageView =
                 match model with
                     | Loaded loaded
                         when loaded ^. LoadedImage.ZoomScaleLock_ ->
-                            Color.darkGray
-                    | _ -> Colors.Black
+                            Brush.darkGray
+                    | _ -> Brushes.Black
             DockPanel.background background
 
             DockPanel.children [
@@ -377,7 +377,7 @@ module ImageView =
             if model.IsUninitialized
                 || model.IsInitialized then
                 DockPanel.cursor Cursor.wait
-                DockPanel.background "Transparent"   // needed to force the cursor change for some reason
+                DockPanel.background Brushes.Transparent   // needed to force the cursor change for some reason
 
             DockPanel.children [
                 createToolbar model dispatch
@@ -432,7 +432,7 @@ module ImageView =
 
             Border.focusable true
             Border.focusAdorner null
-            Border.background "Transparent"
+            Border.background Brushes.Transparent
 
             match model with
                 | Situated_ situated ->
