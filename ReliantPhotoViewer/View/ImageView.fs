@@ -133,7 +133,8 @@ module ImageView =
                                         | Some len35 when len35 <> len ->
                                             let str = len35.ToString("0.##")
                                             StatusBar.createSelectableTextBlock
-                                                $"{str} mm equiv." "Full-frame focal length equivalent"
+                                                $"{str} mm equiv."
+                                                "Full-frame focal length equivalent"
                                         | _ -> ()
 
                                 | None -> ()
