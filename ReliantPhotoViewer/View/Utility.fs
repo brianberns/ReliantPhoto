@@ -47,19 +47,22 @@ module Icon =
 
     /// Creates an icon.
     let private create name =
-        new Bitmap(Resource.get name)
+        let stream =
+            $"{name}_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
+                |> Resource.get
+        new Bitmap(stream)
 
     /// Delete.
-    let delete =
-        create "delete_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
+    let delete = create "delete"
 
     /// Folder open.
-    let folderOpen =
-        create "folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
+    let folderOpen = create "folder_open"
 
     /// Switch access.
-    let switchAccess =
-        create "switch_access_shortcut_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
+    let switchAccess = create "switch_access_shortcut"
+
+    /// View real size.
+    let viewRealSize = create "view_real_size"
 
 module Button =
 

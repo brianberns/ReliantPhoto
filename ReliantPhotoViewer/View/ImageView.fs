@@ -52,7 +52,8 @@ module ImageView =
                                         |> dispatch)
                         | _ ->
                             let enabled = (curZoomScale <> 1.0)
-                            Button.createIconImpl Icon.folderOpen
+                            Button.createIconImpl
+                                Icon.viewRealSize
                                 "Zoom to actual size"
                                 enabled
                                 (fun _ ->
