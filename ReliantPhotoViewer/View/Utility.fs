@@ -53,10 +53,10 @@ module Icon =
         new Bitmap(stream)
 
     /// Arrow left.
-    let arrowLeft = create "arrow_left_alt"
+    let arrowLeft = create "keyboard_arrow_left"
 
     /// Arrow right.
-    let arrowRight = create "arrow_right_alt"
+    let arrowRight = create "keyboard_arrow_right"
 
     /// Delete.
     let delete = create "delete"
