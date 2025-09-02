@@ -1,10 +1,11 @@
 ﻿namespace Reliant.Photo
 
-open System
 open System.IO
 
 open Avalonia
 open Avalonia.Media.Imaging
+
+open SixLabors.ImageSharp.Metadata.Profiles.Exif
 
 open Aether
 open Aether.Operators
@@ -108,8 +109,7 @@ module InitializedContainer =
 /// Situation of a file in a directory.
 type Situation =
     {
-        /// Date taken, if any.
-        DateTakenOpt : Option<DateTime>
+        ExifProfileOpt : Option<ExifProfile>
 
         /// Previous image result, if any.
         PreviousResultOpt : Option<FileImageResult>
@@ -121,9 +121,9 @@ type Situation =
 module Situation =
 
     /// Creates a situation.
-    let create dateTakenOpt previousResultOpt nextResultOpt =
+    let create exifProfileOpt previousResultOpt nextResultOpt =
         {
-            DateTakenOpt = dateTakenOpt
+            ExifProfileOpt = exifProfileOpt
             PreviousResultOpt = previousResultOpt
             NextResultOpt = nextResultOpt
         }

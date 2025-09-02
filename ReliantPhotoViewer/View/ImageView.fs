@@ -99,7 +99,11 @@ module ImageView =
                         $"{dims.Width} x {dims.Height}" "Dimensions"
 
                         // date taken
-                    match loaded.Situated.Situation.DateTakenOpt with
+                    let dateTakenOpt =
+                        Option.bind
+                            ImageSharp.tryGetDateTaken
+                            loaded.Situated.Situation.ExifProfileOpt
+                    match dateTakenOpt with
                         | Some dateTaken ->
                             StatusBar.createSelectableTextBlock
                                 $"{dateTaken}" "Date taken"

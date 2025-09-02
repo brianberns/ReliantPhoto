@@ -190,7 +190,7 @@ module ImageMessage =
                 let! nextResultOpt =
                     tryLoadImage detail.NextFileOpt
                 Situation.create
-                    detail.DateTakenOpt
+                    detail.ExifProfileOpt
                     prevResultOpt
                     nextResultOpt
                         |> Situated
