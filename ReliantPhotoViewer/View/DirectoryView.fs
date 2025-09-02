@@ -49,6 +49,7 @@ module DirectoryView =
     /// Creates an image control with hover effect.
     let private createImageView
         (file : FileInfo) source dispatch =
+        let hoverScale = 1.05
         Component.create (
             file.FullName,
             fun ctx ->
@@ -59,6 +60,9 @@ module DirectoryView =
                     Border.background (
                         if isHovered.Current then Brush.lightGray
                         else Brushes.Transparent)
+                    if isHovered.Current then
+                        Border.renderTransform (
+                            ScaleTransform(hoverScale, hoverScale))
                     Border.onPointerEntered (fun _ ->
                         isHovered.Set true)
                     Border.onPointerExited (fun _ ->
