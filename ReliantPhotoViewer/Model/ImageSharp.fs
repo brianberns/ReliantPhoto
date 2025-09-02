@@ -71,7 +71,10 @@ module private ImageSharp =
         tryGetExifValue [ExifTag.Model] exifProfile
 
     /// Converts a rational number to a decimal.
-    let private toDecimal (rational : Rational) =
+    let inline private toDecimal<'t, 'u
+        when 't : (member Numerator : 'u)
+        and 't : (member Denominator : 'u)
+        and 'u : (static member op_Explicit : 'u -> decimal)> (rational : 't) =
         let num = rational.Numerator
         let den = rational.Denominator
         decimal num / decimal den
@@ -80,6 +83,12 @@ module private ImageSharp =
     let tryGetFStop exifProfile =
         exifProfile
             |> tryGetExifValue [ExifTag.FNumber]
+            |> Option.map toDecimal
+
+    /// Tries to get the exposure time.
+    let tryGetExposureTime exifProfile =
+        exifProfile
+            |> tryGetExifValue [ExifTag.ExposureTime]
             |> Option.map toDecimal
 
     /// Tries to get the focal length.

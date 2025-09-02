@@ -134,6 +134,17 @@ module ImageView =
                                         $"f/{Decimal.toString fStop}" "F-stop"
                                 | None -> ()
 
+                                // exposure time
+                            match exifMetadata.ExposureTimeOpt with
+                                | Some time ->
+                                    let str =
+                                        if time < 1m then
+                                            $"1/{Decimal.toString (1m/time)}"
+                                        else Decimal.toString time
+                                    StatusBar.createSelectableTextBlock
+                                        $"{str} sec." "Exposure time"
+                                | None -> ()
+
                                 // focal length
                             match exifMetadata.FocalLengthOpt with
                                 | Some len ->

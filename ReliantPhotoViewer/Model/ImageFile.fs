@@ -57,6 +57,9 @@ type ExifMetadata =
         /// F-stop.
         FStopOpt : Option<decimal>
 
+        /// Exposure time.
+        ExposureTimeOpt : Option<decimal>
+
         /// Focal length.
         FocalLengthOpt : Option<decimal>
 
@@ -75,6 +78,7 @@ module ExifMetadata =
             CameraMakeOpt = tryGetCameraMake exifProfile
             CameraModelOpt = tryGetCameraModel exifProfile
             FStopOpt = tryGetFStop exifProfile
+            ExposureTimeOpt = tryGetExposureTime exifProfile
             FocalLengthOpt = tryGetFocalLength exifProfile
             FocalLengthFullFrameOpt =
                 tryGetFocalLengthFullFrame exifProfile
