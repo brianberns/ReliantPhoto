@@ -68,6 +68,7 @@ module ImageView =
                     TextBlock.create [
                         TextBlock.verticalAlignment VerticalAlignment.Center
                         TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
+                        TextBlock.tip "Zoom scale"
                     ]
 
                 | _ -> ()
