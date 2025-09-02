@@ -70,6 +70,15 @@ module private ImageSharp =
     let tryGetCameraModel exifProfile =
         tryGetExifValue [ExifTag.Model] exifProfile
 
+    /// Tries to get the focal length.
+    let tryGetFocalLength exifProfile =
+        exifProfile
+            |> tryGetExifValue [ExifTag.FocalLength]
+            |> Option.map (fun rational ->
+                let num = rational.Numerator
+                let den = rational.Denominator
+                decimal num / decimal den)
+
     /// Gets the orientation of the given image.
     let private getOrientation (imageInfo : ImageInfo) =
         option {

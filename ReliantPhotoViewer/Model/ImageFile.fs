@@ -53,6 +53,9 @@ type ExifMetadata =
 
         /// Camera model.
         CameraModelOpt : Option<string>
+
+        /// Focal length.
+        FocalLengthOpt : Option<decimal>
     }
 
 module ExifMetadata =
@@ -65,6 +68,7 @@ module ExifMetadata =
             DateTakenOpt = tryGetDateTaken exifProfile
             CameraMakeOpt = tryGetCameraMake exifProfile
             CameraModelOpt = tryGetCameraModel exifProfile
+            FocalLengthOpt = tryGetFocalLength exifProfile
         }
 
 module ImageFile =

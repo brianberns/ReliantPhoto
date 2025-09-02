@@ -120,7 +120,16 @@ module ImageView =
                                     StatusBar.createSelectableTextBlock
                                         model "Camera model"
                                 | None -> ()
+
+                                // focal length
+                            match exifMetadata.FocalLengthOpt with
+                                | Some focalLength ->
+                                    StatusBar.createSelectableTextBlock
+                                        $"{focalLength} mm" "Focal length"
+                                | None -> ()
+
                         | None -> ()
+
                 | _ -> ()
         ]
 
