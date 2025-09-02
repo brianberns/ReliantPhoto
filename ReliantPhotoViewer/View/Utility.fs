@@ -47,7 +47,7 @@ module Toolbar =
 module Button =
 
     /// Button height and width.
-    let buttonSize = 50
+    let buttonSize = 42
 
     /// Creates a text button.
     let createTextImpl text (tooltip : string) enabled onClick =
@@ -74,6 +74,8 @@ module Button =
             Button.verticalAlignment VerticalAlignment.Stretch
             Button.horizontalContentAlignment HorizontalAlignment.Center
             Button.verticalContentAlignment VerticalAlignment.Center
+            Button.cornerRadius 4.0
+            Button.background Brushes.Transparent
             Button.onClick onClick
         ]
 
