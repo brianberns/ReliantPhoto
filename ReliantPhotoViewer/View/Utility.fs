@@ -9,6 +9,7 @@ open Avalonia.Input
 open Avalonia.Interactivity
 open Avalonia.Layout
 open Avalonia.Media
+open Avalonia.Media.Imaging
 open Avalonia.Platform.Storage
 
 module Resource =
@@ -42,38 +43,32 @@ module Cursor =
     /// Hand cursor.
     let hand = new Cursor(StandardCursorType.Hand)
 
-module Toolbar =
+module Icon =
 
-    /// Creates a toolbar.
-    let create children =
-        StackPanel.create [
-            StackPanel.dock Dock.Top
-            StackPanel.orientation Orientation.Horizontal
-            StackPanel.spacing 5.0
-            StackPanel.margin 5.0
-            StackPanel.children children
-        ]
+    /// Creates an icon.
+    let private create name =
+        new Bitmap(Resource.get name)
+
+    /// Folder open.
+    let folderOpen =
+        create "folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
+
+    /// Switch access.
+    let switchAccess =
+        create "switch_access_shortcut_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
 
 module Button =
 
     /// Button height and width.
     let buttonSize = 42
 
-    /// Creates a text button.
-    let createTextImpl text (tooltip : string) enabled onClick =
+    /// Creates an icon button.
+    let createIconImpl icon (tooltip : string) enabled onClick =
         Button.create [
             Button.content (
-                Viewbox.create [
-                    Viewbox.stretch Stretch.Uniform
-                    Viewbox.stretchDirection StretchDirection.Both
-                    Viewbox.child (
-                        TextBlock.create [
-                            TextBlock.text text
-                            TextBlock.horizontalAlignment HorizontalAlignment.Center
-                            TextBlock.verticalAlignment VerticalAlignment.Center
-                            TextBlock.textWrapping TextWrapping.NoWrap
-                        ]
-                    )
+                Image.create [
+                    Image.source icon
+                    Image.stretch Stretch.Uniform
                 ]
             )
             Button.tip tooltip
@@ -89,9 +84,21 @@ module Button =
             Button.onClick onClick
         ]
 
-    /// Creates a text button.
-    let createText text tooltip onClick =
-        createTextImpl text tooltip true onClick
+    /// Creates an icon button.
+    let createIcon icon tooltip onClick =
+        createIconImpl icon tooltip true onClick
+
+module Toolbar =
+
+    /// Creates a toolbar.
+    let create children =
+        StackPanel.create [
+            StackPanel.dock Dock.Top
+            StackPanel.orientation Orientation.Horizontal
+            StackPanel.spacing 5.0
+            StackPanel.margin 5.0
+            StackPanel.children children
+        ]
 
 module StatusBar =
 

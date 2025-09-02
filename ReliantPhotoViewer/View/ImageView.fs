@@ -19,15 +19,15 @@ module ImageView =
         Toolbar.create [
 
                 // switch to directory mode
-            Button.createText "↩" "View folder contents" (fun _ ->
+            Button.createIcon Icon.switchAccess "View folder contents" (fun _ ->
                 dispatch SwitchToDirectory)
 
                 // open file
-            Button.createText "🗀" "Open image file" (
+            Button.createIcon Icon.folderOpen "Open image file" (
                 FileSystemView.onSelectImage dispatch)
 
                 // delete file
-            Button.createText "🗑" "Delete file" (fun _ ->
+            Button.createIcon Icon.folderOpen "Delete file" (fun _ ->
                 dispatch (MkImageMessage DeleteFile))
 
             match model with
@@ -37,18 +37,22 @@ module ImageView =
                     let curZoomScale = loaded ^. LoadedImage.ZoomScale_
                     match curZoomScale, loaded.SavedZoomOpt with   // to-do: why doesn't refactoring this work?
                         | 1.0, Some savedZoom ->
-                            Button.createText
-                                "🔍" "Zoom to previous size" (fun _ ->
-                                ZoomTo (savedZoom, None)
-                                    |> MkImageMessage
-                                    |> dispatch)
+                            Button.createIcon
+                                Icon.folderOpen
+                                "Zoom to previous size"
+                                (fun _ ->
+                                    ZoomTo (savedZoom, None)
+                                        |> MkImageMessage
+                                        |> dispatch)
                         | _ ->
                             let enabled = (curZoomScale <> 1.0)
-                            Button.createTextImpl
-                                "🔎" "Zoom to actual size" enabled (fun _ ->
-                                ZoomTo (Zoom.actualSize, None)
-                                    |> MkImageMessage
-                                    |> dispatch)
+                            Button.createIconImpl Icon.folderOpen
+                                "Zoom to actual size"
+                                enabled
+                                (fun _ ->
+                                    ZoomTo (Zoom.actualSize, None)
+                                        |> MkImageMessage
+                                        |> dispatch)
 
                         // zoom scale
                     TextBlock.create [
@@ -175,10 +179,10 @@ module ImageView =
 
     /// Creates a browse panel, with or without a button.
     let private createBrowsePanel
-        dock text tooltip resultOpt dispatch =
+        dock icon tooltip resultOpt dispatch =
 
         let createButton message =
-            Button.createText text tooltip (fun _ ->
+            Button.createIcon icon tooltip (fun _ ->
                 message
                     |> MkImageMessage
                     |> dispatch)
@@ -210,14 +214,14 @@ module ImageView =
         [
                 // "previous image" button
             createBrowsePanel
-                Dock.Left "◀" "Previous image"
+                Dock.Left Icon.folderOpen "Previous image"
                 prevResultOpt
                 dispatch
                 :> IView
 
                 // "next image" button
             createBrowsePanel
-                Dock.Right "▶" "Next image"
+                Dock.Right Icon.folderOpen "Next image"
                 nextResultOpt
                 dispatch
         ]
