@@ -22,3 +22,10 @@ module Resource =
         Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream($"ReliantPhotoViewer.{name : string}")
+
+module Dictionary =
+
+    /// Converts a dictionary lookup value to an option.
+    let toOption (flag, value) =
+        if flag then Some value
+        else None

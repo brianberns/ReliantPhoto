@@ -17,9 +17,31 @@ open SixLabors.ImageSharp.Processing
 
 module private ImageSharp =
 
-    /// Tries to get the time at which the given photo
-    /// image file was taken.
-    let tryGetDateTaken (file : FileInfo) =
+    /// Tries to get the given image file's EXIF profile.
+    let tryGetExif (file : FileInfo) =
+        try
+            option {
+                let! metadata =
+                    Image.Identify(file.FullName)
+                        .Metadata
+                        |> Option.ofObj
+                return!
+                    metadata.ExifProfile
+                        |> Option.ofObj
+            }
+        with _ -> None
+
+    /// Tries to get an EXIF value for the given tag(s).
+    let private tryGetExifValue tags (exifProfile : ExifProfile) =
+        tags
+            |> Seq.choose (
+                exifProfile.TryGetValue
+                    >> Dictionary.toOption)
+            |> Seq.tryHead
+            |> Option.map (fun value -> value.Value)
+
+    /// Tries to get the time at which a photo was taken.
+    let tryGetDateTaken exifProfile =
 
         let tags =
             [
@@ -27,31 +49,16 @@ module private ImageSharp =
                 ExifTag.DateTime
             ]
 
-        let toOption (flag, value) =
-            if flag then Some value
-            else None
-
         try
             option {
-                let! metadata =
-                    Image.Identify(file.FullName)
-                        .Metadata
-                        |> Option.ofObj
-                let! profile =
-                    metadata.ExifProfile
-                        |> Option.ofObj
-                let! value =
-                    tags
-                        |> Seq.choose (
-                            profile.TryGetValue >> toOption)
-                        |> Seq.tryHead
+                let! value = tryGetExifValue tags exifProfile
                 return!
                     DateTime.TryParseExact(
-                        value.Value,
+                        value,
                         "yyyy:MM:dd HH:mm:ss",
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None)
-                        |> toOption
+                        |> Dictionary.toOption
             }
         with _ -> None
 
