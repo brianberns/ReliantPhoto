@@ -27,7 +27,7 @@ module ImageView =
                 FileSystemView.onSelectImage dispatch)
 
                 // delete file
-            Button.createIcon Icon.folderOpen "Delete file" (fun _ ->
+            Button.createIcon Icon.delete "Delete file" (fun _ ->
                 dispatch (MkImageMessage DeleteFile))
 
             match model with

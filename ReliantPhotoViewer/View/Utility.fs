@@ -49,6 +49,10 @@ module Icon =
     let private create name =
         new Bitmap(Resource.get name)
 
+    /// Delete.
+    let delete =
+        create "delete_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
+
     /// Folder open.
     let folderOpen =
         create "folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
