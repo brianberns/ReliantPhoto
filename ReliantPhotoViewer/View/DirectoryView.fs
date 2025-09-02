@@ -73,7 +73,7 @@ module DirectoryView =
         )
 
     /// Creates a view of the given model.
-    let view (model : DirectoryModel) dispatch =
+    let view model dispatch =
 
         let thumbnails =
             [
