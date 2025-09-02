@@ -20,7 +20,7 @@ module Window =
 
     /// Gets the window icon.
     let getIcon () =
-        Resource.get "icon.png"
+        Resource.get "ReliantPhoto.png"
             |> WindowIcon
 
     /// Loads user settings, if possible.

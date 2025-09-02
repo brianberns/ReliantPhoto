@@ -1,6 +1,7 @@
 ﻿namespace Reliant.Photo
 
 open System.IO
+open System.Reflection
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
@@ -9,6 +10,15 @@ open Avalonia.Interactivity
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Platform.Storage
+
+module Resource =
+
+    /// Gets a resource by name.
+    let get name =
+        Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream(
+                $"ReliantPhotoViewer.Assets.{name : string}")
 
 module Brush =
 

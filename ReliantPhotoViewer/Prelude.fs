@@ -13,16 +13,6 @@ module OptionBuilder =
     /// Option computation expression builder.
     let option = OptionBuilder()
 
-module Resource =
-
-    open System.Reflection
-
-    /// Gets a resource by name.
-    let get name =
-        Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream($"ReliantPhotoViewer.{name : string}")
-
 module Dictionary =
 
     /// Converts a dictionary lookup value to an option.

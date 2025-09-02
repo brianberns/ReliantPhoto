@@ -14,7 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="icon.png" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Model\ImageSharp.fs" />
     <Compile Include="Model\ImageFile.fs" />
@@ -25,6 +24,7 @@
     <Compile Include="Update\DirectoryMessage.fs" />
     <Compile Include="Update\ImageMessage.fs" />
     <Compile Include="Update\Message.fs" />
+    <EmbeddedResource Include="Assets\ReliantPhoto.png" />
     <Compile Include="View\KeyBinding.fs" />
     <Compile Include="View\Utility.fs" />
     <Compile Include="View\DirectoryView.fs" />
