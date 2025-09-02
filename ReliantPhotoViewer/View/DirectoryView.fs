@@ -37,8 +37,8 @@ module DirectoryView =
             ]
         ]
 
-    /// Creates an image.
-    let private createImage (source : IImage) =
+    /// Creates a thumbnail.
+    let private createThumbnail (source : IImage) =
         Image.create [
             Image.source source
             Image.height source.Size.Height   // why is this necessary?
@@ -46,8 +46,8 @@ module DirectoryView =
             Image.margin 8.0
         ]
 
-    /// Creates an image control with hover effect.
-    let private createImageView
+    /// Creates an thumbnail control with hover effect.
+    let private createThumbnailView
         (file : FileInfo) source dispatch =
         let hoverScale = 1.05
         Component.create (
@@ -55,7 +55,7 @@ module DirectoryView =
             fun ctx ->
                 let isHovered = ctx.useState false
                 Border.create [
-                    Border.child (createImage source)
+                    Border.child (createThumbnail source)
                     Border.tip file.Name
                     Border.background (
                         if isHovered.Current then Brush.lightGray
@@ -75,12 +75,12 @@ module DirectoryView =
     /// Creates a view of the given model.
     let view (model : DirectoryModel) dispatch =
 
-        let images =
+        let thumbnails =
             [
                 for file, result in model.FileImageResults do
                     match result with
                         | Ok source ->
-                            createImageView file source dispatch
+                            createThumbnailView file source dispatch
                                 :> IView
                         | _ -> ()
             ]
@@ -89,7 +89,7 @@ module DirectoryView =
             DockPanel.children [
 
                 createToolbar dispatch
-                createStatusBar model.Directory images.Length
+                createStatusBar model.Directory thumbnails.Length
 
                 ScrollViewer.create [
                     ScrollViewer.background Brush.darkGray
@@ -98,10 +98,10 @@ module DirectoryView =
                             WrapPanel.orientation
                                 Orientation.Horizontal
                             WrapPanel.margin 8.0
-                            WrapPanel.children images
+                            WrapPanel.children thumbnails
                         ]
                     )
-                    if images.IsEmpty && model.IsLoading then
+                    if thumbnails.IsEmpty && model.IsLoading then
                         ScrollViewer.cursor Cursor.wait
                 ]
             ]
