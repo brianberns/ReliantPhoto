@@ -56,6 +56,9 @@ type ExifMetadata =
 
         /// Focal length.
         FocalLengthOpt : Option<decimal>
+
+        /// Full-frame focal length equivalent.
+        FocalLengthFullFrameOpt : Option<decimal>
     }
 
 module ExifMetadata =
@@ -69,6 +72,8 @@ module ExifMetadata =
             CameraMakeOpt = tryGetCameraMake exifProfile
             CameraModelOpt = tryGetCameraModel exifProfile
             FocalLengthOpt = tryGetFocalLength exifProfile
+            FocalLengthFullFrameOpt =
+                tryGetFocalLengthFullFrame exifProfile
         }
 
 module ImageFile =

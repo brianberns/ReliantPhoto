@@ -70,14 +70,23 @@ module private ImageSharp =
     let tryGetCameraModel exifProfile =
         tryGetExifValue [ExifTag.Model] exifProfile
 
+    /// Converts a rational number to a decimal.
+    let private toDecimal (rational : Rational) =
+        let num = rational.Numerator
+        let den = rational.Denominator
+        decimal num / decimal den
+
     /// Tries to get the focal length.
     let tryGetFocalLength exifProfile =
         exifProfile
             |> tryGetExifValue [ExifTag.FocalLength]
-            |> Option.map (fun rational ->
-                let num = rational.Numerator
-                let den = rational.Denominator
-                decimal num / decimal den)
+            |> Option.map toDecimal
+
+    /// Tries to get the full-frame focal length equivalent.
+    let tryGetFocalLengthFullFrame exifProfile =
+        exifProfile
+            |> tryGetExifValue [ExifTag.FocalLengthIn35mmFilm]
+            |> Option.map decimal
 
     /// Gets the orientation of the given image.
     let private getOrientation (imageInfo : ImageInfo) =
