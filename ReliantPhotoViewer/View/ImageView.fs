@@ -145,6 +145,13 @@ module ImageView =
                                         $"{str} sec." "Exposure time"
                                 | None -> ()
 
+                                // ISO rating
+                            match exifMetadata.IsoRatingOpt with
+                                | Some iso ->
+                                    StatusBar.createSelectableTextBlock
+                                        $"ISO {Decimal.toString iso}" "ISO speed rating"
+                                | None -> ()
+
                                 // focal length
                             match exifMetadata.FocalLengthOpt with
                                 | Some len ->

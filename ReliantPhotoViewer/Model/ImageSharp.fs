@@ -91,6 +91,16 @@ module private ImageSharp =
             |> tryGetExifValue [ExifTag.ExposureTime]
             |> Option.map toDecimal
 
+    /// Tries to get the ISO speed rating.
+    let tryGetIsoRating exifProfile =
+        option {
+            let! ratings =
+                exifProfile
+                    |> tryGetExifValue [ExifTag.ISOSpeedRatings]
+            let! iso = Array.tryHead ratings
+            return decimal iso
+        }
+
     /// Tries to get the focal length.
     let tryGetFocalLength exifProfile =
         exifProfile

@@ -60,6 +60,9 @@ type ExifMetadata =
         /// Exposure time.
         ExposureTimeOpt : Option<decimal>
 
+        /// ISO speed rating.
+        IsoRatingOpt : Option<decimal>
+
         /// Focal length.
         FocalLengthOpt : Option<decimal>
 
@@ -79,6 +82,7 @@ module ExifMetadata =
             CameraModelOpt = tryGetCameraModel exifProfile
             FStopOpt = tryGetFStop exifProfile
             ExposureTimeOpt = tryGetExposureTime exifProfile
+            IsoRatingOpt = tryGetIsoRating exifProfile
             FocalLengthOpt = tryGetFocalLength exifProfile
             FocalLengthFullFrameOpt =
                 tryGetFocalLengthFullFrame exifProfile
