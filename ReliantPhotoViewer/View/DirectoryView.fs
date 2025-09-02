@@ -14,8 +14,10 @@ module DirectoryView =
     /// Creates a toolbar.
     let private createToolbar dispatch =
         Toolbar.create [
-                Button.createIcon Icon.folderOpen "Open image file" (
-                    FileSystemView.onSelectImage dispatch)
+            Button.createIcon
+                Icon.folderOpen
+                "Open image file"
+                (FileSystemView.onSelectImage dispatch)
         ]
 
     /// Creates a status bar.
