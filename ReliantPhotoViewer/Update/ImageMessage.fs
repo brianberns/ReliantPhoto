@@ -1,6 +1,5 @@
 ﻿namespace Reliant.Photo
 
-open System
 open System.IO
 
 open Elmish
@@ -190,7 +189,7 @@ module ImageMessage =
                 let! nextResultOpt =
                     tryLoadImage detail.NextFileOpt
                 Situation.create
-                    detail.ExifProfileOpt
+                    detail.ExifMetadataOpt
                     prevResultOpt
                     nextResultOpt
                         |> Situated

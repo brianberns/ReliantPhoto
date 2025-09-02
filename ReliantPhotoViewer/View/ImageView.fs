@@ -1,7 +1,5 @@
 ﻿namespace Reliant.Photo
 
-open System
-
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
@@ -100,9 +98,8 @@ module ImageView =
 
                         // date taken
                     let dateTakenOpt =
-                        Option.bind
-                            ImageSharp.tryGetDateTaken
-                            loaded.Situated.Situation.ExifProfileOpt
+                        loaded.Situated.Situation.ExifMetadataOpt
+                            |> Option.bind _.DateTakenOpt
                     match dateTakenOpt with
                         | Some dateTaken ->
                             StatusBar.createSelectableTextBlock

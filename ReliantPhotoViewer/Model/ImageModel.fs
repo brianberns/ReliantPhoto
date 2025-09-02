@@ -5,8 +5,6 @@ open System.IO
 open Avalonia
 open Avalonia.Media.Imaging
 
-open SixLabors.ImageSharp.Metadata.Profiles.Exif
-
 open Aether
 open Aether.Operators
 
@@ -109,7 +107,8 @@ module InitializedContainer =
 /// Situation of a file in a directory.
 type Situation =
     {
-        ExifProfileOpt : Option<ExifProfile>
+        /// File's EXIF metadata, if any.
+        ExifMetadataOpt : Option<ExifMetadata>
 
         /// Previous image result, if any.
         PreviousResultOpt : Option<FileImageResult>
@@ -121,9 +120,9 @@ type Situation =
 module Situation =
 
     /// Creates a situation.
-    let create exifProfileOpt previousResultOpt nextResultOpt =
+    let create exifMetadataOpt previousResultOpt nextResultOpt =
         {
-            ExifProfileOpt = exifProfileOpt
+            ExifMetadataOpt = exifMetadataOpt
             PreviousResultOpt = previousResultOpt
             NextResultOpt = nextResultOpt
         }

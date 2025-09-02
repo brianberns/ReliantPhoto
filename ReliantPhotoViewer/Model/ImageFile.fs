@@ -1,7 +1,6 @@
 ﻿namespace Reliant.Photo
 
 open System
-open System.Collections.Generic
 open System.IO
 open System.Threading
 
@@ -42,6 +41,18 @@ type ImageResult = Result<Bitmap, string (*error message*)>
 
 /// An image result for a specific file.
 type FileImageResult = FileInfo * ImageResult
+
+type ExifMetadata =
+    {
+        DateTakenOpt : Option<DateTime>
+    }
+
+module ExifMetadata =
+
+    let create exifProfile =
+        {
+            DateTakenOpt = ImageSharp.tryGetDateTaken exifProfile
+        }
 
 module ImageFile =
 
@@ -116,10 +127,12 @@ module ImageFile =
     let situate file =
 
             // get key of target file
-        let exifProfileOpt = ImageSharp.tryGetExif file
+        let exifMetadataOpt =
+            ImageSharp.tryGetExif file
+                |> Option.map ExifMetadata.create
         let targetKey =
             let dateTakenOpt =
-                Option.bind ImageSharp.tryGetDateTaken exifProfileOpt
+                Option.bind _.DateTakenOpt exifMetadataOpt
             toSortKey dateTakenOpt file
 
             // examine all files in target's directory
@@ -156,7 +169,7 @@ module ImageFile =
                     prevPairOpt, nextPairOpt)
 
         {|
-            ExifProfileOpt = exifProfileOpt
+            ExifMetadataOpt = exifMetadataOpt
             PreviousFileOpt = Option.map snd prevPairOpt
             NextFileOpt = Option.map snd nextPairOpt
         |}
