@@ -85,8 +85,10 @@ module ImageView =
                     let sizeStr =
                         let nBytes = file.Length
                         if nBytes < kb then $"{nBytes} bytes"
-                        elif nBytes < mb then $"%.2f{float nBytes / float kb} KiB"
-                        elif nBytes < gb then $"%.2f{float nBytes / float mb} MiB"
+                        elif nBytes < mb then
+                            $"%.2f{float nBytes / float kb} KiB"
+                        elif nBytes < gb then
+                            $"%.2f{float nBytes / float mb} MiB"
                         else $"%.2f{float nBytes / float gb} GiB"
                     StatusBar.createSelectableTextBlock
                         sizeStr "File size"
