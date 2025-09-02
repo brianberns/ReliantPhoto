@@ -73,7 +73,8 @@ module ImageFile =
     type private SortKey = DateTime (*date taken*) * string (*file name*)
 
     /// Creates a sort key.
-    let private toSortKey dateTakenOpt (file : FileInfo) : SortKey =
+    let private toSortKey
+        dateTakenOpt (file : FileInfo) : SortKey =
         let dateTaken =
             dateTakenOpt
                 |> Option.defaultValue DateTime.MaxValue   // sort missing dates to the end
