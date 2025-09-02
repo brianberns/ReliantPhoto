@@ -76,6 +76,12 @@ module private ImageSharp =
         let den = rational.Denominator
         decimal num / decimal den
 
+    /// Tries to get the f-stop.
+    let tryGetFStop exifProfile =
+        exifProfile
+            |> tryGetExifValue [ExifTag.FNumber]
+            |> Option.map toDecimal
+
     /// Tries to get the focal length.
     let tryGetFocalLength exifProfile =
         exifProfile

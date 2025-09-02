@@ -54,6 +54,9 @@ type ExifMetadata =
         /// Camera model.
         CameraModelOpt : Option<string>
 
+        /// F-stop.
+        FStopOpt : Option<decimal>
+
         /// Focal length.
         FocalLengthOpt : Option<decimal>
 
@@ -71,6 +74,7 @@ module ExifMetadata =
             DateTakenOpt = tryGetDateTaken exifProfile
             CameraMakeOpt = tryGetCameraMake exifProfile
             CameraModelOpt = tryGetCameraModel exifProfile
+            FStopOpt = tryGetFStop exifProfile
             FocalLengthOpt = tryGetFocalLength exifProfile
             FocalLengthFullFrameOpt =
                 tryGetFocalLengthFullFrame exifProfile

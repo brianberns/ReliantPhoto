@@ -68,6 +68,12 @@ module ImageView =
     /// Number of bytes in a gigabyte.
     let private gb = pown 2 30
 
+    module Decimal =
+
+        /// Converts a decimal to a string.
+        let toString (n : decimal) =
+            n.ToString("0.##")
+
     /// Creates a status bar.
     let private createStatusBar model =
         StatusBar.create [
@@ -121,20 +127,24 @@ module ImageView =
                                         model "Camera model"
                                 | None -> ()
 
+                                // f-stop
+                            match exifMetadata.FStopOpt with
+                                | Some fStop ->
+                                    StatusBar.createSelectableTextBlock
+                                        $"f/{Decimal.toString fStop}" "F-stop"
+                                | None -> ()
+
                                 // focal length
                             match exifMetadata.FocalLengthOpt with
                                 | Some len ->
 
-                                    let format = "0.##"
-                                    let str = len.ToString(format)
                                     StatusBar.createSelectableTextBlock
-                                        $"{str} mm" "Focal length"
+                                        $"{Decimal.toString len} mm" "Focal length"
 
                                     match exifMetadata.FocalLengthFullFrameOpt with
                                         | Some len35 when len35 <> len ->
-                                            let str = len35.ToString(format)
                                             StatusBar.createSelectableTextBlock
-                                                $"{str} mm equiv."
+                                                $"{Decimal.toString len35} mm equiv."
                                                 "Full-frame focal length equivalent"
                                         | _ -> ()
 
