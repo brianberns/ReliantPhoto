@@ -147,6 +147,8 @@ module ImageFile =
 
                     prevPairOpt, nextPairOpt)
 
-        dateTakenOpt,
-        Option.map snd prevPairOpt,
-        Option.map snd nextPairOpt
+        {|
+            DateTakenOpt = dateTakenOpt
+            PreviousFileOpt = Option.map snd prevPairOpt
+            NextFileOpt = Option.map snd nextPairOpt
+        |}

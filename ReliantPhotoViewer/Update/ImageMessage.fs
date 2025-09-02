@@ -184,12 +184,13 @@ module ImageMessage =
     let private situate file =
         Cmd.ofEffect (fun dispatch ->
             async {
-                let dateTakenOpt, prevFileOpt, nextFileOpt
-                    = ImageFile.situate file
-                let! prevResultOpt = tryLoadImage prevFileOpt
-                let! nextResultOpt = tryLoadImage nextFileOpt
+                let detail = ImageFile.situate file
+                let! prevResultOpt =
+                    tryLoadImage detail.PreviousFileOpt
+                let! nextResultOpt =
+                    tryLoadImage detail.NextFileOpt
                 Situation.create
-                    dateTakenOpt
+                    detail.DateTakenOpt
                     prevResultOpt
                     nextResultOpt
                         |> Situated
