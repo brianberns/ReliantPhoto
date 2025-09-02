@@ -42,16 +42,29 @@ type ImageResult = Result<Bitmap, string (*error message*)>
 /// An image result for a specific file.
 type FileImageResult = FileInfo * ImageResult
 
+/// EXIF metadata.
 type ExifMetadata =
     {
+        /// Date taken.
         DateTakenOpt : Option<DateTime>
+
+        /// Camera make.
+        CameraMakeOpt : Option<string>
+
+        /// Camera model.
+        CameraModelOpt : Option<string>
     }
 
 module ExifMetadata =
 
+    open ImageSharp
+
+    /// Creates an EXIF metadata.
     let create exifProfile =
         {
-            DateTakenOpt = ImageSharp.tryGetDateTaken exifProfile
+            DateTakenOpt = tryGetDateTaken exifProfile
+            CameraMakeOpt = tryGetCameraMake exifProfile
+            CameraModelOpt = tryGetCameraModel exifProfile
         }
 
 module ImageFile =
@@ -95,7 +108,8 @@ module ImageFile =
     let private getSortKey file : SortKey =
         let dateTakenOpt =
             option {
-                let! exifProfile = ImageSharp.tryGetExif file
+                let! exifProfile =
+                    ImageSharp.tryGetExifProfile file
                 return! ImageSharp.tryGetDateTaken exifProfile
             }
         toSortKey dateTakenOpt file
@@ -128,7 +142,7 @@ module ImageFile =
 
             // get key of target file
         let exifMetadataOpt =
-            ImageSharp.tryGetExif file
+            ImageSharp.tryGetExifProfile file
                 |> Option.map ExifMetadata.create
         let targetKey =
             let dateTakenOpt =

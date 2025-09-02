@@ -96,15 +96,31 @@ module ImageView =
                     StatusBar.createSelectableTextBlock
                         $"{dims.Width} x {dims.Height}" "Dimensions"
 
-                        // date taken
-                    let dateTakenOpt =
-                        loaded.Situated.Situation.ExifMetadataOpt
-                            |> Option.bind _.DateTakenOpt
-                    match dateTakenOpt with
-                        | Some dateTaken ->
-                            StatusBar.createSelectableTextBlock
-                                $"{dateTaken}" "Date taken"
-                        | _ -> ()
+                        // image metadata
+                    match loaded.Situated.Situation.ExifMetadataOpt with
+                        | Some exifMetadata ->
+
+                                // date taken
+                            match exifMetadata.DateTakenOpt with
+                                | Some dateTaken ->
+                                    StatusBar.createSelectableTextBlock
+                                        $"{dateTaken}" "Date taken"
+                                | _ -> ()
+
+                                // camera make
+                            match exifMetadata.CameraMakeOpt with
+                                | Some make ->
+                                    StatusBar.createSelectableTextBlock
+                                        make "Camera make"
+                                | None -> ()
+
+                                // camera model
+                            match exifMetadata.CameraModelOpt with
+                                | Some model ->
+                                    StatusBar.createSelectableTextBlock
+                                        model "Camera model"
+                                | None -> ()
+                        | None -> ()
                 | _ -> ()
         ]
 

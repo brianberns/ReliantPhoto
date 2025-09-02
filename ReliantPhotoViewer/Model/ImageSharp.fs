@@ -18,7 +18,7 @@ open SixLabors.ImageSharp.Processing
 module private ImageSharp =
 
     /// Tries to get the given image file's EXIF profile.
-    let tryGetExif (file : FileInfo) =
+    let tryGetExifProfile (file : FileInfo) =
         try
             option {
                 let! metadata =
@@ -61,6 +61,14 @@ module private ImageSharp =
                         |> Dictionary.toOption
             }
         with _ -> None
+
+    /// Tries to get the camera make.
+    let tryGetCameraMake exifProfile =
+        tryGetExifValue [ExifTag.Make] exifProfile
+
+    /// Tries to get the camera model.
+    let tryGetCameraModel exifProfile =
+        tryGetExifValue [ExifTag.Model] exifProfile
 
     /// Gets the orientation of the given image.
     let private getOrientation (imageInfo : ImageInfo) =
