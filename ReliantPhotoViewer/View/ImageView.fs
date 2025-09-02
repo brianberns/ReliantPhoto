@@ -125,11 +125,11 @@ module ImageView =
                             match exifMetadata.FocalLengthOpt with
                                 | Some len ->
                                     StatusBar.createSelectableTextBlock
-                                        $"{len} mm" "Focal length"
+                                        $"%.2f{len} mm" "Focal length"
                                     match exifMetadata.FocalLengthFullFrameOpt with
                                         | Some len35 when len35 <> len ->
                                             StatusBar.createSelectableTextBlock
-                                                $"{len35} mm" "Full-frame focal length equivalent"
+                                                $"%.2f{len35} mm equiv." "Full-frame focal length equivalent"
                                         | _ -> ()
                                 | None -> ()
 
