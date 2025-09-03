@@ -30,10 +30,10 @@ module Brush =
             :> IBrush
 
     /// Dark gray.
-    let darkGray = create "#181818"
+    let darkGray = create "#2D2D30"
 
     /// Light gray.
-    let lightGray = create "#808080"
+    let lightGray = create "#3E3E42"
 
 module Cursor =
 

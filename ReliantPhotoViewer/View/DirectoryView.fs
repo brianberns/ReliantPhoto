@@ -57,9 +57,6 @@ module DirectoryView =
                 Border.create [
                     Border.child (createThumbnail source)
                     Border.tip file.Name
-                    Border.background (
-                        if isHovered.Current then Brush.lightGray
-                        else Brushes.Transparent)
                     if isHovered.Current then
                         Border.renderTransform (
                             ScaleTransform(hoverScale, hoverScale))
