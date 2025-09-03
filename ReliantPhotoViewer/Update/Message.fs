@@ -12,6 +12,9 @@ type Message =
     /// An image-mode message.
     | MkImageMessage of ImageMessage
 
+    /// Load the given directory.
+    | LoadDirectory of DirectoryInfo
+
     /// Load the given image.
     | LoadImage of FileInfo
 
@@ -64,6 +67,15 @@ module Message =
             ImageMode (dirModelOpt, imgModel),
             Cmd.map MkImageMessage imgCmd
         | _ -> failwith "Invalid state"
+
+    /// Loads the given directory.
+    let private onLoadDirectory dir = function
+        | DirectoryMode (dirModel, imgModelOpt) ->
+            DirectoryMode (dirModel, imgModelOpt),
+            Cmd.none
+        | ImageMode (dirModelOpt, imgModel) ->
+            ImageMode (dirModelOpt, imgModel),
+            Cmd.none
 
     /// Reuses the given directory model, if possible.
     let private tryReuseDirectoryModel
@@ -127,6 +139,8 @@ module Message =
                 onDirectoryMessage dirMsg model
             | MkImageMessage imgMsg ->
                 onImageMessage dpiScale imgMsg model
+            | LoadDirectory dir ->
+                onLoadDirectory dir model
             | LoadImage file ->
                 onLoadImage file model
             | SwitchToDirectory ->

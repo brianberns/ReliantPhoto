@@ -143,6 +143,26 @@ module StatusBar =
 
 module FileSystemView =
 
+    /// Allows user to select a directory.
+    let onSelectDirectory dispatch args =
+        let topLevel =
+            (args : RoutedEventArgs).Source
+                :?> Control
+                |> TopLevel.GetTopLevel
+        async {
+            let! folders =
+                let options = FolderPickerOpenOptions()
+                topLevel
+                    .StorageProvider
+                    .OpenFolderPickerAsync(options)
+                    |> Async.AwaitTask
+            if folders.Count > 0 then
+                folders[0].Path.LocalPath
+                    |> DirectoryInfo
+                    |> LoadDirectory
+                    |> dispatch
+        } |> Async.StartImmediate
+
     /// Allows user to select an image.
     let onSelectImage dispatch args =
         let topLevel =

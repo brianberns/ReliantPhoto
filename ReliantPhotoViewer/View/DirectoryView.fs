@@ -16,8 +16,8 @@ module DirectoryView =
         Toolbar.create [
             Button.createIcon
                 Icon.folderOpen
-                "Open image file"
-                (FileSystemView.onSelectImage dispatch)
+                "Open directory"
+                (FileSystemView.onSelectDirectory dispatch)
         ]
 
     /// Creates a status bar.
