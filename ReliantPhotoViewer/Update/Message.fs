@@ -70,20 +70,9 @@ module Message =
 
     /// Loads the given directory.
     let private onLoadDirectory dir = function
-        | DirectoryMode (dirModel, imgModelOpt) ->
-            DirectoryMode (dirModel, imgModelOpt),
-            Cmd.none
-        | ImageMode (dirModelOpt, imgModel) ->
-            ImageMode (dirModelOpt, imgModel),
-            Cmd.none
-
-    /// Reuses the given directory model, if possible.
-    let private tryReuseDirectoryModel
-        (file : FileInfo) dirModel =
-        if FileSystemInfo.same
-            dirModel.Directory file.Directory then
-            Some dirModel
-        else None
+        | DirectoryMode (_, imgModelOpt) ->
+            initDirectory dir imgModelOpt
+        | _ -> failwith "Invalid state"
 
     /// Loads the given image.
     let private loadImage (file : FileInfo) dirModelOpt imgModel =
@@ -96,27 +85,10 @@ module Message =
             |> Cmd.map MkImageMessage
 
     /// Loads the given image.
-    let private onLoadImage file = function
-
-            // create image model
-        | DirectoryMode (dirModel, None) ->
-            let dirModelOpt =
-                tryReuseDirectoryModel file dirModel
-            initImage file dirModelOpt
-
-            // reuse image model
-        | DirectoryMode (dirModel, Some imgModel) ->
-            let dirModelOpt =
-                tryReuseDirectoryModel file dirModel
-            loadImage file dirModelOpt imgModel
-
-            // reuse image model
-        | ImageMode (dirModelOpt, imgModel) ->
-            let dirModelOpt =
-                dirModelOpt
-                    |> Option.bind (
-                        tryReuseDirectoryModel file)
-            loadImage file dirModelOpt imgModel
+    let private onLoadImage (file : FileInfo) = function
+        | ImageMode (_, imgModel) ->
+            loadImage file None imgModel
+        | _ -> failwith "Invalid state"
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
