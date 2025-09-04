@@ -2,15 +2,32 @@
 
 open System
 open System.IO
+open System.Runtime.InteropServices
 open System.Threading
 
 open Avalonia.Media.Imaging
 
 module FileSystemInfo =
 
+    /// Trims separator characters from the given info's path.
+    let private trimPath (fsi : FileSystemInfo) =
+        fsi.FullName.TrimEnd [|
+            Path.DirectorySeparatorChar
+            Path.AltDirectorySeparatorChar |]
+
     /// File/directory equality.
     let same<'t when 't :> FileSystemInfo> (fsiA : 't) (fsiB : 't) =
-        fsiA.FullName = fsiB.FullName
+
+        let pathA = trimPath fsiA
+        let pathB = trimPath fsiB
+
+        let comparisonType =
+            if RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
+                    StringComparison.OrdinalIgnoreCase
+            else StringComparison.Ordinal
+
+        String.Equals(pathA, pathB, comparisonType)
 
 module FileInfo =
 

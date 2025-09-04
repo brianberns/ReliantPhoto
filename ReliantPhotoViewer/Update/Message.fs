@@ -75,7 +75,7 @@ module Message =
         | _ -> failwith "Invalid state"
 
     /// Loads the given image.
-    let private loadImage (file : FileInfo) dirModelOpt imgModel =
+    let private loadImage file dirModelOpt imgModel =
         ImageMode (dirModelOpt, imgModel),
         [
             Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
@@ -85,10 +85,22 @@ module Message =
             |> Cmd.map MkImageMessage
 
     /// Loads the given image.
-    let private onLoadImage (file : FileInfo) = function
+    let private onLoadImage file = function
+
         | ImageMode (_, imgModel) ->
             loadImage file None imgModel
-        | _ -> failwith "Invalid state"
+
+            // switch to image mode
+        | DirectoryMode (dirModel, imgModelOpt) ->
+            assert(
+                FileSystemInfo.same
+                    file.Directory dirModel.Directory)
+            let dirModelOpt = Some dirModel
+            match imgModelOpt with
+                | Some imgModel ->
+                    loadImage file dirModelOpt imgModel
+                | None ->
+                    initImage file dirModelOpt
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
