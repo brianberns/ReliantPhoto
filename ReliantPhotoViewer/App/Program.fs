@@ -39,7 +39,12 @@ module Program =
                 "Error", sb.ToString())
 
             // ugh - we have to show the dialog asynchronously
-        let task = msgBox.ShowAsync()
+        let owner =
+            match Application.Current.ApplicationLifetime with
+                | :? IClassicDesktopStyleApplicationLifetime as lifetime ->
+                    lifetime.MainWindow
+                | _ -> null
+        let task = msgBox.ShowWindowDialogAsync(owner)
 
             // on UI thread?
         if Dispatcher.UIThread.CheckAccess() then
