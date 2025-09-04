@@ -1,9 +1,14 @@
 ﻿namespace Reliant.Photo
 
+open System
+
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.Styling
 open Avalonia.Themes.Fluent
+
+open MsBox.Avalonia
+open MsBox.Avalonia.Enums
 
 type App() =
     inherit Application(
@@ -20,10 +25,32 @@ type App() =
 
 module Program =
 
+    /// Handles an exception.
+    let private handleException (exn : exn) =
+        MessageBoxManager.GetMessageBoxStandard(
+            "Error",
+            exn.Message,
+            ButtonEnum.Ok,
+            Icon.Error)
+                |> ignore
+
     [<EntryPoint>]
     let main args =
-        AppBuilder
-            .Configure<App>()
-            .UsePlatformDetect()
-            .UseSkia()
-            .StartWithClassicDesktopLifetime(args)
+
+            // handle exceptions on background threads
+        AppDomain.CurrentDomain
+            .UnhandledException
+            .Add(fun args ->
+                args.ExceptionObject
+                    :?> Exception
+                    |> handleException)
+
+        try
+            AppBuilder
+                .Configure<App>()
+                .UsePlatformDetect()
+                .UseSkia()
+                .StartWithClassicDesktopLifetime(args)
+        with exn ->
+            handleException exn
+            1
