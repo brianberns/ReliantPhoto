@@ -67,8 +67,8 @@ module Icon =
     /// Folder open.
     let folderOpen = create "folder_open"
 
-    /// Switch access.
-    let switchAccess = create "switch_access_shortcut"
+    /// Folder eye.
+    let folderEye = create "folder_eye"
 
     /// View real size.
     let viewRealSize = create "view_real_size"

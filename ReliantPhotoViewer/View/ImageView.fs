@@ -20,7 +20,7 @@ module ImageView =
 
                 // switch to directory mode
             Button.createIcon
-                Icon.switchAccess
+                Icon.folderEye
                 "View folder contents"
                 (fun _ -> dispatch SwitchToDirectory)
 
