@@ -28,11 +28,7 @@ module Program =
     /// Handles an exception.
     let private handleException (exn : exn) =
         MessageBoxManager.GetMessageBoxStandard(
-            "Error",
-            exn.Message,
-            ButtonEnum.Ok,
-            Icon.Error)
-                |> ignore
+            "Error", exn.Message) |> ignore
 
     [<EntryPoint>]
     let main args =
