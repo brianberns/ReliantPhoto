@@ -42,12 +42,12 @@
       </uap:VisualElements>
       <Extensions>
         <uap:Extension Category="windows.fileTypeAssociation">
-          <uap:FileTypeAssociation Name="jpeg-files">
+          <uap:FileTypeAssociation Name="jpeg-file">
             <uap:SupportedFileTypes>
               <uap:FileType ContentType="image/jpeg">.jpeg</uap:FileType>
               <uap:FileType ContentType="image/jpeg">.jpg</uap:FileType>
             </uap:SupportedFileTypes>
-            <uap:DisplayName>Reliant JPEG Image</uap:DisplayName>
+            <uap:DisplayName>JPEG Image</uap:DisplayName>
             <uap:Logo>image_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png</uap:Logo>
           </uap:FileTypeAssociation>
         </uap:Extension>
