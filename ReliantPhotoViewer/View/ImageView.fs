@@ -26,7 +26,7 @@ module ImageView =
 
                 // open file
             Button.createIcon
-                Icon.folderOpen
+                Icon.fileOpen
                 "Open image file"
                 (FileSystemView.onSelectImage dispatch)
 

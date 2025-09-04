@@ -61,6 +61,9 @@ module Icon =
     /// Delete.
     let delete = create "delete"
 
+    /// File open.
+    let fileOpen = create "file_open"
+
     /// Folder open.
     let folderOpen = create "folder_open"
 
