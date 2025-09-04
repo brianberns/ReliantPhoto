@@ -1,14 +1,16 @@
 ﻿namespace Reliant.Photo
 
 open System
+open System.Text
+open System.Threading.Tasks
 
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.Styling
 open Avalonia.Themes.Fluent
+open Avalonia.Threading
 
 open MsBox.Avalonia
-open MsBox.Avalonia.Enums
 
 type App() =
     inherit Application(
@@ -27,8 +29,27 @@ module Program =
 
     /// Handles an exception.
     let private handleException (exn : exn) =
-        MessageBoxManager.GetMessageBoxStandard(
-            "Error", exn.Message) |> ignore
+
+            // create dialog
+        let msgBox =
+            let sb = StringBuilder()
+            sb.AppendLine(exn.Message) |> ignore
+            sb.Append(exn.StackTrace) |> ignore
+            MessageBoxManager.GetMessageBoxStandard(
+                "Error", sb.ToString())
+
+            // ugh - we have to show the dialog asynchronously
+        let task = msgBox.ShowAsync()
+
+            // on UI thread?
+        if Dispatcher.UIThread.CheckAccess() then
+            let frame = DispatcherFrame()            // nested event loop
+            task.ContinueWith(fun (_ : Task<_>) ->   // exit the nested loop
+                frame.Continue <- false)
+                |> ignore
+            Dispatcher.UIThread.PushFrame(frame)
+        else
+            task.Wait()
 
     [<EntryPoint>]
     let main args =
