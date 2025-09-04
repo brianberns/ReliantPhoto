@@ -15,19 +15,16 @@ module FileSystemInfo =
             Path.DirectorySeparatorChar
             Path.AltDirectorySeparatorChar |]
 
+    /// Path string comparison.
+    let private comparison =
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
+                StringComparison.OrdinalIgnoreCase
+        else StringComparison.Ordinal
+
     /// File/directory equality.
     let same<'t when 't :> FileSystemInfo> (fsiA : 't) (fsiB : 't) =
-
-        let pathA = trimPath fsiA
-        let pathB = trimPath fsiB
-
-        let comparisonType =
-            if RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
-                    StringComparison.OrdinalIgnoreCase
-            else StringComparison.Ordinal
-
-        String.Equals(pathA, pathB, comparisonType)
+        String.Equals(trimPath fsiA, trimPath fsiB, comparison)
 
 module FileInfo =
 
