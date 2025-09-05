@@ -63,8 +63,8 @@ module Program =
         assert(Dispatcher.UIThread.CheckAccess())
         let task = createMessageBox exn
         let frame = DispatcherFrame()            // nested event loop
-        task.ContinueWith(fun (_ : Task<_>) ->   // exit the nested loop
-            frame.Continue <- false)
+        task.ContinueWith(fun (_ : Task<_>) ->
+            frame.Continue <- false)             // exit the nested loop
             |> ignore
         Dispatcher.UIThread.PushFrame(frame)
 
@@ -75,10 +75,10 @@ module Program =
         Dispatcher.UIThread.InvokeAsync(fun () ->
             let task = createMessageBox exn
             task.ContinueWith(fun (_ : Task<_>) ->
-                waitHandle.Set())              // unblock thread
+                waitHandle.Set())        // unblock thread
                 |> ignore)
             |> ignore
-        waitHandle.WaitOne() |> ignore         // block thread to prevent .NET from aborting
+        waitHandle.WaitOne() |> ignore   // block thread to prevent .NET from aborting
 
     [<EntryPoint>]
     let main args =
