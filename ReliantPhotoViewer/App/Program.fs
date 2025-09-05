@@ -64,7 +64,8 @@ module Program =
         Dispatcher.UIThread.InvokeAsync(fun () ->
             let task = createMessageBox exn
             task.ContinueWith(fun (_ : Task<_>) ->
-                waitHandle.Set()) |> ignore)   // unblock thread
+                waitHandle.Set())              // unblock thread
+                |> ignore)
             |> ignore
         waitHandle.WaitOne() |> ignore         // block thread to prevent .NET from aborting
 
