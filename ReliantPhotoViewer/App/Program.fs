@@ -28,6 +28,17 @@ type App() =
 
 module Program =
 
+    /// Maximum display string length.
+    let private maxStringLength = 2000
+
+    /// Shortens the given string, if necessary.
+    let private shorten (str : string) =
+        let ellipsis = "…"
+        if str.Length > maxStringLength then
+            str.Substring(0, maxStringLength - ellipsis.Length)
+                + ellipsis
+        else str
+
     /// Creates an exception handler message box.
     let private createMessageBox (exn : exn) =
 
@@ -35,7 +46,7 @@ module Program =
         let msgBox =
             let sb = StringBuilder()
             sb.AppendLine(exn.Message) |> ignore
-            sb.Append(exn.StackTrace) |> ignore
+            sb.Append(shorten exn.StackTrace) |> ignore
             MessageBoxManager.GetMessageBoxStandard(
                 "Error", sb.ToString())
 
