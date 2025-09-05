@@ -32,9 +32,6 @@ module Brush =
     /// Dark gray.
     let darkGray = create "#2D2D30"
 
-    /// Light gray.
-    let lightGray = create "#3E3E42"
-
 module Cursor =
 
     /// Wait cursor.
