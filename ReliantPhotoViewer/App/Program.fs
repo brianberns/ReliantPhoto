@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open System.Threading
 open System.Threading.Tasks
 
 open Avalonia
@@ -27,8 +28,8 @@ type App() =
 
 module Program =
 
-    /// Handles an exception.
-    let private handleException (exn : exn) =
+    /// Creates an exception handler message box.
+    let private createMessageBox (exn : exn) =
 
             // create dialog
         let msgBox =
@@ -44,17 +45,28 @@ module Program =
                 | :? IClassicDesktopStyleApplicationLifetime as lifetime ->
                     lifetime.MainWindow
                 | _ -> null
-        let task = msgBox.ShowWindowDialogAsync(owner)
+        msgBox.ShowWindowDialogAsync(owner)
 
-            // on UI thread?
-        if Dispatcher.UIThread.CheckAccess() then
-            let frame = DispatcherFrame()            // nested event loop
-            task.ContinueWith(fun (_ : Task<_>) ->   // exit the nested loop
-                frame.Continue <- false)
-                |> ignore
-            Dispatcher.UIThread.PushFrame(frame)
-        else
-            task.Wait()
+    /// Handles an exception on the UI thread.
+    let private handleUiException exn =
+        assert(Dispatcher.UIThread.CheckAccess())
+        let task = createMessageBox exn
+        let frame = DispatcherFrame()            // nested event loop
+        task.ContinueWith(fun (_ : Task<_>) ->   // exit the nested loop
+            frame.Continue <- false)
+            |> ignore
+        Dispatcher.UIThread.PushFrame(frame)
+
+    /// Handles an exception on a background thread.
+    let private handleBackgroundException exn =
+        assert(not (Dispatcher.UIThread.CheckAccess()))
+        use waitHandle = new ManualResetEvent(false)
+        Dispatcher.UIThread.InvokeAsync(fun () ->
+            let task = createMessageBox exn
+            task.ContinueWith(fun (_ : Task<_>) ->
+                waitHandle.Set()) |> ignore)   // unblock thread
+            |> ignore
+        waitHandle.WaitOne() |> ignore         // block thread to prevent .NET from aborting
 
     [<EntryPoint>]
     let main args =
@@ -65,7 +77,7 @@ module Program =
             .Add(fun args ->
                 args.ExceptionObject
                     :?> Exception
-                    |> handleException)
+                    |> handleBackgroundException)
 
         try
             AppBuilder
@@ -74,5 +86,5 @@ module Program =
                 .UseSkia()
                 .StartWithClassicDesktopLifetime(args)
         with exn ->
-            handleException exn
+            handleUiException exn
             1
