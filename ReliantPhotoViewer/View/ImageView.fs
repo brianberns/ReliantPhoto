@@ -396,14 +396,23 @@ module ImageView =
     let private createWorkPanel (model : ImageModel) dispatch =
         DockPanel.create [
 
+                // loading?
             if model.IsUninitialized
                 || model.IsInitialized then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background Brushes.Transparent   // needed to force the cursor change for some reason
 
+                // full screen?
+            let fullScreen =
+                match model with
+                    | Loaded loaded -> loaded.FullScreen
+                    | _ -> false
+
+                // content
             DockPanel.children [
-                createToolbar model dispatch
-                createStatusBar model
+                if not fullScreen then
+                    createToolbar model dispatch
+                    createStatusBar model
                 createBrowseDisplayPanel model dispatch
             ]
         ]
