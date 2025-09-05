@@ -64,6 +64,9 @@ module Icon =
     /// Folder open.
     let folderOpen = create "folder_open"
 
+    /// Full screen.
+    let fullScreen = create "fullscreen"
+
     /// Folder eye.
     let folderEye = create "folder_eye"
 

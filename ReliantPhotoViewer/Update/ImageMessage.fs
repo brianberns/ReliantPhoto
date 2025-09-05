@@ -42,6 +42,9 @@ type ImageMessage =
     /// File has been situated in its directory.
     | Situated of Situation
 
+    /// Turn full-screen mode on/off.
+    | FullScreen of bool
+
     /// Delete the current file.
     | DeleteFile
 
@@ -167,6 +170,7 @@ module ImageMessage =
             BitmapSize = bitmapSize
             SavedZoomOpt = None
             PanOpt = None
+            FullScreen = false
         }
 
     /// Tries to load an image from the given file.
@@ -333,6 +337,13 @@ module ImageMessage =
                 |> situated ^= ImageModel.Situated_
         model, Cmd.none
 
+    /// Turns full-screen mode on or off.
+    let private onFullScreen flag = function
+        | Loaded loaded ->
+            Loaded { loaded with FullScreen = flag },
+            Cmd.none
+        | _ -> failwith "Invalid state"
+
     /// Deletes the current image.
     let private onDeleteFile model =
         let situated = model ^. ImageModel.Situated_
@@ -401,6 +412,10 @@ module ImageMessage =
                 // situate file in directory
             | Situated situation ->
                 onSituated situation model
+
+                // full-screen mode
+            | FullScreen flag ->
+                onFullScreen flag model
 
                 // delete file
             | DeleteFile ->

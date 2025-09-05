@@ -70,6 +70,14 @@ module ImageView =
                         TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
                         TextBlock.tip "Zoom scale"
                     ]
+                        // full screen on
+                    Button.createIcon
+                        Icon.fullScreen
+                        "Full screen"
+                        (fun _ ->
+                            FullScreen true
+                                |> MkImageMessage
+                                |> dispatch)
 
                 | _ -> ()
         ]
@@ -438,6 +446,11 @@ module ImageView =
             yield! createBindings
                 [ Key.Delete ]
                 DeleteFile
+
+                // full-screen off
+            yield! createBindings
+                [ Key.Escape ]
+                (FullScreen false)
         ]
 
     /// Creates an invisible border that handles key bindings.

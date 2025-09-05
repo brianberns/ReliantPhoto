@@ -187,6 +187,9 @@ type LoadedImage =
 
         /// Pan location, when panning.
         PanOpt : Option<Pan>
+
+        /// Full-screen mode.
+        FullScreen : bool
     }
 
     /// Situated file lens.

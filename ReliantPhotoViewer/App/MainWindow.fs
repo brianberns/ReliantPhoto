@@ -66,6 +66,19 @@ module Window =
             directory <- dir
             window.Title <- title
 
+                // full screen?
+            let fullScreen =
+                match model with
+                    | ImageMode (_, Loaded loaded) ->
+                        loaded.FullScreen
+                    | _ -> false
+            if fullScreen then
+                window.SystemDecorations <- SystemDecorations.None
+                window.WindowState <- WindowState.FullScreen
+            else
+                window.SystemDecorations <- SystemDecorations.Full
+                window.WindowState <- WindowState.Normal
+
                 // Elmish subscription
             match Model.tryGetDirectoryModel model with
                 | Some dirModel ->
