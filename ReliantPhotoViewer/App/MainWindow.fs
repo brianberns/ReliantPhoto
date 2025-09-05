@@ -76,11 +76,13 @@ module Window =
                 | _ -> false
         if fullScreen then
             window.ExtendClientAreaToDecorationsHint <- true
-            window.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.NoChrome
+            window.ExtendClientAreaChromeHints <-
+                ExtendClientAreaChromeHints.NoChrome
             window.WindowState <- WindowState.Maximized
         else
             window.ExtendClientAreaToDecorationsHint <- false
-            window.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.Default
+            window.ExtendClientAreaChromeHints <-
+                ExtendClientAreaChromeHints.Default
             window.WindowState <- WindowState.Normal
 
     /// Subscribes to effects.
