@@ -53,7 +53,7 @@ module Window =
     /// Subscribes to effects.
     let subscribe (window : Window) model =
         [
-                // side effects
+                // current directory and window title
             let dir, title =
                 match model with
                     | DirectoryMode (dirModel, _) ->
