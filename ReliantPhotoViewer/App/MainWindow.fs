@@ -9,6 +9,7 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
+open Avalonia.Platform
 
 module Window =
 
@@ -50,43 +51,51 @@ module Window =
             Directory = directory.FullName
         }
 
+    /// Applies effects that can't currently be expressed in
+    /// the FuncUI DSL.
+    let private applyEffects (window : Window) model =
+
+            // current directory and window title
+        let dir, title =
+            match model with
+                | DirectoryMode (dirModel, _) ->
+                    dirModel.Directory,
+                    dirModel.Directory.FullName
+                | ImageMode (_, Situated_ situated) ->
+                    situated.File.Directory,
+                    situated.File.Name
+                | _ -> directory, window.Title
+        directory <- dir
+        window.Title <- title
+
+            // full screen?
+        let fullScreen =
+            match model with
+                | ImageMode (_, Loaded loaded) ->
+                    loaded.FullScreen
+                | _ -> false
+        if fullScreen then
+            window.ExtendClientAreaToDecorationsHint <- true
+            window.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.NoChrome
+            window.WindowState <- WindowState.Maximized
+        else
+            window.ExtendClientAreaToDecorationsHint <- false
+            window.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.Default
+            window.WindowState <- WindowState.Normal
+
     /// Subscribes to effects.
     let subscribe (window : Window) model =
-        [
-                // current directory and window title
-            let dir, title =
-                match model with
-                    | DirectoryMode (dirModel, _) ->
-                        dirModel.Directory,
-                        dirModel.Directory.FullName
-                    | ImageMode (_, Situated_ situated) ->
-                        situated.File.Directory,
-                        situated.File.Name
-                    | _ -> directory, window.Title
-            directory <- dir
-            window.Title <- title
 
-                // full screen?
-            let fullScreen =
-                match model with
-                    | ImageMode (_, Loaded loaded) ->
-                        loaded.FullScreen
-                    | _ -> false
-            if fullScreen then
-                window.SystemDecorations <- SystemDecorations.None
-                window.WindowState <- WindowState.FullScreen
-            else
-                window.SystemDecorations <- SystemDecorations.Full
-                window.WindowState <- WindowState.Normal
+            // non-DSL effects
+        applyEffects window model
 
-                // Elmish subscription
-            match Model.tryGetDirectoryModel model with
-                | Some dirModel ->
-                    yield! dirModel
-                        |> DirectoryMessage.subscribe
-                        |> Sub.map "directory" MkDirectoryMessage
-                | None -> ()
-        ]
+            // Elmish subscription
+        match Model.tryGetDirectoryModel model with
+            | Some dirModel ->
+                dirModel
+                    |> DirectoryMessage.subscribe
+                    |> Sub.map "directory" MkDirectoryMessage
+            | None -> []
 
     /// Gets initial directory and file.
     let getInitialArg (args : _[]) =
