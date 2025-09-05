@@ -74,16 +74,9 @@ module Window =
                 | ImageMode (_, Loaded loaded) ->
                     loaded.FullScreen
                 | _ -> false
-        if fullScreen then
-            window.ExtendClientAreaToDecorationsHint <- true
-            window.ExtendClientAreaChromeHints <-
-                ExtendClientAreaChromeHints.NoChrome
-            window.WindowState <- WindowState.Maximized
-        else
-            window.ExtendClientAreaToDecorationsHint <- false
-            window.ExtendClientAreaChromeHints <-
-                ExtendClientAreaChromeHints.Default
-            window.WindowState <- WindowState.Normal
+        window.WindowState <-
+            if fullScreen then WindowState.FullScreen
+            else WindowState.Normal
 
     /// Subscribes to effects.
     let subscribe (window : Window) model =
