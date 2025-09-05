@@ -364,7 +364,8 @@ module ImageView =
             let background =
                 match model with
                     | Loaded loaded
-                        when loaded ^. LoadedImage.ZoomScaleLock_ ->
+                        when loaded ^. LoadedImage.ZoomScaleLock_ 
+                            && loaded ^. LoadedImage.ZoomScale_ <> 1.0 ->
                             Brush.darkGray
                     | _ -> Brushes.Black
             DockPanel.background background
