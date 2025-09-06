@@ -99,19 +99,37 @@ module Window =
         else
             Choice2Of2 (FileInfo args[0])
 
+    /// Creates Elmish program.
+    let private makeProgram dpiScale =
+
+        let init = Message.init
+        let update = Message.update dpiScale
+        let view = View.view
+
+#if DEBUG
+        let init arg =
+            let model, cmd = init arg
+            printfn $"Initial state: {model}"
+            model, cmd
+
+        let update msg model =
+            printfn ""
+            printfn $"New message: {msg}"
+            let model, cmd = update msg model
+            printfn $"Updated state: {model}"
+            model, cmd
+#endif
+
+        Program.mkProgram init update view
+
     /// Starts the Elmish MVU loop.
     let run window arg =
-        let dpiScale = TopLevel.GetTopLevel(window).RenderScaling
-        Program.mkProgram
-            Message.init
-            (Message.update dpiScale)
-            View.view
+        let dpiScale =
+            TopLevel.GetTopLevel(window).RenderScaling
+        makeProgram dpiScale
             |> Program.withSubscription (
                 subscribe window)
             |> Program.withHost window
-#if DEBUG
-            |> Program.withConsoleTrace
-#endif
             |> Program.runWithAvaloniaSyncDispatch arg
 
 /// Main window.
