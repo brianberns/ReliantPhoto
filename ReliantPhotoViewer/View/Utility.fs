@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
 open System.Reflection
 
@@ -141,7 +142,8 @@ module StatusBar =
             SelectableTextBlock.text text
             SelectableTextBlock.background Brush.darkGray
             SelectableTextBlock.padding 5.0
-            SelectableTextBlock.tip tooltip
+            if not (String.IsNullOrWhiteSpace(tooltip)) then
+                SelectableTextBlock.tip tooltip
         ]
 
 module FileSystemView =

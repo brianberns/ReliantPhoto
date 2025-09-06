@@ -208,26 +208,30 @@ module ImageView =
                 :> IView
         ]
 
-    /// Creates status bar items.
-    let private createStatusItems (loaded : LoadedImage) =
-        [
-            yield! createFileStatusItems loaded.Situated.File
-            yield! createBitmapStatusItems loaded.Bitmap
-
-                // image metadata
-            match loaded.Situated.Situation.ExifMetadataOpt with
-                | Some exif ->
-                    yield! createExifStatusItems exif
-                | None -> ()
-        ]
-
     /// Creates a status bar.
     let private createStatusBar model =
         StatusBar.create [
             match model with
+
+                | Uninitialized
+                | Initialized _ ->
+                    StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
+                        "Loading..." ""
+                        :> IView
+
+                | ImageModel.Situated situated ->
+                    assert(situated.Situation.ExifMetadataOpt.IsNone)
+                    yield! createFileStatusItems situated.File
+
                 | Loaded loaded ->
-                    yield! createStatusItems loaded
-                | _ -> ()
+                    yield! createFileStatusItems loaded.Situated.File
+                    yield! createBitmapStatusItems loaded.Bitmap
+                    match loaded.Situated.Situation.ExifMetadataOpt with
+                        | Some exif -> yield! createExifStatusItems exif
+                        | None -> ()
+
+                | LoadError errored ->
+                    yield! createFileStatusItems errored.Situated.File
         ]
 
     /// Creates a browse panel, with or without a button.
