@@ -109,6 +109,71 @@ module ImageView =
                             :> IView))
             |> Option.defaultValue Seq.empty
 
+    /// Creates EXIF status bar items.
+    let private createExifStatusItems (exif : ExifMetadata) =
+        [
+                // date taken
+            yield! createStatusItemsOpt
+                exif.DateTakenOpt
+                [ "Date taken" ]
+                (string >> List.singleton)
+
+                // camera make
+            yield! createStatusItemsOpt
+                exif.CameraMakeOpt
+                [ "Camera make" ]
+                List.singleton
+
+                // camera model
+            yield! createStatusItemsOpt
+                exif.CameraModelOpt
+                [ "Camera model" ]
+                List.singleton
+
+                // f-stop
+            yield! createStatusItemsOpt
+                exif.FStopOpt
+                [ "F-stop" ]
+                (fun fStop ->
+                    [ $"f/{Decimal.toString fStop}" ])
+
+                // exposure time
+            yield! createStatusItemsOpt
+                exif.ExposureTimeOpt
+                [ "Exposure time" ]
+                (fun time ->
+                    let str =
+                        if time < 1m then
+                            $"1/{Decimal.toString (1m/time)}"
+                        else Decimal.toString time
+                    [ $"{str} sec." ])
+
+                // ISO rating
+            yield! createStatusItemsOpt
+                exif.IsoRatingOpt
+                [ "ISO speed rating" ]
+                (fun iso ->
+                    [ $"ISO {Decimal.toString iso}" ])
+
+                // focal length
+            yield! createStatusItemsOpt
+                exif.FocalLengthOpt
+                [
+                    "Focal length"
+                    "Full-frame focal length equivalent"
+                ]
+                (fun len ->
+                    seq {
+
+                        $"{Decimal.toString len} mm"
+
+                        match exif.FocalLengthFullFrameOpt with
+                            | Some len35 when len35 <> len ->
+                                $"{Decimal.toString len35}"
+                            | _ -> ()
+                    })
+        ]
+
     /// Creates status bar items.
     let private createStatusItems (loaded : LoadedImage) =
         [
@@ -138,68 +203,7 @@ module ImageView =
                 // image metadata
             match loaded.Situated.Situation.ExifMetadataOpt with
                 | Some exif ->
-
-                        // date taken
-                    yield! createStatusItemsOpt
-                        exif.DateTakenOpt
-                        [ "Date taken" ]
-                        (string >> List.singleton)
-
-                        // camera make
-                    yield! createStatusItemsOpt
-                        exif.CameraMakeOpt
-                        [ "Camera make" ]
-                        List.singleton
-
-                        // camera model
-                    yield! createStatusItemsOpt
-                        exif.CameraModelOpt
-                        [ "Camera model" ]
-                        List.singleton
-
-                        // f-stop
-                    yield! createStatusItemsOpt
-                        exif.FStopOpt
-                        [ "F-stop" ]
-                        (fun fStop ->
-                            [ $"f/{Decimal.toString fStop}" ])
-
-                        // exposure time
-                    yield! createStatusItemsOpt
-                        exif.ExposureTimeOpt
-                        [ "Exposure time" ]
-                        (fun time ->
-                            let str =
-                                if time < 1m then
-                                    $"1/{Decimal.toString (1m/time)}"
-                                else Decimal.toString time
-                            [ $"{str} sec." ])
-
-                        // ISO rating
-                    yield! createStatusItemsOpt
-                        exif.IsoRatingOpt
-                        [ "ISO speed rating" ]
-                        (fun iso ->
-                            [ $"ISO {Decimal.toString iso}" ])
-
-                        // focal length
-                    yield! createStatusItemsOpt
-                        exif.FocalLengthOpt
-                        [
-                            "Focal length"
-                            "Full-frame focal length equivalent"
-                        ]
-                        (fun len ->
-                            seq {
-
-                                $"{Decimal.toString len} mm"
-
-                                match exif.FocalLengthFullFrameOpt with
-                                    | Some len35 when len35 <> len ->
-                                        $"{Decimal.toString len35}"
-                                    | _ -> ()
-                            })
-
+                    yield! createExifStatusItems exif
                 | None -> ()
         ]
 
