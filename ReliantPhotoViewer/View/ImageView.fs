@@ -163,15 +163,14 @@ module ImageView =
                     "Full-frame focal length equivalent"
                 ]
                 (fun len ->
-                    seq {
-
+                    [
                         $"{Decimal.toString len} mm"
 
                         match exif.FocalLengthFullFrameOpt with
                             | Some len35 when len35 <> len ->
                                 $"{Decimal.toString len35}"
                             | _ -> ()
-                    })
+                    ])
         ]
 
     /// Creates status bar items.
