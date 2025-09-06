@@ -1,5 +1,7 @@
 ﻿namespace Reliant.Photo
 
+open System.IO
+
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
@@ -91,7 +93,7 @@ module ImageView =
     /// Number of bytes in a gigabyte.
     let private gb = pown 2 30
 
-    module Decimal =
+    module private Decimal =
 
         /// Converts a decimal to a string.
         let toString (n : decimal) =
@@ -174,11 +176,11 @@ module ImageView =
                     ])
         ]
 
-    /// Creates status bar items.
-    let private createStatusItems (loaded : LoadedImage) =
+    /// Creates status items for the given file.
+    let private createFileStatusItems (file : FileInfo) =
         [
                 // file name
-            let file = loaded.Situated.File
+            let file = file
             StatusBar.createSelectableTextBlock
                 file.Name "File name"
                 :> IView
@@ -194,11 +196,23 @@ module ImageView =
                 else $"%.2f{float nBytes / float gb} GiB"
             StatusBar.createSelectableTextBlock
                 sizeStr "File size"
+        ]
 
-                // image dimensions
-            let dims = loaded.Bitmap.Size
+    /// Creates bitmap status bar items.
+    let private createBitmapStatusItems (bitmap : Imaging.Bitmap) =
+        [
+                // bitmap dimensions
+            let dims = bitmap.Size
             StatusBar.createSelectableTextBlock
                 $"{dims.Width} x {dims.Height}" "Dimensions"
+                :> IView
+        ]
+
+    /// Creates status bar items.
+    let private createStatusItems (loaded : LoadedImage) =
+        [
+            yield! createFileStatusItems loaded.Situated.File
+            yield! createBitmapStatusItems loaded.Bitmap
 
                 // image metadata
             match loaded.Situated.Situation.ExifMetadataOpt with
