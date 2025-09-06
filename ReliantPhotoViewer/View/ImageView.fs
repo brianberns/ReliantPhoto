@@ -505,6 +505,8 @@ module ImageView =
         ]
 
     /// Creates an invisible border that handles key bindings.
+    // This hack is needed because there is no way to set key
+    // bindings on the top-level window in the FuncUI DSL.
     let private createKeyBindingBorder model dispatch child =
         Border.create [
 
@@ -517,8 +519,9 @@ module ImageView =
                     createKeyBindings situated dispatch
                 | _ -> ()
 
+                // grab focus to enable bindings
             Border.onLoaded (fun e ->
-                let border = e.Source :?> Border   // grab focus
+                let border = e.Source :?> Border
                 border.Focus() |> ignore)
 
             Border.child (child : IView)

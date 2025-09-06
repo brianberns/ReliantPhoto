@@ -9,6 +9,8 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
+open Avalonia.LogicalTree
+open Avalonia.Threading
 
 module Window =
 
@@ -71,14 +73,31 @@ module Window =
                     situated.File.Name
                 | _ -> window.Title
 
+    /// Tries to find a child element by type.
+    let rec private tryFindChild<'t when 't :> Control>
+        (parent : ILogical) : Option<'t> =
+        parent.LogicalChildren
+            |> Seq.tryPick (fun child ->
+                match child with
+                    | :? 't as ctrl -> Some ctrl
+                    | _ -> tryFindChild<'t> child)
+
     /// Sets the window state.
-    let private setWindowState (window : Window) model =
-        window.WindowState <-
-            match model with
-                | ImageMode (_, Loaded loaded)
-                    when loaded.FullScreen ->
-                    WindowState.FullScreen
-                | _ -> WindowState.Normal
+    let private setWindowState (window : Window) = function
+        | ImageMode (_, Loaded loaded)
+            when loaded.FullScreen ->
+
+                // switch to full screen
+            window.WindowState <- WindowState.FullScreen
+
+                // hack: grab focus so Esc key binding works
+            Dispatcher.UIThread.Post(fun () ->
+                tryFindChild<Border> window
+                    |> Option.iter (fun control ->
+                        control.Focus() |> ignore))
+        | _ ->
+            window.WindowState <- WindowState.Normal
+        
 
     /// Subscribes to effects.
     let subscribe window model =
