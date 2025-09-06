@@ -107,6 +107,7 @@ module Window =
         let view = View.view
 
 #if DEBUG
+        /// Short model string.
         let getModelString = function
             | DirectoryMode (dirModel, _) ->
                 dirModel.Directory.FullName
@@ -116,13 +117,16 @@ module Window =
                         imgModel,
                         typeof<ImageModel>) |> fst}"
 
+        /// Traced init function.
         let init arg =
             let model, cmd = init arg
             printfn $"Initial state: {getModelString model}"
             model, cmd
 
+        /// Message number.
         let mutable msgNum = 0
 
+        /// Traced update function.
         let update msg model =
             msgNum <- msgNum + 1
             printfn ""
