@@ -435,8 +435,7 @@ module ImageView =
         DockPanel.create [
 
                 // loading?
-            if model.IsUninitialized
-                || model.IsInitialized then
+            if model.IsUninitialized || model.IsInitialized then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background Brushes.Transparent   // needed to force the cursor change for some reason
 
@@ -493,6 +492,11 @@ module ImageView =
             yield! createBindings
                 [ Key.Delete ]
                 DeleteFile
+
+                // full-screen on
+            yield! createBindings
+                [ Key.F11 ]
+                (FullScreen true)
 
                 // full-screen off
             yield! createBindings
