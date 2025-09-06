@@ -120,7 +120,8 @@ type Situation =
 module Situation =
 
     /// Creates a situation.
-    let create exifMetadataOpt previousResultOpt nextResultOpt =
+    let create
+        exifMetadataOpt previousResultOpt nextResultOpt =
         {
             ExifMetadataOpt = exifMetadataOpt
             PreviousResultOpt = previousResultOpt
