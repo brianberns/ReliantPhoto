@@ -75,12 +75,11 @@ module Window =
 
     /// Tries to find a child element by type.
     let rec private tryFindChild<'t when 't :> Control>
-        (parent : ILogical) : Option<'t> =
+        (parent : ILogical) =
         parent.LogicalChildren
-            |> Seq.tryPick (fun child ->
-                match child with
-                    | :? 't as ctrl -> Some ctrl
-                    | _ -> tryFindChild<'t> child)
+            |> Seq.tryPick (function
+                | :? 't as child -> Some child
+                | child -> tryFindChild child)
 
     /// Sets the window state.
     let private setWindowState (window : Window) = function
