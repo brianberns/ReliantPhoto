@@ -107,16 +107,28 @@ module Window =
         let view = View.view
 
 #if DEBUG
+        let getModelString = function
+            | DirectoryMode (dirModel, _) ->
+                dirModel.Directory.FullName
+            | ImageMode (_, imgModel) ->
+                $"{Microsoft.FSharp.Reflection
+                    .FSharpValue.GetUnionFields(
+                        imgModel,
+                        typeof<ImageModel>) |> fst}"
+
         let init arg =
             let model, cmd = init arg
-            printfn $"Initial state: {model}"
+            printfn $"Initial state: {getModelString model}"
             model, cmd
 
+        let mutable msgNum = 0
+
         let update msg model =
+            msgNum <- msgNum + 1
             printfn ""
-            printfn $"New message: {msg}"
+            printfn $"Message #{msgNum}: {msg}"
             let model, cmd = update msg model
-            printfn $"Updated state: {model}"
+            printfn $"Updated state: {getModelString model}"
             model, cmd
 #endif
 
