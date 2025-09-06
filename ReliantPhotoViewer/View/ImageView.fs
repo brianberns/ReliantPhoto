@@ -97,102 +97,107 @@ module ImageView =
         let toString (n : decimal) =
             n.ToString("0.##")
 
+    /// Creates status bar items.
+    let private createStatusItems (loaded : LoadedImage) =
+        [
+                // file name
+            let file = loaded.Situated.File
+            StatusBar.createSelectableTextBlock
+                file.Name "File name"
+                :> IView
+
+                // file size
+            let sizeStr =
+                let nBytes = file.Length
+                if nBytes < kb then $"{nBytes} bytes"
+                elif nBytes < mb then
+                    $"%.2f{float nBytes / float kb} KiB"
+                elif nBytes < gb then
+                    $"%.2f{float nBytes / float mb} MiB"
+                else $"%.2f{float nBytes / float gb} GiB"
+            StatusBar.createSelectableTextBlock
+                sizeStr "File size"
+
+                // image dimensions
+            let dims = loaded.Bitmap.Size
+            StatusBar.createSelectableTextBlock
+                $"{dims.Width} x {dims.Height}" "Dimensions"
+
+                // image metadata
+            match loaded.Situated.Situation.ExifMetadataOpt with
+                | Some exifMetadata ->
+
+                        // date taken
+                    match exifMetadata.DateTakenOpt with
+                        | Some dateTaken ->
+                            StatusBar.createSelectableTextBlock
+                                $"{dateTaken}" "Date taken"
+                        | _ -> ()
+
+                        // camera make
+                    match exifMetadata.CameraMakeOpt with
+                        | Some make ->
+                            StatusBar.createSelectableTextBlock
+                                make "Camera make"
+                        | None -> ()
+
+                        // camera model
+                    match exifMetadata.CameraModelOpt with
+                        | Some model ->
+                            StatusBar.createSelectableTextBlock
+                                model "Camera model"
+                        | None -> ()
+
+                        // f-stop
+                    match exifMetadata.FStopOpt with
+                        | Some fStop ->
+                            StatusBar.createSelectableTextBlock
+                                $"f/{Decimal.toString fStop}" "F-stop"
+                        | None -> ()
+
+                        // exposure time
+                    match exifMetadata.ExposureTimeOpt with
+                        | Some time ->
+                            let str =
+                                if time < 1m then
+                                    $"1/{Decimal.toString (1m/time)}"
+                                else Decimal.toString time
+                            StatusBar.createSelectableTextBlock
+                                $"{str} sec." "Exposure time"
+                        | None -> ()
+
+                        // ISO rating
+                    match exifMetadata.IsoRatingOpt with
+                        | Some iso ->
+                            StatusBar.createSelectableTextBlock
+                                $"ISO {Decimal.toString iso}" "ISO speed rating"
+                        | None -> ()
+
+                        // focal length
+                    match exifMetadata.FocalLengthOpt with
+                        | Some len ->
+
+                            StatusBar.createSelectableTextBlock
+                                $"{Decimal.toString len} mm" "Focal length"
+
+                            match exifMetadata.FocalLengthFullFrameOpt with
+                                | Some len35 when len35 <> len ->
+                                    StatusBar.createSelectableTextBlock
+                                        $"{Decimal.toString len35} mm equiv."
+                                        "Full-frame focal length equivalent"
+                                | _ -> ()
+
+                        | None -> ()
+
+                | None -> ()
+        ]
+
     /// Creates a status bar.
     let private createStatusBar model =
         StatusBar.create [
             match model with
                 | Loaded loaded ->
-
-                        // file name
-                    let file = loaded.Situated.File
-                    StatusBar.createSelectableTextBlock
-                        file.Name "File name"
-
-                        // file size
-                    let sizeStr =
-                        let nBytes = file.Length
-                        if nBytes < kb then $"{nBytes} bytes"
-                        elif nBytes < mb then
-                            $"%.2f{float nBytes / float kb} KiB"
-                        elif nBytes < gb then
-                            $"%.2f{float nBytes / float mb} MiB"
-                        else $"%.2f{float nBytes / float gb} GiB"
-                    StatusBar.createSelectableTextBlock
-                        sizeStr "File size"
-
-                        // image dimensions
-                    let dims = loaded.Bitmap.Size
-                    StatusBar.createSelectableTextBlock
-                        $"{dims.Width} x {dims.Height}" "Dimensions"
-
-                        // image metadata
-                    match loaded.Situated.Situation.ExifMetadataOpt with
-                        | Some exifMetadata ->
-
-                                // date taken
-                            match exifMetadata.DateTakenOpt with
-                                | Some dateTaken ->
-                                    StatusBar.createSelectableTextBlock
-                                        $"{dateTaken}" "Date taken"
-                                | _ -> ()
-
-                                // camera make
-                            match exifMetadata.CameraMakeOpt with
-                                | Some make ->
-                                    StatusBar.createSelectableTextBlock
-                                        make "Camera make"
-                                | None -> ()
-
-                                // camera model
-                            match exifMetadata.CameraModelOpt with
-                                | Some model ->
-                                    StatusBar.createSelectableTextBlock
-                                        model "Camera model"
-                                | None -> ()
-
-                                // f-stop
-                            match exifMetadata.FStopOpt with
-                                | Some fStop ->
-                                    StatusBar.createSelectableTextBlock
-                                        $"f/{Decimal.toString fStop}" "F-stop"
-                                | None -> ()
-
-                                // exposure time
-                            match exifMetadata.ExposureTimeOpt with
-                                | Some time ->
-                                    let str =
-                                        if time < 1m then
-                                            $"1/{Decimal.toString (1m/time)}"
-                                        else Decimal.toString time
-                                    StatusBar.createSelectableTextBlock
-                                        $"{str} sec." "Exposure time"
-                                | None -> ()
-
-                                // ISO rating
-                            match exifMetadata.IsoRatingOpt with
-                                | Some iso ->
-                                    StatusBar.createSelectableTextBlock
-                                        $"ISO {Decimal.toString iso}" "ISO speed rating"
-                                | None -> ()
-
-                                // focal length
-                            match exifMetadata.FocalLengthOpt with
-                                | Some len ->
-
-                                    StatusBar.createSelectableTextBlock
-                                        $"{Decimal.toString len} mm" "Focal length"
-
-                                    match exifMetadata.FocalLengthFullFrameOpt with
-                                        | Some len35 when len35 <> len ->
-                                            StatusBar.createSelectableTextBlock
-                                                $"{Decimal.toString len35} mm equiv."
-                                                "Full-frame focal length equivalent"
-                                        | _ -> ()
-
-                                | None -> ()
-
-                        | None -> ()
-
+                    yield! createStatusItems loaded
                 | _ -> ()
         ]
 
