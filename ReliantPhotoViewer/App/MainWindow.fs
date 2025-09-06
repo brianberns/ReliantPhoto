@@ -12,16 +12,16 @@ open Avalonia.FuncUI.Hosts
 
 module Window =
 
+    /// Gets the window icon.
+    let getIcon () =
+        Resource.get "ReliantPhoto.png"
+            |> WindowIcon
+
     /// Current directory.
     let mutable directory =
         Environment.SpecialFolder.MyPictures
             |> Environment.GetFolderPath
             |> DirectoryInfo
-
-    /// Gets the window icon.
-    let getIcon () =
-        Resource.get "ReliantPhoto.png"
-            |> WindowIcon
 
     /// Loads user settings, if possible.
     let loadSettings (window : Window) =
@@ -50,38 +50,42 @@ module Window =
             Directory = directory.FullName
         }
 
-    /// Applies effects that can't currently be expressed in
-    /// the FuncUI DSL.
-    let private applyEffects (window : Window) model =
-
-            // current directory and window title
-        let dir, title =
+    /// Sets the current directory.
+    let private setCurrentDirectory model =
+        directory <-
             match model with
                 | DirectoryMode (dirModel, _) ->
-                    dirModel.Directory,
+                    dirModel.Directory
+                | ImageMode (_, Situated_ situated) ->
+                    situated.File.Directory
+                | _ -> directory
+
+    /// Sets the window title
+    let private setWindowTitle (window : Window) model =
+        window.Title <-
+            match model with
+                | DirectoryMode (dirModel, _) ->
                     dirModel.Directory.FullName
                 | ImageMode (_, Situated_ situated) ->
-                    situated.File.Directory,
                     situated.File.Name
-                | _ -> directory, window.Title
-        directory <- dir
-        window.Title <- title
+                | _ -> window.Title
 
-            // full screen?
-        let fullScreen =
-            match model with
-                | ImageMode (_, Loaded loaded) ->
-                    loaded.FullScreen
-                | _ -> false
+    /// Sets the window state.
+    let private setWindowState (window : Window) model =
         window.WindowState <-
-            if fullScreen then WindowState.FullScreen
-            else WindowState.Normal
+            match model with
+                | ImageMode (_, Loaded loaded)
+                    when loaded.FullScreen ->
+                    WindowState.FullScreen
+                | _ -> WindowState.Normal
 
     /// Subscribes to effects.
-    let subscribe (window : Window) model =
+    let subscribe window model =
 
             // non-DSL effects
-        applyEffects window model
+        setCurrentDirectory model
+        setWindowTitle window model
+        setWindowState window model
 
             // Elmish subscription
         match Model.tryGetDirectoryModel model with
