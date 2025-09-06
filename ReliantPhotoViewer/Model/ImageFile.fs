@@ -9,24 +9,35 @@ open Avalonia.Media.Imaging
 
 module FileSystemInfo =
 
-    /// Trims separator characters from the given info's path.
-    let private trimPath (fsi : FileSystemInfo) =
-        fsi.FullName.TrimEnd [|
-            Path.DirectorySeparatorChar
-            Path.AltDirectorySeparatorChar |]
-
     /// Path string comparison.
-    let private comparison =
+    let comparison =
         if RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
                 StringComparison.OrdinalIgnoreCase
         else StringComparison.Ordinal
 
-    /// File/directory equality.
-    let same<'t when 't :> FileSystemInfo> (fsiA : 't) (fsiB : 't) =
-        String.Equals(trimPath fsiA, trimPath fsiB, comparison)
+module DirectoryInfo =
+
+    /// Normalizes the given directory's path.
+    let normalizedPath (dir : DirectoryInfo) =
+        dir.FullName
+            |> Path.TrimEndingDirectorySeparator
+
+    /// Directory equality.
+    let same dirA dirB =
+        String.Equals(
+            normalizedPath dirA,
+            normalizedPath dirB,
+            FileSystemInfo.comparison)
 
 module FileInfo =
+
+    /// File equality.
+    let same (fileA : FileInfo) (fileB : FileInfo) =
+        String.Equals(
+            fileA.FullName,
+            fileB.FullName,
+            FileSystemInfo.comparison)
 
     /// Waits for the given file to be readable.
     let waitForFileRead
@@ -193,7 +204,7 @@ module ImageFile =
                         // get key of current file
                     let curKey = getSortKey curFile
                     assert(curKey <> targetKey
-                        || FileSystemInfo.same curFile file)
+                        || FileInfo.same curFile file)
 
                         // find nearest inferior neighbor
                     let prevPairOpt =

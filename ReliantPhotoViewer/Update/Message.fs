@@ -93,7 +93,7 @@ module Message =
             // switch to image mode
         | DirectoryMode (dirModel, imgModelOpt) ->
             assert(
-                FileSystemInfo.same
+                DirectoryInfo.same
                     file.Directory dirModel.Directory)
             let dirModelOpt = Some dirModel
             match imgModelOpt with
@@ -105,7 +105,7 @@ module Message =
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
         | ImageMode (Some dirModel, imgModel) ->
-            assert(FileSystemInfo.same
+            assert(DirectoryInfo.same
                 dirModel.Directory
                 imgModel.File.Directory)
             DirectoryMode (dirModel, Some imgModel),

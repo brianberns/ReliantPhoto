@@ -27,7 +27,8 @@ module DirectoryView =
 
                 // directory path
             StatusBar.createSelectableTextBlock
-                dir.FullName "Directory path"
+                (DirectoryInfo.normalizedPath dir)
+                "Directory path"
 
                 // number of images
             TextBlock.create [

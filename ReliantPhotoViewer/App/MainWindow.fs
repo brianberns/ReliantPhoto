@@ -65,7 +65,8 @@ module Window =
         window.Title <-
             match model with
                 | DirectoryMode (dirModel, _) ->
-                    dirModel.Directory.FullName
+                    DirectoryInfo.normalizedPath
+                        dirModel.Directory
                 | ImageMode (_, Situated_ situated) ->
                     situated.File.Name
                 | _ -> window.Title
