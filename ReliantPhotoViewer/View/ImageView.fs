@@ -97,8 +97,9 @@ module ImageView =
         let toString (n : decimal) =
             n.ToString("0.##")
 
-    /// Creates a status bar item.
-    let private createStatusItemsOpt propertyOpt tooltips mapping =
+    /// Creates zero or more status bar items.
+    let private createStatusItemsOpt
+        propertyOpt tooltips mapping =
         propertyOpt
             |> Option.map (fun property ->
                 ((mapping property), tooltips)
