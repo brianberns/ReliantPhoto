@@ -97,6 +97,17 @@ module ImageView =
         let toString (n : decimal) =
             n.ToString("0.##")
 
+    /// Creates a status bar item.
+    let private createStatusItemsOpt propertyOpt tooltips mapping =
+        propertyOpt
+            |> Option.map (fun property ->
+                ((mapping property), tooltips)
+                    ||> Seq.map2 (fun text tooltip ->
+                        StatusBar.createSelectableTextBlock
+                            text tooltip
+                            :> IView))
+            |> Option.defaultValue Seq.empty
+
     /// Creates status bar items.
     let private createStatusItems (loaded : LoadedImage) =
         [
@@ -125,69 +136,68 @@ module ImageView =
 
                 // image metadata
             match loaded.Situated.Situation.ExifMetadataOpt with
-                | Some exifMetadata ->
+                | Some exif ->
 
                         // date taken
-                    match exifMetadata.DateTakenOpt with
-                        | Some dateTaken ->
-                            StatusBar.createSelectableTextBlock
-                                $"{dateTaken}" "Date taken"
-                        | _ -> ()
+                    yield! createStatusItemsOpt
+                        exif.DateTakenOpt
+                        [ "Date taken" ]
+                        (string >> List.singleton)
 
                         // camera make
-                    match exifMetadata.CameraMakeOpt with
-                        | Some make ->
-                            StatusBar.createSelectableTextBlock
-                                make "Camera make"
-                        | None -> ()
+                    yield! createStatusItemsOpt
+                        exif.CameraMakeOpt
+                        [ "Camera make" ]
+                        List.singleton
 
                         // camera model
-                    match exifMetadata.CameraModelOpt with
-                        | Some model ->
-                            StatusBar.createSelectableTextBlock
-                                model "Camera model"
-                        | None -> ()
+                    yield! createStatusItemsOpt
+                        exif.CameraModelOpt
+                        [ "Camera model" ]
+                        List.singleton
 
                         // f-stop
-                    match exifMetadata.FStopOpt with
-                        | Some fStop ->
-                            StatusBar.createSelectableTextBlock
-                                $"f/{Decimal.toString fStop}" "F-stop"
-                        | None -> ()
+                    yield! createStatusItemsOpt
+                        exif.FStopOpt
+                        [ "F-stop" ]
+                        (fun fStop ->
+                            [ $"f/{Decimal.toString fStop}" ])
 
                         // exposure time
-                    match exifMetadata.ExposureTimeOpt with
-                        | Some time ->
+                    yield! createStatusItemsOpt
+                        exif.ExposureTimeOpt
+                        [ "Exposure time" ]
+                        (fun time ->
                             let str =
                                 if time < 1m then
                                     $"1/{Decimal.toString (1m/time)}"
                                 else Decimal.toString time
-                            StatusBar.createSelectableTextBlock
-                                $"{str} sec." "Exposure time"
-                        | None -> ()
+                            [ $"{str} sec." ])
 
                         // ISO rating
-                    match exifMetadata.IsoRatingOpt with
-                        | Some iso ->
-                            StatusBar.createSelectableTextBlock
-                                $"ISO {Decimal.toString iso}" "ISO speed rating"
-                        | None -> ()
+                    yield! createStatusItemsOpt
+                        exif.IsoRatingOpt
+                        [ "ISO speed rating" ]
+                        (fun iso ->
+                            [ $"ISO {Decimal.toString iso}" ])
 
                         // focal length
-                    match exifMetadata.FocalLengthOpt with
-                        | Some len ->
+                    yield! createStatusItemsOpt
+                        exif.FocalLengthOpt
+                        [
+                            "Focal length"
+                            "Full-frame focal length equivalent"
+                        ]
+                        (fun len ->
+                            seq {
 
-                            StatusBar.createSelectableTextBlock
-                                $"{Decimal.toString len} mm" "Focal length"
+                                $"{Decimal.toString len} mm"
 
-                            match exifMetadata.FocalLengthFullFrameOpt with
-                                | Some len35 when len35 <> len ->
-                                    StatusBar.createSelectableTextBlock
-                                        $"{Decimal.toString len35} mm equiv."
-                                        "Full-frame focal length equivalent"
-                                | _ -> ()
-
-                        | None -> ()
+                                match exif.FocalLengthFullFrameOpt with
+                                    | Some len35 when len35 <> len ->
+                                        $"{Decimal.toString len35}"
+                                    | _ -> ()
+                            })
 
                 | None -> ()
         ]
