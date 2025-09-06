@@ -97,8 +97,9 @@ module ImageView =
         let toString (n : decimal) =
             n.ToString("0.##")
 
-    /// Creates zero or more status bar items.
-    let private createStatusItemsOpt
+    /// Creates status bar items from the given optional
+    /// property.
+    let private createPropertyStatusItems
         propertyOpt tooltips mapping =
         propertyOpt
             |> Option.map (fun property ->
@@ -113,32 +114,32 @@ module ImageView =
     let private createExifStatusItems (exif : ExifMetadata) =
         [
                 // date taken
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.DateTakenOpt
                 [ "Date taken" ]
                 (string >> List.singleton)
 
                 // camera make
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.CameraMakeOpt
                 [ "Camera make" ]
                 List.singleton
 
                 // camera model
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.CameraModelOpt
                 [ "Camera model" ]
                 List.singleton
 
                 // f-stop
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.FStopOpt
                 [ "F-stop" ]
                 (fun fStop ->
                     [ $"f/{Decimal.toString fStop}" ])
 
                 // exposure time
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.ExposureTimeOpt
                 [ "Exposure time" ]
                 (fun time ->
@@ -149,14 +150,14 @@ module ImageView =
                     [ $"{str} sec." ])
 
                 // ISO rating
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.IsoRatingOpt
                 [ "ISO speed rating" ]
                 (fun iso ->
                     [ $"ISO {Decimal.toString iso}" ])
 
                 // focal length
-            yield! createStatusItemsOpt
+            yield! createPropertyStatusItems
                 exif.FocalLengthOpt
                 [
                     "Focal length"
