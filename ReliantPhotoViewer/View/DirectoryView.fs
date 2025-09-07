@@ -16,7 +16,7 @@ module DirectoryView =
         Toolbar.create [
             Button.createIcon
                 Icon.folderOpen
-                "Open directory"
+                "Open folder"
                 (FileSystemView.onSelectDirectory dispatch)
         ]
 
@@ -28,7 +28,7 @@ module DirectoryView =
                 // directory path
             StatusBar.createSelectableTextBlock
                 (DirectoryInfo.normalizedPath dir)
-                "Directory path"
+                "Folder path"
 
                 // number of images
             TextBlock.create [
