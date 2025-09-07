@@ -170,7 +170,6 @@ module ImageMessage =
             BitmapSize = bitmapSize
             SavedZoomOpt = None
             PanOpt = None
-            FullScreen = false
         }
 
     /// Tries to load an image from the given file.
@@ -338,11 +337,14 @@ module ImageMessage =
         model, Cmd.none
 
     /// Turns full-screen mode on or off.
-    let private onFullScreen flag = function
-        | Loaded loaded ->
-            Loaded { loaded with FullScreen = flag },
-            Cmd.none
-        | _ -> failwith "Invalid state"
+    let private onFullScreen flag model =
+        let model =
+            let inited =
+                { (model ^. ImageModel.Initialized_) with
+                    FullScreen = flag }
+            model
+                |> inited ^= ImageModel.Initialized_
+        model, Cmd.none
 
     /// Deletes the current image.
     let private onDeleteFile model =

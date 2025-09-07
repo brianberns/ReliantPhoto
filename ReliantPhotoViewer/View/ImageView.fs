@@ -442,7 +442,8 @@ module ImageView =
                 // full screen?
             let fullScreen =
                 match model with
-                    | Loaded loaded -> loaded.FullScreen
+                    | Initialized_ inited ->
+                        inited.FullScreen
                     | _ -> false
 
                 // content

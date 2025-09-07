@@ -48,7 +48,11 @@ module Window =
             Top = window.Position.Y
             Width = window.Width
             Height = window.Height
-            Maximized = window.WindowState = WindowState.Maximized
+            Maximized =
+                match window.WindowState with
+                    | WindowState.Maximized
+                    | WindowState.FullScreen -> true
+                    | _ -> false
             Directory = directory.FullName
         }
 
@@ -81,22 +85,36 @@ module Window =
                 | :? 't as child -> Some child
                 | child -> tryFindChild child)
 
+    /// Saved window state.
+    let mutable private savedWindowStateOpt = None
+
     /// Sets the window state.
-    let private setWindowState (window : Window) = function
-        | ImageMode (_, Loaded loaded)
-            when loaded.FullScreen ->
+    let private setWindowState (window : Window) model =
+        match model, savedWindowStateOpt with
 
-                // switch to full screen
-            window.WindowState <- WindowState.FullScreen
+            | ImageMode (_, Initialized_ inited), None
+                when inited.FullScreen ->
 
-                // hack: grab focus so Esc key binding works
-            Dispatcher.UIThread.Post(fun () ->
-                tryFindChild<Border> window
-                    |> Option.iter (fun control ->
-                        control.Focus() |> ignore))
-        | _ ->
-            window.WindowState <- WindowState.Normal
-        
+                    // switch to full screen
+                savedWindowStateOpt <- Some window.WindowState
+                window.WindowState <- WindowState.FullScreen
+
+            | ImageMode (_, Initialized_ inited), Some state
+                when not inited.FullScreen ->
+
+                    // restore previous state
+                savedWindowStateOpt <- None
+                window.WindowState <- state
+
+            | _ -> ()
+
+            // hack: grab focus so Esc key binding works
+        if window.WindowState = WindowState.FullScreen
+            && isNull (window.FocusManager.GetFocusedElement()) then
+                Dispatcher.UIThread.Post(fun () ->
+                    tryFindChild<Border> window
+                        |> Option.iter (fun control ->
+                            control.Focus() |> ignore))
 
     /// Subscribes to effects.
     let subscribe window model =

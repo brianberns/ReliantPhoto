@@ -55,6 +55,9 @@ type InitializedContainer =
 
         /// Zoom details.
         Zoom : Zoom
+
+        /// Full-screen mode.
+        FullScreen : bool
     }
 
     /// Container size lens.
@@ -96,6 +99,7 @@ module InitializedContainer =
             ContainerSize = containerSize
             OffsetOpt = None
             Zoom = dummyZoom
+            FullScreen = false
         }
 
     /// Get locked zoom scale, if any.
@@ -188,9 +192,6 @@ type LoadedImage =
 
         /// Pan location, when panning.
         PanOpt : Option<Pan>
-
-        /// Full-screen mode.
-        FullScreen : bool
     }
 
     /// Situated file lens.
