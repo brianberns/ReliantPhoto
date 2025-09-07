@@ -74,8 +74,8 @@ module ImageMessage =
             // keep zoom scale?
         let zoomScaleOpt =
             loaded
-                ^. LoadedImage.Initialized_
-                |> InitializedContainer.tryGetLockedZoomScale
+                ^. LoadedImage.Sized_
+                |> SizedContainer.tryGetLockedZoomScale
 
             // get layout for new container size
         let offset, zoomScale =
@@ -100,8 +100,8 @@ module ImageMessage =
 
                     // creation: set container size
                 | Uninitialized ->
-                    Initialized (
-                        InitializedContainer.create containerSize)
+                    Sized (
+                        SizedContainer.create containerSize)
 
                     // resize: update container size and layout
                 | Loaded loaded ->
@@ -122,16 +122,16 @@ module ImageMessage =
     let private onUnloadImage model =
         let model =
             match model with
-                | Initialized_ inited ->
-                    inited.ContainerSize   // keep only the container size
-                        |> InitializedContainer.create
-                        |> Initialized
+                | Sized_ sized ->
+                    sized.ContainerSize   // keep only the container size
+                        |> SizedContainer.create
+                        |> Sized
                 | _ -> model
         model, Cmd.none
 
     /// Applies default layout rules to the given bitmap.
     let private layoutImage
-        (dpiScale : float) file (bitmap : Bitmap) inited =
+        (dpiScale : float) file (bitmap : Bitmap) sized =
 
             // get size of bitmap, adjusted for DPI scale
         let bitmapSize =
@@ -139,15 +139,15 @@ module ImageMessage =
 
             // keep zoom scale and offset?
         let zoomScaleOpt =
-            InitializedContainer.tryGetLockedZoomScale inited
+            SizedContainer.tryGetLockedZoomScale sized
         let offsetOpt =
-            if zoomScaleOpt.IsSome then inited.OffsetOpt
+            if zoomScaleOpt.IsSome then sized.OffsetOpt
             else None
 
             // layout image
         let offset, zoomScale =
             ImageLayout.getImageLayout
-                inited.ContainerSize
+                sized.ContainerSize
                 bitmapSize
                 offsetOpt
                 zoomScaleOpt
@@ -156,16 +156,16 @@ module ImageMessage =
         let zoomScaleLock = (Some zoomScale = zoomScaleOpt)
 
             // update offset/zoom
-        let inited =
+        let sized =
             {
-                inited with
+                sized with
                     OffsetOpt = Some offset
                     Zoom =
                         Zoom.create zoomScale zoomScaleLock
             }
 
         {
-            Situated = SituatedFile.create file inited
+            Situated = SituatedFile.create file sized
             Bitmap = bitmap
             BitmapSize = bitmapSize
             SavedZoomOpt = None
@@ -202,7 +202,7 @@ module ImageMessage =
     /// Handles a loaded image.
     let private onImageLoaded dpiScale file bitmap model =
         let model =
-            model ^. ImageModel.Initialized_
+            model ^. ImageModel.Sized_
                 |> layoutImage dpiScale file bitmap
                 |> Loaded
         model, situate file
@@ -211,7 +211,7 @@ module ImageMessage =
     let private onHandleLoadError file message model =
         let model =
             let situated =
-                model ^. ImageModel.Initialized_
+                model ^. ImageModel.Sized_
                     |> SituatedFile.create file
             LoadError {
                 Situated = situated
@@ -339,11 +339,11 @@ module ImageMessage =
     /// Turns full-screen mode on or off.
     let private onFullScreen flag model =
         let model =
-            let inited =
-                { (model ^. ImageModel.Initialized_) with
+            let sized =
+                { (model ^. ImageModel.Sized_) with
                     FullScreen = flag }
             model
-                |> inited ^= ImageModel.Initialized_
+                |> sized ^= ImageModel.Sized_
         model, Cmd.none
 
     /// Deletes the current image.

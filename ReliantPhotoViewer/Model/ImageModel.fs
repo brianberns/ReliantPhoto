@@ -44,8 +44,8 @@ module Zoom =
     let actualSize =
         create 1.0 true
 
-/// Initialized container.
-type InitializedContainer =
+/// Sized container.
+type SizedContainer =
     {
         /// Container size.
         ContainerSize : Size
@@ -63,37 +63,37 @@ type InitializedContainer =
     /// Container size lens.
     static member ContainerSize_ : Lens<_, _> =
         _.ContainerSize,
-        fun containerSize inited ->
-            { inited with ContainerSize = containerSize }
+        fun containerSize sized ->
+            { sized with ContainerSize = containerSize }
 
     /// Offset prism.
     static member Offset_ : Prism<_, _> =
         _.OffsetOpt,
-        fun offset inited ->
-            { inited with OffsetOpt = Some offset }
+        fun offset sized ->
+            { sized with OffsetOpt = Some offset }
 
     /// Zoom lens. (Hah!)
     static member Zoom_ : Lens<_, _> =
         _.Zoom,
-        fun zoom inited ->
-            { inited with Zoom = zoom }
+        fun zoom sized ->
+            { sized with Zoom = zoom }
 
     /// Zoom scale lens.
     static member ZoomScale_ =
-        InitializedContainer.Zoom_
+        SizedContainer.Zoom_
             >-> Zoom.Scale_
 
     /// Zoom scale lock lens.
     static member ZoomScaleLock_ =
-        InitializedContainer.Zoom_
+        SizedContainer.Zoom_
             >-> Zoom.ScaleLock_
 
-module InitializedContainer =
+module SizedContainer =
 
     /// Dummy zoom.
     let private dummyZoom = Zoom.create 0.0 false
 
-    /// Creates an initialized container.
+    /// Creates a sized container.
     let create containerSize =
         {
             ContainerSize = containerSize
@@ -103,9 +103,9 @@ module InitializedContainer =
         }
 
     /// Get locked zoom scale, if any.
-    let tryGetLockedZoomScale inited =
-        if inited.Zoom.ScaleLock then
-            Some inited.Zoom.Scale
+    let tryGetLockedZoomScale sized =
+        if sized.Zoom.ScaleLock then
+            Some sized.Zoom.Scale
         else None
 
 /// Situation of a file in a directory.
@@ -139,8 +139,8 @@ module Situation =
 /// A file situated in a directory.
 type SituatedFile =
     {
-        /// Initialized container.
-        Initialized : InitializedContainer
+        /// Sized container.
+        Sized : SizedContainer
 
         /// File.
         File : FileInfo
@@ -149,18 +149,18 @@ type SituatedFile =
         Situation : Situation
     }
 
-    /// Initialized container lens.
-    static member Initialized_ : Lens<_, _> =
-        _.Initialized,
-        fun inited loaded ->
-            { loaded with Initialized = inited }
+    /// Sized container lens.
+    static member Sized_ : Lens<_, _> =
+        _.Sized,
+        fun sized loaded ->
+            { loaded with Sized = sized }
 
 module SituatedFile =
 
     /// Creates a situated file with unknown situation.
-    let create file inited =
+    let create file sized =
         {
-            Initialized = inited
+            Sized = sized
             File = file
             Situation = Situation.unknown
         }
@@ -200,35 +200,35 @@ type LoadedImage =
         fun situated loaded ->
             { loaded with Situated = situated }
 
-    /// Initialized container lens.
-    static member Initialized_ =
+    /// Sized container lens.
+    static member Sized_ =
         LoadedImage.Situated_
-            >-> SituatedFile.Initialized_
+            >-> SituatedFile.Sized_
 
     /// Container size lens.
     static member ContainerSize_ =
-        LoadedImage.Initialized_
-            >-> InitializedContainer.ContainerSize_
+        LoadedImage.Sized_
+            >-> SizedContainer.ContainerSize_
 
     /// Zoom lens.
     static member Zoom_ =
-        LoadedImage.Initialized_
-            >-> InitializedContainer.Zoom_
+        LoadedImage.Sized_
+            >-> SizedContainer.Zoom_
 
     /// Zoom scale lens.
     static member ZoomScale_ =
-        LoadedImage.Initialized_
-            >-> InitializedContainer.ZoomScale_
+        LoadedImage.Sized_
+            >-> SizedContainer.ZoomScale_
 
     /// Zoom scale lock lens.
     static member ZoomScaleLock_ =
-        LoadedImage.Initialized_
-            >-> InitializedContainer.ZoomScaleLock_
+        LoadedImage.Sized_
+            >-> SizedContainer.ZoomScaleLock_
 
     /// Offset prism.
     static member Offset_ =
-        LoadedImage.Initialized_
-            >-> InitializedContainer.Offset_
+        LoadedImage.Sized_
+            >-> SizedContainer.Offset_
 
     /// Loaded image offset.
     member this.Offset =
@@ -252,18 +252,18 @@ type LoadError =
         fun situated errored ->
             { errored with Situated = situated }
 
-    /// Initialized container lens.
-    static member Initialized_ =
+    /// Sized container lens.
+    static member Sized_ =
         LoadError.Situated_
-            >-> SituatedFile.Initialized_
+            >-> SituatedFile.Sized_
 
 type ImageModel =
 
     /// Uninitialized.
     | Uninitialized
 
-    /// Initialized container.
-    | Initialized of InitializedContainer
+    /// Sized container.
+    | Sized of SizedContainer
 
     /// Situated file.
     | Situated of SituatedFile
@@ -274,51 +274,51 @@ type ImageModel =
     /// Image could not be loaded.
     | LoadError of LoadError
 
-    /// Initialized container prism.
-    static member TryInitialized_ : Prism<_, _> =
+    /// Sized container prism.
+    static member TrySized_ : Prism<_, _> =
 
         (function
-            | Initialized inited -> Some inited
+            | Sized sized -> Some sized
             | Situated situated ->
-                Some (situated ^.SituatedFile.Initialized_)
+                Some (situated ^.SituatedFile.Sized_)
             | Loaded loaded ->
-                Some (loaded ^. LoadedImage.Initialized_)
+                Some (loaded ^. LoadedImage.Sized_)
             | LoadError errored ->
-                Some (errored ^. LoadError.Initialized_)
+                Some (errored ^. LoadError.Sized_)
             | Uninitialized -> None),
 
-        (fun inited -> function
-            | Initialized _ -> Initialized inited
+        (fun sized -> function
+            | Sized _ -> Sized sized
             | Situated situated ->
                 situated
-                    |> inited ^= SituatedFile.Initialized_
+                    |> sized ^= SituatedFile.Sized_
                     |> Situated
             | Loaded loaded ->
                 loaded
-                    |> inited ^= LoadedImage.Initialized_
+                    |> sized ^= LoadedImage.Sized_
                     |> Loaded
             | LoadError errored ->
                 errored
-                    |> inited ^= LoadError.Initialized_
+                    |> sized ^= LoadError.Sized_
                     |> LoadError
             | Uninitialized -> Uninitialized)
 
-    /// Initialized container lens.
-    static member Initialized_ : Lens<_, _> =
+    /// Sized container lens.
+    static member Sized_ : Lens<_, _> =
 
         (fun model ->
-            match model ^. ImageModel.TryInitialized_ with
-                | Some inited -> inited
+            match model ^. ImageModel.TrySized_ with
+                | Some sized -> sized
                 | None -> failwith "Invalid state"),
 
-        (fun inited model ->
+        (fun sized model ->
             model
-                |> inited ^= ImageModel.TryInitialized_)
+                |> sized ^= ImageModel.TrySized_)
 
     /// Container size lens.
     static member ContainerSize_ =
-        ImageModel.Initialized_
-            >-> InitializedContainer.ContainerSize_
+        ImageModel.Sized_
+            >-> SizedContainer.ContainerSize_
 
     /// Situated file prism.
     static member TrySituated_ : Prism<_, _> =
@@ -363,9 +363,9 @@ module ImageModel =
 [<AutoOpen>]
 module ImageModelExt =
 
-    /// Initialized container active pattern.
-    let (|Initialized_|_|) model =
-        model ^. ImageModel.TryInitialized_
+    /// Sized container active pattern.
+    let (|Sized_|_|) model =
+        model ^. ImageModel.TrySized_
 
     /// Situated file active pattern.
     let (|Situated_|_|) model =

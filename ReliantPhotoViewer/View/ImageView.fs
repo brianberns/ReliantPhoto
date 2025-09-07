@@ -214,7 +214,7 @@ module ImageView =
             match model with
 
                 | Uninitialized
-                | Initialized _ ->
+                | Sized _ ->
                     StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
                         "Loading..." ""
                         :> IView
@@ -435,15 +435,15 @@ module ImageView =
         DockPanel.create [
 
                 // loading?
-            if model.IsUninitialized || model.IsInitialized then
+            if model.IsUninitialized || model.IsSized then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background Brushes.Transparent   // needed to force the cursor change for some reason
 
                 // full screen?
             let fullScreen =
                 match model with
-                    | Initialized_ inited ->
-                        inited.FullScreen
+                    | Sized_ sized ->
+                        sized.FullScreen
                     | _ -> false
 
                 // content

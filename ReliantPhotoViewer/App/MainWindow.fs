@@ -92,15 +92,15 @@ module Window =
     let private setWindowState (window : Window) model =
         match model, savedWindowStateOpt with
 
-            | ImageMode (_, Initialized_ inited), None
-                when inited.FullScreen ->
+            | ImageMode (_, Sized_ sized), None
+                when sized.FullScreen ->
 
                     // switch to full screen
                 savedWindowStateOpt <- Some window.WindowState
                 window.WindowState <- WindowState.FullScreen
 
-            | ImageMode (_, Initialized_ inited), Some state
-                when not inited.FullScreen ->
+            | ImageMode (_, Sized_ sized), Some state
+                when not sized.FullScreen ->
 
                     // restore previous state
                 savedWindowStateOpt <- None
