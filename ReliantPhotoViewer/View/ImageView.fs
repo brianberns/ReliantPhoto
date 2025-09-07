@@ -213,7 +213,7 @@ module ImageView =
         StatusBar.create [
             match model with
 
-                | Uninitialized
+                | Initial
                 | Sized _ ->
                     StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
                         "Loading..." ""

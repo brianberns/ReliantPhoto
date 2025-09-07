@@ -8,6 +8,19 @@ open Avalonia.Media.Imaging
 open Aether
 open Aether.Operators
 
+/// Initialized model.
+type Initial =
+    {
+        /// System DPI scale.
+        DpiScale : float
+    }
+
+    /// DPI scale lens.
+    static member DpiScale_ : Lens<_, _> =
+        _.DpiScale,
+        fun dpiScale initial ->
+            { initial with DpiScale = dpiScale }
+
 /// Zoom details.
 type Zoom =
     {
@@ -47,6 +60,9 @@ module Zoom =
 /// Sized container.
 type SizedContainer =
     {
+        /// Initialized model.
+        Initial : Initial
+
         /// Container size.
         ContainerSize : Size
 
@@ -88,14 +104,26 @@ type SizedContainer =
         SizedContainer.Zoom_
             >-> Zoom.ScaleLock_
 
+    /// Initialized model lens.
+    static member Initial_ : Lens<_, _> =
+        _.Initial,
+        fun initial sized ->
+            { sized with Initial = initial }
+
+    /// DPI scale lens.
+    static member DpiScale_ =
+        SizedContainer.Initial_
+            >-> Initial.DpiScale_
+
 module SizedContainer =
 
     /// Dummy zoom.
     let private dummyZoom = Zoom.create 0.0 false
 
     /// Creates a sized container.
-    let create containerSize =
+    let create initial containerSize =
         {
+            Initial = initial
             ContainerSize = containerSize
             OffsetOpt = None
             Zoom = dummyZoom
@@ -259,8 +287,8 @@ type LoadError =
 
 type ImageModel =
 
-    /// Uninitialized.
-    | Uninitialized
+    /// Initial state.
+    | Initialized of Initial
 
     /// Sized container.
     | Sized of SizedContainer
@@ -285,7 +313,7 @@ type ImageModel =
                 Some (loaded ^. LoadedImage.Sized_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Sized_)
-            | Uninitialized -> None),
+            | Initialized _ -> None),
 
         (fun sized -> function
             | Sized _ -> Sized sized
@@ -301,7 +329,8 @@ type ImageModel =
                 errored
                     |> sized ^= LoadError.Sized_
                     |> LoadError
-            | Uninitialized -> Uninitialized)
+            | Initialized _ as model ->
+                model)
 
     /// Sized container lens.
     static member Sized_ : Lens<_, _> =
@@ -358,7 +387,7 @@ type ImageModel =
 module ImageModel =
 
     /// Initial model.
-    let init () = Uninitialized
+    let init dpiScale = Initialized dpiScale
 
 [<AutoOpen>]
 module ImageModelExt =

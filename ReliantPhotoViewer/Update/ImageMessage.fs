@@ -99,9 +99,10 @@ module ImageMessage =
             match model with
 
                     // creation: set container size
-                | Uninitialized ->
+                | Initialized initial ->
                     Sized (
-                        SizedContainer.create containerSize)
+                        SizedContainer.create
+                            initial containerSize)
 
                     // resize: update container size and layout
                 | Loaded loaded ->
@@ -130,11 +131,11 @@ module ImageMessage =
         model, Cmd.none
 
     /// Applies default layout rules to the given bitmap.
-    let private layoutImage
-        (dpiScale : float) file (bitmap : Bitmap) sized =
+    let private layoutImage file (bitmap : Bitmap) sized =
 
             // get size of bitmap, adjusted for DPI scale
         let bitmapSize =
+            let dpiScale = sized ^. SizedContainer.DpiScale_
             bitmap.PixelSize.ToSize(dpiScale)
 
             // keep zoom scale and offset?
