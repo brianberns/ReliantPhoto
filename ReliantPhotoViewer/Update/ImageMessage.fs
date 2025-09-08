@@ -12,6 +12,9 @@ open Aether.Operators
 /// Messages that can update the image model.
 type ImageMessage =
 
+    /// DPI scale has changed.
+    | DpiChanged of double
+
     /// Size of the image container has been set or updated.
     | ContainerSized of Size
 
@@ -49,6 +52,13 @@ type ImageMessage =
     | DeleteFile
 
 module ImageMessage =
+
+    /// Updates DPI scale.
+    let private onDpiChanged dpiScale model =
+        let model =
+            model
+                |> dpiScale ^= ImageModel.DpiScale_
+        model, Cmd.none
 
     /// Converts the given image result to a message.
     let ofResult file (result : ImageResult) =
@@ -370,6 +380,10 @@ module ImageMessage =
     /// Updates the given model based on the given message.
     let update message model =
         match message with
+
+                // update DPI scale
+            | DpiChanged dpiScale ->
+                onDpiChanged dpiScale model
 
                 // set/update container size
             | ContainerSized containerSize ->

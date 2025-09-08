@@ -116,6 +116,29 @@ module Window =
                         |> Option.iter (fun control ->
                             control.Focus() |> ignore))
 
+    /// Watches for DPI scale changes.
+    let watchDpiScale (window : Window) : Subscribe<_> =
+        fun dispatch ->
+
+                // watch for changes
+            window.ScalingChanged.Add(fun _ ->
+                window.RenderScaling
+                    |> DpiChanged
+                    |> MkImageMessage
+                    |> dispatch)
+
+                // cleanup
+            {
+                new IDisposable with
+                    member _.Dispose() = ()
+            }
+
+    /// Subscribes to DPI scale changes.
+    let subscribeDpiScale window : Sub<_> =
+        [
+            [ "DpiScale" ], watchDpiScale window
+        ]
+
     /// Subscribes to effects.
     let subscribe window model =
 
@@ -124,13 +147,19 @@ module Window =
         setWindowTitle window model
         setWindowState window model
 
+            // DPI scale subscription
+        let dpiSub = subscribeDpiScale window
+
             // Elmish subscription
-        match Model.tryGetDirectoryModel model with
-            | Some dirModel ->
-                dirModel
-                    |> DirectoryMessage.subscribe
-                    |> Sub.map "directory" MkDirectoryMessage
-            | None -> []
+        let dirSub =
+            match Model.tryGetDirectoryModel model with
+                | Some dirModel ->
+                    dirModel
+                        |> DirectoryMessage.subscribe
+                        |> Sub.map "directory" MkDirectoryMessage
+                | None -> []
+
+        Sub.batch [ dpiSub; dirSub ]
 
     /// Gets initial directory and file.
     let getInitialArg (args : _[]) =
@@ -179,10 +208,8 @@ module Window =
         Program.mkProgram init update view
 
     /// Starts the Elmish MVU loop.
-    let run window arg =
-        let dpiScale =
-            TopLevel.GetTopLevel(window).RenderScaling
-        makeProgram dpiScale
+    let run (window : HostWindow) arg =
+        makeProgram window.RenderScaling
             |> Program.withSubscription (
                 subscribe window)
             |> Program.withHost window

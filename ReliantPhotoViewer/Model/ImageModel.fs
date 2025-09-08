@@ -344,6 +344,11 @@ type ImageModel =
             model
                 |> sized ^= ImageModel.TrySized_)
 
+    /// DPI scale lens.
+    static member DpiScale_ =
+        ImageModel.Sized_
+            >-> SizedContainer.DpiScale_
+
     /// Container size lens.
     static member ContainerSize_ =
         ImageModel.Sized_
