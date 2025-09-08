@@ -142,8 +142,8 @@ module Window =
     /// Creates Elmish program.
     let private makeProgram dpiScale =
 
-        let init = Message.init
-        let update = Message.update dpiScale
+        let init = Message.init dpiScale
+        let update = Message.update
         let view = View.view
 
 #if DEBUG
