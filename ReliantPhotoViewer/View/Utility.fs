@@ -60,7 +60,7 @@ module Icon =
     let delete = create "delete"
 
     /// File open.
-    let fileOpen = create "file_open"
+    let fileOpen = create "folder_open"   // using a folder icon is conventional
 
     /// Folder open.
     let folderOpen = create "folder_open"

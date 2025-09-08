@@ -20,17 +20,17 @@ module ImageView =
     let private createToolbar model dispatch =
         Toolbar.create [
 
-                // switch to directory mode
-            Button.createIcon
-                Icon.folderEye
-                "View folder contents"
-                (fun _ -> dispatch SwitchToDirectory)
-
                 // open file
             Button.createIcon
                 Icon.fileOpen
                 "Open image file"
                 (FileSystemView.onSelectImage dispatch)
+
+                // switch to directory mode
+            Button.createIcon
+                Icon.folderEye
+                "View folder contents"
+                (fun _ -> dispatch SwitchToDirectory)
 
                 // delete file
             Button.createIcon
