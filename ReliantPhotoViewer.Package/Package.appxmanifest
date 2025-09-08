@@ -9,7 +9,7 @@
   <Identity
     Name="ReliantPhotoViewer"
     Publisher="CN=bernsrite.com"
-    Version="1.0.15.0" />
+    Version="1.0.17.0" />
 
   <Properties>
     <DisplayName>Reliant Photo Viewer</DisplayName>

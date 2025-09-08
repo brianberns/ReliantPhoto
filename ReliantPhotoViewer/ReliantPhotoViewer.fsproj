@@ -12,9 +12,11 @@
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Platforms>AnyCPU;x64</Platforms>
 	<PublishSingleFile>true</PublishSingleFile>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="app.manifest" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Model\ImageSharp.fs" />
     <Compile Include="Model\ImageFile.fs" />
