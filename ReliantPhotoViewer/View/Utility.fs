@@ -69,7 +69,7 @@ module Icon =
     let fullScreen = create "fullscreen"
 
     /// Folder eye.
-    let folderEye = create "folder_eye"
+    let viewFolder = create "dashboard_2"
 
     /// View real size.
     let viewRealSize = create "view_real_size"

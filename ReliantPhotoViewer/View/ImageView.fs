@@ -28,8 +28,8 @@ module ImageView =
 
                 // switch to directory mode
             Button.createIcon
-                Icon.folderEye
-                "View folder contents"
+                Icon.viewFolder
+                "View thumbnails"
                 (fun _ -> dispatch SwitchToDirectory)
 
                 // delete file
