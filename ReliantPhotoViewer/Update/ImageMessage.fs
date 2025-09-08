@@ -12,9 +12,6 @@ open Aether.Operators
 /// Messages that can update the image model.
 type ImageMessage =
 
-    /// DPI scale has changed.
-    | DpiChanged of double
-
     /// Size of the image container has been set or updated.
     | ContainerSized of Size
 
@@ -51,14 +48,10 @@ type ImageMessage =
     /// Delete the current file.
     | DeleteFile
 
-module ImageMessage =
+    /// DPI scale has changed.
+    | DpiChanged of double
 
-    /// Updates DPI scale.
-    let private onDpiChanged dpiScale model =
-        let model =
-            model
-                |> dpiScale ^= ImageModel.DpiScale_
-        model, Cmd.none
+module ImageMessage =
 
     /// Converts the given image result to a message.
     let ofResult file (result : ImageResult) =
@@ -130,13 +123,18 @@ module ImageMessage =
                 | _ -> model
         model, Cmd.none
 
+    /// Computes size of the given bitmap, adjusted for DPI.
+    let private getBitmapSize
+        (dpiScale : float) (bitmap : Bitmap) =
+        bitmap.PixelSize.ToSize(dpiScale)
+
     /// Applies default layout rules to the given bitmap.
     let private layoutImage file (bitmap : Bitmap) sized =
 
-            // get size of bitmap, adjusted for DPI scale
+            // get bitmap size
         let bitmapSize =
             let dpiScale = sized ^. SizedContainer.DpiScale_
-            bitmap.PixelSize.ToSize(dpiScale)
+            getBitmapSize dpiScale bitmap
 
             // keep zoom scale and offset?
         let zoomScaleOpt =
@@ -372,13 +370,30 @@ module ImageMessage =
                 Message = exn.Message
             }, Cmd.none
 
+    /// Updates DPI scale.
+    let private onDpiChanged dpiScale model =
+
+            // update DPI scale
+        let model =
+            model
+                |> dpiScale ^= ImageModel.DpiScale_
+
+            // update bitmap size?
+        let model =
+            match model with
+                | Loaded loaded ->
+                    let bitmapSize =
+                        getBitmapSize dpiScale loaded.Bitmap
+                    Loaded {
+                        loaded with
+                            BitmapSize = bitmapSize }
+                | _ -> model
+
+        model, Cmd.none
+
     /// Updates the given model based on the given message.
     let update message model =
         match message with
-
-                // update DPI scale
-            | DpiChanged dpiScale ->
-                onDpiChanged dpiScale model
 
                 // set/update container size
             | ContainerSized containerSize ->
@@ -427,3 +442,7 @@ module ImageMessage =
                 // delete file
             | DeleteFile ->
                 onDeleteFile model
+
+                // update DPI scale
+            | DpiChanged dpiScale ->
+                onDpiChanged dpiScale model
