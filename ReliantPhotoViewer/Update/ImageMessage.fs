@@ -119,11 +119,6 @@ module ImageMessage =
                         |> containerSize ^= ImageModel.ContainerSize_
         model, Cmd.none
 
-    /// Starts loading an image from the given file.
-    let private onLoadImage file (model : ImageModel) =
-        let cmd = loadImageCommand file
-        model, cmd
-
     /// Unloads the current image, if any.
     let private onUnloadImage model =
         let model =
