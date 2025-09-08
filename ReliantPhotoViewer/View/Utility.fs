@@ -99,6 +99,7 @@ module Button =
             Button.dock dock
             Button.height buttonSize
             Button.minWidth buttonSize
+            Button.margin (5.0, 0.0)
             Button.horizontalAlignment HorizontalAlignment.Stretch
             Button.verticalAlignment VerticalAlignment.Stretch
             Button.horizontalContentAlignment HorizontalAlignment.Center
