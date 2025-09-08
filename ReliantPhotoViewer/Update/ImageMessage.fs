@@ -64,8 +64,8 @@ module ImageMessage =
             (ofResult file)
 
     /// Initializes model to start loading the given file.
-    let init file =
-        ImageModel.init (),
+    let init dpiScale file =
+        ImageModel.init dpiScale,
         loadImageCommand file
 
     /// Updates layout due to container resize.
@@ -125,7 +125,7 @@ module ImageMessage =
             match model with
                 | Sized_ sized ->
                     sized.ContainerSize   // keep only the container size
-                        |> SizedContainer.create
+                        |> SizedContainer.create sized.Initial
                         |> Sized
                 | _ -> model
         model, Cmd.none
@@ -201,10 +201,10 @@ module ImageMessage =
             } |> Async.Start)
 
     /// Handles a loaded image.
-    let private onImageLoaded dpiScale file bitmap model =
+    let private onImageLoaded file bitmap model =
         let model =
             model ^. ImageModel.Sized_
-                |> layoutImage dpiScale file bitmap
+                |> layoutImage file bitmap
                 |> Loaded
         model, situate file
 
@@ -373,7 +373,7 @@ module ImageMessage =
             }, Cmd.none
 
     /// Updates the given model based on the given message.
-    let update dpiScale message model =
+    let update message model =
         match message with
 
                 // set/update container size
@@ -382,7 +382,7 @@ module ImageMessage =
 
                 // finish loading an image
             | ImageLoaded (file, bitmap) ->
-                onImageLoaded dpiScale file bitmap model
+                onImageLoaded file bitmap model
 
                 // unload current image
             | UnloadImage ->

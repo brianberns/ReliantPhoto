@@ -387,7 +387,8 @@ type ImageModel =
 module ImageModel =
 
     /// Initial model.
-    let init dpiScale = Initialized dpiScale
+    let init dpiScale =
+        Initialized { DpiScale = dpiScale }
 
 [<AutoOpen>]
 module ImageModelExt =

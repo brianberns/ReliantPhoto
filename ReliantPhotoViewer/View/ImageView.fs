@@ -213,7 +213,7 @@ module ImageView =
         StatusBar.create [
             match model with
 
-                | Initial
+                | Initialized _
                 | Sized _ ->
                     StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
                         "Loading..." ""
@@ -435,7 +435,7 @@ module ImageView =
         DockPanel.create [
 
                 // loading?
-            if model.IsUninitialized || model.IsSized then
+            if model.IsInitialized || model.IsSized then
                 DockPanel.cursor Cursor.wait
                 DockPanel.background Brushes.Transparent   // needed to force the cursor change for some reason
 

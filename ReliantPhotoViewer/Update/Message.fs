@@ -24,21 +24,25 @@ type Message =
 module Message =
 
     /// Initializes directory model.
-    let private initDirectory dir imgModelOpt =
+    let private initDirectory dir imgModel =
         let dirModel, dirCmd = DirectoryMessage.init dir
-        DirectoryMode (dirModel, imgModelOpt),
+        DirectoryMode (dirModel, imgModel),
         Cmd.map MkDirectoryMessage dirCmd
 
     /// Initializes image model.
-    let private initImage file dirModelOpt =
-        let imgModel, imgCmd = ImageMessage.init file
+    let private initImage dpiScale file dirModelOpt =
+        let imgModel, imgCmd =
+            ImageMessage.init dpiScale file
         ImageMode (dirModelOpt, imgModel),
         Cmd.map MkImageMessage imgCmd
 
     /// Initializes model.
-    let init = function
-        | Choice1Of2 dir -> initDirectory dir None
-        | Choice2Of2 file -> initImage file None
+    let init dpiScale = function
+        | Choice1Of2 dir ->
+            let imgModel = ImageModel.init dpiScale
+            initDirectory dir imgModel
+        | Choice2Of2 file ->
+            initImage dpiScale file None
 
     /// Handles a directory message.
     let private onDirectoryMessage dirMsg model =
@@ -50,9 +54,9 @@ module Message =
             Cmd.map MkDirectoryMessage dirCmd
 
         match model with
-            | DirectoryMode (dirModel, imgModelOpt) ->
+            | DirectoryMode (dirModel, imgModel) ->
                 handle dirModel (fun dirModel ->
-                    DirectoryMode (dirModel, imgModelOpt))
+                    DirectoryMode (dirModel, imgModel))
             | ImageMode (Some dirModel, imgModel) ->   // e.g. add/delete file
                 handle dirModel (fun dirModel ->
                     ImageMode (Some dirModel, imgModel))
@@ -60,18 +64,18 @@ module Message =
                 model, Cmd.none
 
     /// Handles an image message.
-    let private onImageMessage dpiScale imgMsg = function
+    let private onImageMessage imgMsg = function
         | ImageMode (dirModelOpt, imgModel) ->
             let imgModel, imgCmd =
-                ImageMessage.update dpiScale imgMsg imgModel
+                ImageMessage.update imgMsg imgModel
             ImageMode (dirModelOpt, imgModel),
             Cmd.map MkImageMessage imgCmd
         | _ -> failwith "Invalid state"
 
     /// Loads the given directory.
     let private onLoadDirectory dir = function
-        | DirectoryMode (_, imgModelOpt) ->
-            initDirectory dir imgModelOpt
+        | DirectoryMode (_, imgModel) ->
+            initDirectory dir imgModel
         | _ -> failwith "Invalid state"
 
     /// Loads the given image.
@@ -91,7 +95,7 @@ module Message =
             loadImage file None imgModel
 
             // switch to image mode
-        | DirectoryMode (dirModel, imgModelOpt) ->
+        | DirectoryMode (dirModel, imgModel) ->
             assert(
                 DirectoryInfo.same
                     file.Directory dirModel.Directory)
@@ -108,21 +112,21 @@ module Message =
             assert(DirectoryInfo.same
                 dirModel.Directory
                 imgModel.File.Directory)
-            DirectoryMode (dirModel, Some imgModel),
+            DirectoryMode (dirModel, imgModel),
             Cmd.none
         | ImageMode (None, imgModel) ->
             initDirectory
                 imgModel.File.Directory
-                (Some imgModel)
+                imgModel
         | _ -> failwith "Invalid state"
 
     /// Updates the given model based on the given message.
-    let update dpiScale message model =
+    let update message model =
         match message with
             | MkDirectoryMessage dirMsg ->
                 onDirectoryMessage dirMsg model
             | MkImageMessage imgMsg ->
-                onImageMessage dpiScale imgMsg model
+                onImageMessage imgMsg model
             | LoadDirectory dir ->
                 onLoadDirectory dir model
             | LoadImage file ->

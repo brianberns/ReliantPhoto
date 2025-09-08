@@ -4,7 +4,7 @@
 type Model =
 
     /// Directory mode.
-    | DirectoryMode of (DirectoryModel * Option<ImageModel>)
+    | DirectoryMode of (DirectoryModel * ImageModel)
 
     /// Image mode.
     | ImageMode of (Option<DirectoryModel> * ImageModel)
@@ -16,7 +16,7 @@ module Model =
         | DirectoryMode (dirModel, _) -> Some dirModel
         | ImageMode (dirModelOpt, _) -> dirModelOpt
 
-    /// Gets the given model's image model, if it exists.
-    let tryGetImageModel = function
-        | DirectoryMode (_, imgModelOpt) -> imgModelOpt
-        | ImageMode (_, imgModel) -> Some imgModel
+    /// Gets the given model's image model.
+    let getImageModel = function
+        | DirectoryMode (_, imgModel)
+        | ImageMode (_, imgModel) -> imgModel
