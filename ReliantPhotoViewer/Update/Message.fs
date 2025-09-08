@@ -23,26 +23,38 @@ type Message =
 
 module Message =
 
-    /// Initializes directory model.
-    let private initDirectory dir imgModel =
-        let dirModel, dirCmd = DirectoryMessage.init dir
-        DirectoryMode (dirModel, imgModel),
-        Cmd.map MkDirectoryMessage dirCmd
+    /// Loads the given directory.
+    let private loadDirectory dir imgModel =
+        let model =
+            DirectoryMode (
+                DirectoryModel.init dir, imgModel)
+        let cmd =
+            DirectoryMessage.LoadDirectory
+                |> MkDirectoryMessage
+                |> Cmd.ofMsg
+        model, cmd
 
-    /// Initializes image model.
-    let private initImage dpiScale file dirModelOpt =
-        let imgModel, imgCmd =
-            ImageMessage.init dpiScale file
-        ImageMode (dirModelOpt, imgModel),
-        Cmd.map MkImageMessage imgCmd
+    /// Loads the given image.
+    let private loadImage file dirModelOpt imgModel =
+        let model = ImageMode (dirModelOpt, imgModel)
+        let cmd =
+            [
+                if imgModel.IsLoaded then
+                    Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
+                ImageMessage.loadImageCommand file
+            ]
+                |> Cmd.batch
+                |> Cmd.map MkImageMessage
+        model, cmd
 
     /// Initializes model.
-    let init dpiScale = function
-        | Choice1Of2 dir ->
-            let imgModel = ImageModel.init dpiScale
-            initDirectory dir imgModel
-        | Choice2Of2 file ->
-            initImage dpiScale file None
+    let init dpiScale choice =
+        let imgModel = ImageModel.init dpiScale   // minimal model to hold DPI scale
+        match choice with
+            | Choice1Of2 dir ->
+                loadDirectory dir imgModel
+            | Choice2Of2 file ->
+                loadImage file None imgModel
 
     /// Handles a directory message.
     let private onDirectoryMessage dirMsg model =
@@ -75,24 +87,14 @@ module Message =
     /// Loads the given directory.
     let private onLoadDirectory dir = function
         | DirectoryMode (_, imgModel) ->
-            initDirectory dir imgModel
+            loadDirectory dir imgModel
         | _ -> failwith "Invalid state"
-
-    /// Loads the given image.
-    let private loadImage file dirModelOpt imgModel =
-        ImageMode (dirModelOpt, imgModel),
-        [
-            Cmd.ofMsg ImageMessage.UnloadImage   // avoid flashing previous image
-            ImageMessage.loadImageCommand file
-        ]
-            |> Cmd.batch
-            |> Cmd.map MkImageMessage
 
     /// Loads the given image.
     let private onLoadImage file = function
 
         | ImageMode (_, imgModel) ->
-            loadImage file None imgModel
+            loadImage file None imgModel   // refresh directory, even if it is the same
 
             // switch to image mode
         | DirectoryMode (dirModel, imgModel) ->
@@ -100,11 +102,7 @@ module Message =
                 DirectoryInfo.same
                     file.Directory dirModel.Directory)
             let dirModelOpt = Some dirModel
-            match imgModelOpt with
-                | Some imgModel ->
-                    loadImage file dirModelOpt imgModel
-                | None ->
-                    initImage file dirModelOpt
+            loadImage file dirModelOpt imgModel
 
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
@@ -115,7 +113,7 @@ module Message =
             DirectoryMode (dirModel, imgModel),
             Cmd.none
         | ImageMode (None, imgModel) ->
-            initDirectory
+            loadDirectory
                 imgModel.File.Directory
                 imgModel
         | _ -> failwith "Invalid state"

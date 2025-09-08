@@ -23,11 +23,6 @@ type DirectoryMessage =
 
 module DirectoryMessage =
 
-    /// Initializes model to start loading the given directory.
-    let init dir =
-        DirectoryModel.init dir,
-        Cmd.ofMsg LoadDirectory
-
     /// Loads images in parallel within each chunk.
     let private loadChunks
         sessionId (token : CancellationToken) chunks : Effect<_> =

@@ -63,11 +63,6 @@ module ImageMessage =
             file
             (ofResult file)
 
-    /// Initializes model to start loading the given file.
-    let init dpiScale file =
-        ImageModel.init dpiScale,
-        loadImageCommand file
-
     /// Updates layout due to container resize.
     let private resize containerSize loaded =
 
