@@ -4,10 +4,10 @@
 type Model =
 
     /// Directory mode.
-    | DirectoryMode of (DirectoryModel * ImageModel)
+    | DirectoryMode of DirectoryModel * ImageModel
 
     /// Image mode.
-    | ImageMode of (Option<DirectoryModel> * ImageModel)
+    | ImageMode of Option<DirectoryModel> * ImageModel
 
 module Model =
 
