@@ -33,9 +33,11 @@ module ImageView =
                 (fun _ -> dispatch SwitchToDirectory)
 
                 // delete file
-            Button.createIcon
+            Button.createIconImpl
                 Icon.delete
                 "Delete file"
+                true
+                Dock.Right
                 (fun _ -> dispatch (MkImageMessage DeleteFile))
 
             match model with
@@ -61,6 +63,7 @@ module ImageView =
                                 Icon.viewRealSize
                                 "Zoom to actual size"
                                 enabled
+                                Dock.Left
                                 (fun _ ->
                                     ZoomTo (Zoom.actualSize, None)
                                         |> MkImageMessage

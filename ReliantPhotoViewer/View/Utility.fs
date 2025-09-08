@@ -86,7 +86,7 @@ module Button =
     let buttonSize = 42
 
     /// Creates an icon button.
-    let createIconImpl icon (tooltip : string) enabled onClick =
+    let createIconImpl icon (tooltip : string) enabled dock onClick =
         Button.create [
             Button.content (
                 Image.create [
@@ -96,6 +96,7 @@ module Button =
             )
             Button.tip tooltip
             Button.isEnabled enabled
+            Button.dock dock
             Button.height buttonSize
             Button.minWidth buttonSize
             Button.horizontalAlignment HorizontalAlignment.Stretch
@@ -109,18 +110,18 @@ module Button =
 
     /// Creates an icon button.
     let createIcon icon tooltip onClick =
-        createIconImpl icon tooltip true onClick
+        createIconImpl
+            icon tooltip true Dock.Left onClick
 
 module Toolbar =
 
     /// Creates a toolbar.
     let create children =
-        StackPanel.create [
-            StackPanel.dock Dock.Top
-            StackPanel.orientation Orientation.Horizontal
-            StackPanel.spacing 5.0
-            StackPanel.margin 5.0
-            StackPanel.children children
+        DockPanel.create [
+            DockPanel.dock Dock.Top
+            DockPanel.margin 5.0
+            DockPanel.lastChildFill false
+            DockPanel.children children
         ]
 
 module StatusBar =
