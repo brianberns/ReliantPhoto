@@ -10,7 +10,6 @@ open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
 open Avalonia.LogicalTree
-open Avalonia.Threading
 
 module Window =
 
