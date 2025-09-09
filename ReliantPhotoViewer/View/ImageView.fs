@@ -234,6 +234,10 @@ module ImageView =
                         "Loading..." ""
                         :> IView
 
+                | Empty _ ->
+                    StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
+                        "No file" ""
+
                 | ImageModel.Situated situated ->
                     assert(situated.Situation.ExifMetadataOpt.IsNone)
                     yield! createFileStatusItems situated

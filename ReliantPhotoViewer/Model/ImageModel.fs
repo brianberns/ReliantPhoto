@@ -307,11 +307,15 @@ type ImageModel =
     /// Image could not be loaded.
     | LoadError of LoadError
 
+    /// No image to show, but not an error.
+    | Empty of SizedContainer
+
     /// Sized container prism.
     static member TrySized_ : Prism<_, _> =
 
         (function
-            | Sized sized -> Some sized
+            | Sized sized
+            | Empty sized -> Some sized
             | Situated situated ->
                 Some (situated ^.SituatedFile.Sized_)
             | Loaded loaded ->
@@ -322,6 +326,7 @@ type ImageModel =
 
         (fun sized -> function
             | Sized _ -> Sized sized
+            | Empty _ -> Empty sized
             | Situated situated ->
                 situated
                     |> sized ^= SituatedFile.Sized_

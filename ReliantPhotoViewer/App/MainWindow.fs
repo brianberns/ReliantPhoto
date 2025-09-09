@@ -56,6 +56,9 @@ module Window =
             Directory = directory.FullName
         }
 
+    /// Default window title.
+    let defaultTitle = "Reliant Photo Viewer"
+
     /// Sets the current directory.
     let private setCurrentDirectory model =
         directory <-
@@ -75,6 +78,8 @@ module Window =
                         dirModel.Directory
                 | ImageMode (_, Situated_ situated) ->
                     situated.File.Name
+                | ImageMode (_, Empty _) ->
+                    defaultTitle
                 | _ -> window.Title
 
     /// Tries to find a child element by type.
@@ -218,7 +223,7 @@ module Window =
 /// Main window.
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
-        Title = "Reliant Photo Viewer",
+        Title = Window.defaultTitle,
         Icon = Window.getIcon (),
         MinWidth = 600.0,
         MinHeight = 400.0)

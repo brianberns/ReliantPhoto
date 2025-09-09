@@ -119,7 +119,7 @@ module ImageMessage =
                 | Sized_ sized ->
                     sized.ContainerSize   // keep only the container size
                         |> SizedContainer.create sized.Initial
-                        |> Sized
+                        |> Empty
                 | _ -> model
         model, Cmd.none
 
@@ -362,7 +362,7 @@ module ImageMessage =
                     | _, Some (file, result)
                     | Some (file, result), _ ->
                         ofResult file result
-                    | None, None -> failwith "No file"   // to-do: handle better?
+                    | None, None -> UnloadImage
             model, Cmd.ofMsg message
 
         with exn ->
