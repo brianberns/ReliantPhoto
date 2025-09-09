@@ -173,6 +173,9 @@ type SituatedFile =
         /// File.
         File : FileInfo
 
+        /// File length in bytes.
+        FileLength : int64
+
         /// File situation.
         Situation : Situation
     }
@@ -190,6 +193,7 @@ module SituatedFile =
         {
             Sized = sized
             File = file
+            FileLength = file.Length   // cache for use in view
             Situation = Situation.unknown
         }
 

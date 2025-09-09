@@ -180,16 +180,17 @@ module ImageView =
         ]
 
     /// Creates status items for the given file.
-    let private createFileStatusItems (file : FileInfo) =
+    let private createFileStatusItems situated =
         [
                 // file name
+            let file = situated.File
             StatusBar.createSelectableTextBlock
                 file.Name "File name"
                 :> IView
 
                 // file size
             let sizeStr =
-                let nBytes = file.Length
+                let nBytes = situated.FileLength
                 if nBytes < kb then $"{nBytes} bytes"
                 elif nBytes < mb then
                     $"%.2f{float nBytes / float kb} KiB"
@@ -223,17 +224,17 @@ module ImageView =
 
                 | ImageModel.Situated situated ->
                     assert(situated.Situation.ExifMetadataOpt.IsNone)
-                    yield! createFileStatusItems situated.File
+                    yield! createFileStatusItems situated
 
                 | Loaded loaded ->
-                    yield! createFileStatusItems loaded.Situated.File
+                    yield! createFileStatusItems loaded.Situated
                     yield! createBitmapStatusItems loaded.Bitmap
                     match loaded.Situated.Situation.ExifMetadataOpt with
                         | Some exif -> yield! createExifStatusItems exif
                         | None -> ()
 
                 | LoadError errored ->
-                    yield! createFileStatusItems errored.Situated.File
+                    yield! createFileStatusItems errored.Situated
         ]
 
     /// Creates a browse panel, with or without a button.
