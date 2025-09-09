@@ -43,7 +43,8 @@ module DirectoryMessage =
     let private imageHeight = 150
 
     /// Loads images in a directory asynchronously.
-    let private loadDirectory model : Subscribe<_> =
+    let private loadDirectory (model : DirectoryModel)
+        : Subscribe<_> =
         fun dispatch ->
 
                 // create async image chunks
@@ -85,7 +86,7 @@ module DirectoryMessage =
         dispatch (ImageDeleted (sessionId, file))
 
     /// Watches the model's directory for changes.
-    let private watch model : Subscribe<_> =
+    let private watch (model : DirectoryModel) : Subscribe<_> =
         fun dispatch ->
 
                 // watch for changes

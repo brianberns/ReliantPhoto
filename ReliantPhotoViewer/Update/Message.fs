@@ -104,17 +104,23 @@ module Message =
             let dirModelOpt = Some dirModel
             loadImage file dirModelOpt imgModel
 
+    /// Gets the given image model's directory.
+    let private getDirectory = function
+        | Situated_ situated -> situated.File.Directory
+        | Empty empty -> empty.Directory
+        | _ -> failwith "Invalid state"
+
     /// Switches to directory mode.
     let private onSwitchToDirectory = function
         | ImageMode (Some dirModel, imgModel) ->
             assert(DirectoryInfo.same
                 dirModel.Directory
-                imgModel.File.Directory)
+                (getDirectory imgModel))
             DirectoryMode (dirModel, imgModel),
             Cmd.none
         | ImageMode (None, imgModel) ->
             loadDirectory
-                imgModel.File.Directory
+                (getDirectory imgModel)
                 imgModel
         | _ -> failwith "Invalid state"
 

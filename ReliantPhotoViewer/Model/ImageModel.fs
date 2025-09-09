@@ -290,6 +290,22 @@ type LoadError =
         LoadError.Situated_
             >-> SituatedFile.Sized_
 
+/// Image in an empty directory.
+type EmptyImage =
+    {
+        /// Sized container.
+        Sized : SizedContainer
+
+        /// Empty directory.
+        Directory : DirectoryInfo
+    }
+
+    /// Sized container lens.
+    static member Sized_ : Lens<_, _> =
+        _.Sized,
+        fun sized loaded ->
+            { loaded with Sized = sized }
+
 type ImageModel =
 
     /// Initial state.
@@ -308,25 +324,24 @@ type ImageModel =
     | LoadError of LoadError
 
     /// No image to show, but not an error.
-    | Empty of SizedContainer
+    | Empty of EmptyImage
 
     /// Sized container prism.
     static member TrySized_ : Prism<_, _> =
 
         (function
-            | Sized sized
-            | Empty sized -> Some sized
+            | Sized sized -> Some sized
             | Situated situated ->
                 Some (situated ^.SituatedFile.Sized_)
             | Loaded loaded ->
                 Some (loaded ^. LoadedImage.Sized_)
             | LoadError errored ->
                 Some (errored ^. LoadError.Sized_)
-            | Initialized _ -> None),
+            | Initialized _ -> None
+            | Empty empty -> Some empty.Sized),
 
         (fun sized -> function
             | Sized _ -> Sized sized
-            | Empty _ -> Empty sized
             | Situated situated ->
                 situated
                     |> sized ^= SituatedFile.Sized_
@@ -340,7 +355,11 @@ type ImageModel =
                     |> sized ^= LoadError.Sized_
                     |> LoadError
             | Initialized _ as model ->
-                model)
+                model
+            | Empty empty ->
+                empty
+                    |> sized ^= EmptyImage.Sized_
+                    |> Empty)
 
     /// Sized container lens.
     static member Sized_ : Lens<_, _> =
@@ -394,10 +413,6 @@ type ImageModel =
         (fun situated model ->
             model
                 |> situated ^= ImageModel.TrySituated_)
-
-    /// Image file.
-    member this.File =
-        (this ^. ImageModel.Situated_).File
 
 module ImageModel =
 

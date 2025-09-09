@@ -113,13 +113,13 @@ module ImageMessage =
         model, Cmd.none
 
     /// Unloads the current image, if any.
-    let private unloadImage newState model =
+    let private unloadImage toModel model =
         let model =
             match model with
                 | Sized_ sized ->
                     sized.ContainerSize   // keep only the container size
                         |> SizedContainer.create sized.Initial
-                        |> newState
+                        |> toModel
                 | _ -> model
         model, Cmd.none
 
@@ -350,6 +350,14 @@ module ImageMessage =
                 |> sized ^= ImageModel.Sized_
         model, Cmd.none
 
+    /// Empties the current image.
+    let private emptyImage directory model =
+        model
+            |> unloadImage (fun sized ->
+                Empty {
+                    Sized = sized
+                    Directory = directory })
+
     /// Deletes the current image.
     let private onDeleteFile model =
         let situated = model ^. ImageModel.Situated_
@@ -366,8 +374,8 @@ module ImageMessage =
                 | Some (file, result), _ ->
                     let msg = ofResult file result
                     model, Cmd.ofMsg msg
-                | None, None ->
-                    unloadImage Empty model   // no files left in directory
+                | None, None ->   // no files left in directory
+                    emptyImage situated.File.Directory model
 
         with exn ->
             LoadError {
