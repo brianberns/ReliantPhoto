@@ -335,7 +335,7 @@ module ImageMessage =
         let model =
             let situated =
                 { (model ^. ImageModel.Situated_) with
-                    Situation = situation }
+                    SituationOpt = Some situation }
             model
                 |> situated ^= ImageModel.Situated_
         model, Cmd.none
@@ -358,30 +358,33 @@ module ImageMessage =
                     Sized = sized
                     Directory = directory })
 
-    /// Deletes the current image.
+    /// Deletes the current image's file.
     let private onDeleteFile model =
         let situated = model ^. ImageModel.Situated_
+        match situated.SituationOpt with
+            | Some situation ->
 
-        try
-                // delete file
-            situated.File.Delete()
+                try
+                        // delete file
+                    situated.File.Delete()
 
-                // browse to another image?
-            let situation = situated.Situation
-            match situation.PreviousResultOpt,
-                situation.NextResultOpt with
-                | _, Some (file, result)
-                | Some (file, result), _ ->
-                    let msg = ofResult file result
-                    model, Cmd.ofMsg msg
-                | None, None ->   // no files left in directory
-                    emptyImage situated.File.Directory model
+                        // browse to another image?
+                    match situation.PreviousResultOpt,
+                        situation.NextResultOpt with
+                        | _, Some (file, result)
+                        | Some (file, result), _ ->
+                            let msg = ofResult file result
+                            model, Cmd.ofMsg msg
+                        | None, None ->   // no files left in directory
+                            emptyImage situated.File.Directory model
 
-        with exn ->
-            LoadError {
-                Situated = situated
-                Message = exn.Message
-            }, Cmd.none
+                with exn ->
+                    LoadError {
+                        Situated = situated
+                        Message = exn.Message
+                    }, Cmd.none
+
+            | None -> failwith "Invalid state"
 
     /// Updates DPI scale.
     let private onDpiChanged dpiScale model =

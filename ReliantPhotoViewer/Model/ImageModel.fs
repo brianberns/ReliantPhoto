@@ -165,10 +165,6 @@ module Situation =
             NextResultOpt = nextResultOpt
         }
 
-    /// Unknown situation.
-    let unknown =
-        create None None None None
-
 /// A file situated in a directory.
 type SituatedFile =
     {
@@ -178,15 +174,15 @@ type SituatedFile =
         /// File.
         File : FileInfo
 
-        /// File situation.
-        Situation : Situation
+        /// File situation, if known.
+        SituationOpt : Option<Situation>
     }
 
     /// Sized container lens.
     static member Sized_ : Lens<_, _> =
         _.Sized,
-        fun sized loaded ->
-            { loaded with Sized = sized }
+        fun sized situated ->
+            { situated with Sized = sized }
 
 module SituatedFile =
 
@@ -195,7 +191,7 @@ module SituatedFile =
         {
             Sized = sized
             File = file
-            Situation = Situation.unknown
+            SituationOpt = None
         }
 
 /// Image pan.
@@ -387,11 +383,13 @@ type ImageModel =
     static member TrySituated_ : Prism<_, _> =
 
         (function
+            | Situated situated -> Some situated
             | Loaded loaded -> Some loaded.Situated
             | LoadError errored -> Some errored.Situated
             | _ -> None),
 
         (fun situated -> function
+            | Situated _ -> Situated situated
             | Loaded loaded ->
                 Loaded {
                     loaded with
@@ -430,3 +428,11 @@ module ImageModelExt =
     /// Situated file active pattern.
     let (|Situated_|_|) model =
         model ^. ImageModel.TrySituated_
+
+    /// Situation active pattern.
+    let (|Situation_|_|) model =
+        option {
+            let! situated =
+                model ^. ImageModel.TrySituated_
+            return! situated.SituationOpt
+        }

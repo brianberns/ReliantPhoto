@@ -33,12 +33,15 @@ module ImageView =
                 (fun _ -> dispatch SwitchToDirectory)
 
                 // delete file
-            Button.createIconImpl
-                Icon.delete
-                "Delete file"
-                true
-                Dock.Right
-                (fun _ -> dispatch (MkImageMessage DeleteFile))
+            match model with
+                | Situation_ _ ->   // don't allow file deletion before it's been situated
+                    Button.createIconImpl
+                        Icon.delete
+                        "Delete file"
+                        true
+                        Dock.Right
+                        (fun _ -> dispatch (MkImageMessage DeleteFile))
+                | _ -> ()
 
             match model with
                 | Loaded loaded ->
@@ -223,6 +226,15 @@ module ImageView =
                 | None -> ()
         ]
 
+    /// Creates situation status bar items.
+    let private createSituationOptStatusItems situationOpt =
+        [
+            match situationOpt with
+                | Some situation ->
+                    yield! createSituationStatusItems situation
+                | None -> ()
+        ]
+
     /// Creates a status bar.
     let private createStatusBar model =
         StatusBar.create [
@@ -234,22 +246,24 @@ module ImageView =
                         "Loading..." ""
                         :> IView
 
-                | Empty _ ->
-                    StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
-                        "No file" ""
-
                 | ImageModel.Situated situated ->
-                    assert(situated.Situation.ExifMetadataOpt.IsNone)
+                    assert(situated.SituationOpt.IsNone)
                     yield! createFileStatusItems situated
 
                 | Loaded loaded ->
                     yield! createFileStatusItems loaded.Situated
                     yield! createBitmapStatusItems loaded.Bitmap
-                    yield! createSituationStatusItems loaded.Situated.Situation
+                    yield! createSituationOptStatusItems
+                        loaded.Situated.SituationOpt
 
                 | LoadError errored ->
                     yield! createFileStatusItems errored.Situated
-                    yield! createSituationStatusItems errored.Situated.Situation
+                    yield! createSituationOptStatusItems
+                        errored.Situated.SituationOpt
+
+                | Empty _ ->
+                    StatusBar.createSelectableTextBlock   // placeholder to ensure status bar has a constant height
+                        "No file" ""
         ]
 
     /// Creates a browse panel, with or without a button.
@@ -281,9 +295,9 @@ module ImageView =
             // get previous/next results
         let prevResultOpt, nextResultOpt =
             match model with
-                | Situated_ situated ->
-                    situated.Situation.PreviousResultOpt,
-                    situated.Situation.NextResultOpt
+                | Situation_ situation ->
+                    situation.PreviousResultOpt,
+                    situation.NextResultOpt
                 | _ -> None, None
 
         [
@@ -474,7 +488,7 @@ module ImageView =
         ]
 
     /// Creates key bindings.
-    let private createKeyBindings situated dispatch =
+    let private createKeyBindings situation dispatch =
 
         let createBindings keys message =
             [
@@ -500,12 +514,12 @@ module ImageView =
                 // previous image
             yield! createResultBindings
                 [ Key.Left; Key.PageUp ]
-                situated.Situation.PreviousResultOpt
+                situation.PreviousResultOpt
 
                 // next image
             yield! createResultBindings
                 [ Key.Right; Key.PageDown ]
-                situated.Situation.NextResultOpt
+                situation.NextResultOpt
 
                 // delete file
             yield! createBindings
@@ -534,8 +548,8 @@ module ImageView =
             Border.background Brushes.Transparent
 
             match model with
-                | Situated_ situated ->
-                    createKeyBindings situated dispatch
+                | Situation_ situation ->
+                    createKeyBindings situation dispatch
                 | _ -> ()
 
                 // grab focus to enable bindings
