@@ -113,13 +113,11 @@ module Window =
 
             | _ -> ()
 
-            // hack: grab focus so Esc key binding works
-        if window.WindowState = WindowState.FullScreen
-            && isNull (window.FocusManager.GetFocusedElement()) then
-                Dispatcher.UIThread.Post(fun () ->
-                    tryFindChild<Border> window
-                        |> Option.iter (fun control ->
-                            control.Focus() |> ignore))
+            // hack: grab focus so key bindings work
+        if isNull (window.FocusManager.GetFocusedElement()) then
+            tryFindChild<Border> window
+                |> Option.iter (fun control ->
+                    control.Focus() |> ignore)
 
     /// Watches for DPI scale changes.
     let watchDpiScale (window : Window) : Subscribe<_> =

@@ -552,11 +552,6 @@ module ImageView =
                     createKeyBindings situation dispatch
                 | _ -> ()
 
-                // grab focus to enable bindings
-            Border.onLoaded (fun e ->
-                let border = e.Source :?> Border
-                border.Focus() |> ignore)
-
             Border.child (child : IView)
         ]
 
