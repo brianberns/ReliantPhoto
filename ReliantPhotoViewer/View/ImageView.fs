@@ -1,7 +1,5 @@
 ﻿namespace Reliant.Photo
 
-open System.IO
-
 open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
