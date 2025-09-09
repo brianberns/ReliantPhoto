@@ -63,12 +63,12 @@ module private ImageSharp =
         with _ -> None
 
     /// Tries to get the camera make.
-    let tryGetCameraMake exifProfile =
-        tryGetExifValue [ExifTag.Make] exifProfile
+    let tryGetCameraMake =
+        tryGetExifValue [ExifTag.Make]
 
     /// Tries to get the camera model.
-    let tryGetCameraModel exifProfile =
-        tryGetExifValue [ExifTag.Model] exifProfile
+    let tryGetCameraModel =
+        tryGetExifValue [ExifTag.Model]
 
     /// Converts a rational number to a decimal.
     let inline private toDecimal<'t, 'u
@@ -80,16 +80,19 @@ module private ImageSharp =
         decimal num / decimal den
 
     /// Tries to get the f-stop.
-    let tryGetFStop exifProfile =
-        exifProfile
-            |> tryGetExifValue [ExifTag.FNumber]
-            |> Option.map toDecimal
+    let tryGetFStop =
+        tryGetExifValue [ExifTag.FNumber]
+            >> Option.map toDecimal
 
     /// Tries to get the exposure time.
-    let tryGetExposureTime exifProfile =
-        exifProfile
-            |> tryGetExifValue [ExifTag.ExposureTime]
-            |> Option.map toDecimal
+    let tryGetExposureTime =
+        tryGetExifValue [ExifTag.ExposureTime]
+            >> Option.map toDecimal
+
+    /// Tries to get the exposure compensation.
+    let tryGetExposureCompensation =
+        tryGetExifValue [ExifTag.ExposureBiasValue]
+            >> Option.map toDecimal
 
     /// Tries to get the ISO speed rating.
     let tryGetIsoRating exifProfile =
@@ -102,16 +105,14 @@ module private ImageSharp =
         }
 
     /// Tries to get the focal length.
-    let tryGetFocalLength exifProfile =
-        exifProfile
-            |> tryGetExifValue [ExifTag.FocalLength]
-            |> Option.map toDecimal
+    let tryGetFocalLength =
+        tryGetExifValue [ExifTag.FocalLength]
+            >> Option.map toDecimal
 
     /// Tries to get the full-frame focal length equivalent.
-    let tryGetFocalLengthFullFrame exifProfile =
-        exifProfile
-            |> tryGetExifValue [ExifTag.FocalLengthIn35mmFilm]
-            |> Option.map decimal
+    let tryGetFocalLengthFullFrame =
+        tryGetExifValue [ExifTag.FocalLengthIn35mmFilm]
+            >> Option.map decimal
 
     /// Gets the orientation of the given image.
     let private getOrientation (imageInfo : ImageInfo) =

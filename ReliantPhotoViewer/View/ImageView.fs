@@ -157,6 +157,15 @@ module ImageView =
                         else Decimal.toString time
                     [ $"{str} sec." ])
 
+                // exposure compensation
+            yield! createPropertyStatusItems
+                exif.ExposureCompensationOpt
+                [ "Exposure compensation" ]
+                (fun ev ->
+                    let sign =
+                        if ev > 0m then "+" else ""
+                    [ $"{sign}{Decimal.toString ev} EV"])
+
                 // ISO rating
             yield! createPropertyStatusItems
                 exif.IsoRatingOpt
