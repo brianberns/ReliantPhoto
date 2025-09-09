@@ -113,15 +113,19 @@ module ImageMessage =
         model, Cmd.none
 
     /// Unloads the current image, if any.
-    let private onUnloadImage model =
+    let private unloadImage newState model =
         let model =
             match model with
                 | Sized_ sized ->
                     sized.ContainerSize   // keep only the container size
                         |> SizedContainer.create sized.Initial
-                        |> Empty
+                        |> newState
                 | _ -> model
         model, Cmd.none
+
+    /// Unloads the current image, if any.
+    let private onUnloadImage model =
+        unloadImage Sized model
 
     /// Computes size of the given bitmap, adjusted for DPI.
     let private getBitmapSize
@@ -354,16 +358,16 @@ module ImageMessage =
                 // delete file
             situated.File.Delete()
 
-                // browse to another image
-            let message =
-                let situation = situated.Situation
-                match situation.PreviousResultOpt,
-                    situation.NextResultOpt with
-                    | _, Some (file, result)
-                    | Some (file, result), _ ->
-                        ofResult file result
-                    | None, None -> UnloadImage
-            model, Cmd.ofMsg message
+                // browse to another image?
+            let situation = situated.Situation
+            match situation.PreviousResultOpt,
+                situation.NextResultOpt with
+                | _, Some (file, result)
+                | Some (file, result), _ ->
+                    let msg = ofResult file result
+                    model, Cmd.ofMsg msg
+                | None, None ->
+                    unloadImage Empty model   // no files left in directory
 
         with exn ->
             LoadError {
