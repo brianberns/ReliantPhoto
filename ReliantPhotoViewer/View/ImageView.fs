@@ -187,18 +187,6 @@ module ImageView =
             StatusBar.createSelectableTextBlock
                 file.Name "File name"
                 :> IView
-
-                // file size
-            let sizeStr =
-                let nBytes = situated.FileLength
-                if nBytes < kb then $"{nBytes} bytes"
-                elif nBytes < mb then
-                    $"%.2f{float nBytes / float kb} KiB"
-                elif nBytes < gb then
-                    $"%.2f{float nBytes / float mb} MiB"
-                else $"%.2f{float nBytes / float gb} GiB"
-            StatusBar.createSelectableTextBlock
-                sizeStr "File size"
         ]
 
     /// Creates bitmap status bar items.
@@ -209,6 +197,30 @@ module ImageView =
             StatusBar.createSelectableTextBlock
                 $"{dims.Width} x {dims.Height}" "Dimensions"
                 :> IView
+        ]
+
+    /// Creates situation status bar items.
+    let private createSituationStatusItems situation =
+        [
+                // file size
+            match situation.FileLengthOpt with
+                | Some nBytes ->
+                    let sizeStr =
+                        if nBytes < kb then $"{nBytes} bytes"
+                        elif nBytes < mb then
+                            $"%.2f{float nBytes / float kb} KiB"
+                        elif nBytes < gb then
+                            $"%.2f{float nBytes / float mb} MiB"
+                        else $"%.2f{float nBytes / float gb} GiB"
+                    StatusBar.createSelectableTextBlock
+                        sizeStr "File size"
+                        :> IView
+                | None -> ()
+
+                // EXIF
+            match situation.ExifMetadataOpt with
+                | Some exif -> yield! createExifStatusItems exif
+                | None -> ()
         ]
 
     /// Creates a status bar.
@@ -229,12 +241,11 @@ module ImageView =
                 | Loaded loaded ->
                     yield! createFileStatusItems loaded.Situated
                     yield! createBitmapStatusItems loaded.Bitmap
-                    match loaded.Situated.Situation.ExifMetadataOpt with
-                        | Some exif -> yield! createExifStatusItems exif
-                        | None -> ()
+                    yield! createSituationStatusItems loaded.Situated.Situation
 
                 | LoadError errored ->
                     yield! createFileStatusItems errored.Situated
+                    yield! createSituationStatusItems errored.Situated.Situation
         ]
 
     /// Creates a browse panel, with or without a button.

@@ -139,6 +139,9 @@ module SizedContainer =
 /// Situation of a file in a directory.
 type Situation =
     {
+        /// File length in bytes.
+        FileLengthOpt : Option<int64>
+
         /// File's EXIF metadata, if any.
         ExifMetadataOpt : Option<ExifMetadata>
 
@@ -153,8 +156,10 @@ module Situation =
 
     /// Creates a situation.
     let create
-        exifMetadataOpt previousResultOpt nextResultOpt =
+        filelLengthOpt exifMetadataOpt
+        previousResultOpt nextResultOpt =
         {
+            FileLengthOpt = filelLengthOpt
             ExifMetadataOpt = exifMetadataOpt
             PreviousResultOpt = previousResultOpt
             NextResultOpt = nextResultOpt
@@ -162,7 +167,7 @@ module Situation =
 
     /// Unknown situation.
     let unknown =
-        create None None None
+        create None None None None
 
 /// A file situated in a directory.
 type SituatedFile =
@@ -172,9 +177,6 @@ type SituatedFile =
 
         /// File.
         File : FileInfo
-
-        /// File length in bytes.
-        FileLength : int64
 
         /// File situation.
         Situation : Situation
@@ -193,7 +195,6 @@ module SituatedFile =
         {
             Sized = sized
             File = file
-            FileLength = file.Length   // cache for use in view
             Situation = Situation.unknown
         }
 

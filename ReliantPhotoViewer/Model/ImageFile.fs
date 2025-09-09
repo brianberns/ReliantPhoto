@@ -184,7 +184,12 @@ module ImageFile =
             | _ -> BitmapInterpolationMode.HighQuality
 
     /// Situates a file within its directory.
-    let situate file =
+    let situate (file : FileInfo) =
+
+            // get file length
+        let fileLengthOpt =
+            try Some file.Length   // this performs I/O, so it can fail (e.g. file no longer exists)
+            with _ -> None
 
             // get key of target file
         let exifMetadataOpt =
@@ -229,6 +234,7 @@ module ImageFile =
                     prevPairOpt, nextPairOpt)
 
         {|
+            FileLengthOpt = fileLengthOpt
             ExifMetadataOpt = exifMetadataOpt
             PreviousFileOpt = Option.map snd prevPairOpt
             NextFileOpt = Option.map snd nextPairOpt

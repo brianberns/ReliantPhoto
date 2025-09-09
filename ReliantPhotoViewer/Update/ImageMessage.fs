@@ -191,6 +191,7 @@ module ImageMessage =
                 let! nextResultOpt =
                     tryLoadImage detail.NextFileOpt
                 Situation.create
+                    detail.FileLengthOpt
                     detail.ExifMetadataOpt
                     prevResultOpt
                     nextResultOpt
