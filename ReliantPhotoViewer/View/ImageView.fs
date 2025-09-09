@@ -183,7 +183,6 @@ module ImageView =
     let private createFileStatusItems (file : FileInfo) =
         [
                 // file name
-            let file = file
             StatusBar.createSelectableTextBlock
                 file.Name "File name"
                 :> IView
