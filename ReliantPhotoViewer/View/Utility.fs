@@ -86,7 +86,8 @@ module Button =
     let buttonSize = 42
 
     /// Creates an icon button.
-    let createIconImpl icon (tooltip : string) enabled dock onClick =
+    let createIconImpl
+        icon (tooltip : string) attrs onClick =
         Button.create [
             Button.content (
                 Image.create [
@@ -95,8 +96,6 @@ module Button =
                 ]
             )
             Button.tip tooltip
-            Button.isEnabled enabled
-            Button.dock dock
             Button.height buttonSize
             Button.minWidth buttonSize
             Button.margin (5.0, 0.0)
@@ -106,13 +105,14 @@ module Button =
             Button.verticalContentAlignment VerticalAlignment.Center
             Button.cornerRadius 4.0
             Button.background Brushes.Transparent
+            yield! attrs
             Button.onClick onClick
         ]
 
     /// Creates an icon button.
     let createIcon icon tooltip onClick =
         createIconImpl
-            icon tooltip true Dock.Left onClick
+            icon tooltip [] onClick
 
 module Toolbar =
 

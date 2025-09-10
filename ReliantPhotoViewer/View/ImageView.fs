@@ -31,14 +31,15 @@ module ImageView =
                 (fun _ -> dispatch SwitchToDirectory)
 
                 // delete file
-            let enabled =
-                (model ^. ImageModel.TrySituation_)
-                    .IsSome
             Button.createIconImpl
                 Icon.delete
                 "Delete file"
-                enabled   // don't allow file deletion before it's been situated
-                Dock.Right
+                [
+                    (model ^. ImageModel.TrySituation_)
+                        .IsSome
+                        |> Button.isEnabled   // don't allow file deletion before it's been situated
+                    Button.dock Dock.Right
+                ]
                 (fun _ -> dispatch (MkImageMessage DeleteFile))
 
             match model with
@@ -59,12 +60,10 @@ module ImageView =
                                         |> MkImageMessage
                                         |> dispatch)
                         | _ ->
-                            let enabled = (curZoomScale <> 1.0)
                             Button.createIconImpl
                                 Icon.viewRealSize
                                 "Zoom to actual size"
-                                enabled
-                                Dock.Left
+                                [ Button.isEnabled (curZoomScale <> 1.0) ]
                                 (fun _ ->
                                     ZoomTo (Zoom.actualSize, None)
                                         |> MkImageMessage
