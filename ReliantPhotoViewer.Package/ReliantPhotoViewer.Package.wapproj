@@ -55,7 +55,7 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <NoWarn>$(NoWarn);NU1702</NoWarn>
+    <NoWarn>$(NoWarn);NU1701;NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\ReliantPhotoViewer\ReliantPhotoViewer.fsproj</EntryPointProjectUniqueName>
     <PackageCertificateThumbprint>7DEE64DEAA7E8B4F80678EF79AED5374746B819D</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
