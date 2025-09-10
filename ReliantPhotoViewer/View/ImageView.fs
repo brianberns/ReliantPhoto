@@ -47,27 +47,22 @@ module ImageView =
 
                         // zoom to specific size
                     let curZoomScale = loaded ^. LoadedImage.ZoomScale_
-                    match curZoomScale, loaded.SavedZoomOpt with   // to-do: why doesn't refactoring this work?
-                        | 1.0, Some savedZoom ->
-                            let icon =
-                                if savedZoom.Scale > 1.0 then Icon.zoomOutMap   // reversed usage
-                                else Icon.zoomInMap
-                            Button.createIcon
-                                icon
-                                "Zoom to previous size"
-                                (fun _ ->
-                                    ZoomTo (savedZoom, None)
-                                        |> MkImageMessage
-                                        |> dispatch)
-                        | _ ->
-                            Button.createIconImpl
-                                Icon.viewRealSize
-                                "Zoom to actual size"
-                                [ Button.isEnabled (curZoomScale <> 1.0) ]
-                                (fun _ ->
-                                    ZoomTo (Zoom.actualSize, None)
-                                        |> MkImageMessage
-                                        |> dispatch)
+
+                        // zoom to actual size
+                    Button.createIconImpl
+                        Icon.viewRealSize
+                        "Zoom to actual size"
+                        [ Button.isEnabled (curZoomScale <> 1.0) ]
+                        (fun _ ->
+                            ZoomTo (Zoom.actualSize, None)
+                                |> MkImageMessage
+                                |> dispatch)
+
+                        // zoom to fit container
+                    Button.createIcon
+                        Icon.fitScreen
+                        "Zoom to fit screen"
+                        (fun _ -> MkImageMessage ZoomToFit |> dispatch)
 
                         // zoom scale
                     TextBlock.create [

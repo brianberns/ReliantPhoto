@@ -62,6 +62,9 @@ module Icon =
     /// File open.
     let fileOpen = create "folder_open"   // using a folder icon is conventional
 
+    /// Fit screen.
+    let fitScreen = create "fit_screen"
+
     /// Folder open.
     let folderOpen = create "folder_open"
 
@@ -73,12 +76,6 @@ module Icon =
 
     /// View real size.
     let viewRealSize = create "view_real_size"
-
-    /// Zoom in map.
-    let zoomInMap = create "zoom_in_map"
-
-    /// Zoom out map.
-    let zoomOutMap = create "zoom_out_map"
 
 module Button =
 

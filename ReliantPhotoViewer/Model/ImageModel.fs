@@ -223,9 +223,6 @@ type LoadedImage =
         /// Bitmap size, adjusted for system DPI scale.
         BitmapSize : Size
 
-        /// Saved zoom, if any.
-        SavedZoomOpt : Option<Zoom>
-
         /// Pan location, when panning.
         PanOpt : Option<Pan>
     }

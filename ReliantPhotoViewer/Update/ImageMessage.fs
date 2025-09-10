@@ -30,6 +30,9 @@ type ImageMessage =
     /// Zoom image to given size. (Full size is 1.0.)
     | ZoomTo of Zoom * Option<Point> (*pointer position*)
 
+    /// Zooms image to fit container.
+    | ZoomToFit
+
     /// Pointer pan has started.
     | PanStart of Point
 
@@ -171,7 +174,6 @@ module ImageMessage =
             Situated = SituatedFile.create file sized
             Bitmap = bitmap
             BitmapSize = bitmapSize
-            SavedZoomOpt = None
             PanOpt = None
         }
 
@@ -245,9 +247,6 @@ module ImageMessage =
                 ImageLayout.incrementZoomScale sign loaded
             let loaded = zoomTo zoom pointerPos loaded
 
-                // clear saved zoom
-            let loaded = { loaded with SavedZoomOpt = None }
-
             Loaded loaded, Cmd.none
 
         | _ -> failwith "Invalid state"
@@ -255,16 +254,6 @@ module ImageMessage =
     /// Zoom to given size.
     let private onZoomTo zoom pointerPosOpt = function
         | Loaded loaded ->
-
-                // save current zoom scale?
-            let loaded =
-                let curZoom =
-                    loaded ^. LoadedImage.Zoom_
-                let savedZoomOpt =
-                    if curZoom.Scale = 1.0 then None
-                    else Some curZoom
-                { loaded with
-                    SavedZoomOpt = savedZoomOpt }
 
                 // find container center?
             let pointerPos =
@@ -279,6 +268,12 @@ module ImageMessage =
 
             Loaded loaded, Cmd.none
 
+        | _ -> failwith "Invalid state"
+
+    /// Zoom to fit container.
+    let private onZoomToFit = function
+        | Loaded loaded ->
+            Loaded loaded, Cmd.none
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
@@ -434,6 +429,10 @@ module ImageMessage =
                 // zoom to given size
             | ZoomTo (zoom, pointerPosOpt) ->
                 onZoomTo zoom pointerPosOpt model
+
+                // zoom to fit container
+            | ZoomToFit ->
+                onZoomToFit model
 
                 // start pan
             | PanStart pointerPos ->
