@@ -9,7 +9,7 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
-open Avalonia.LogicalTree
+open Avalonia.Input
 
 module Window =
 
@@ -127,8 +127,14 @@ module Window =
             [ "DpiScale" ], watchDpiScale window
         ]
 
+    /// Creates key bindings.
+    let createKeyBindings () =
+        KeyBinding.createBindings [
+            Key.Delete, MkImageMessage DeleteFile
+        ]
+
     /// Subscribes to effects.
-    let subscribe window model =
+    let subscribe keyBindingObservable window model =
 
             // non-DSL effects
         setCurrentDirectory model
@@ -137,6 +143,10 @@ module Window =
 
             // DPI scale subscription
         let dpiSub = subscribeDpiScale window
+
+            // Key binding subscription
+        let keyBindingSub =
+            KeyBinding.toSub "KeyBinding" keyBindingObservable
 
             // Elmish subscription
         let dirSub =
@@ -147,7 +157,12 @@ module Window =
                         |> Sub.map "directory" MkDirectoryMessage
                 | None -> []
 
-        Sub.batch [ dpiSub; dirSub ]
+        Sub.batch [
+            dpiSub
+            if model.IsImageMode then
+                keyBindingSub
+            dirSub
+        ]
 
     /// Gets initial directory and file.
     let getInitialArg (args : _[]) =
@@ -197,9 +212,15 @@ module Window =
 
     /// Starts the Elmish MVU loop.
     let run (window : HostWindow) arg =
+
+            // create key bindings
+        let keyBindings, keyBindingObservable =
+            createKeyBindings ()
+        window.KeyBindings.AddRange(keyBindings)
+
         makeProgram window.RenderScaling
             |> Program.withSubscription (
-                subscribe window)
+                subscribe keyBindingObservable window)
             |> Program.withHost window
             |> Program.runWithAvaloniaSyncDispatch arg
 

@@ -42,6 +42,7 @@
     <Compile Include="View\ImageView.fs" />
     <Compile Include="View\View.fs" />
     <Compile Include="App\Settings.fs" />
+    <Compile Include="App\KeyBinding.fs" />
     <Compile Include="App\MainWindow.fs" />
     <Compile Include="App\Program.fs" />
   </ItemGroup>
@@ -54,6 +55,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.5" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+    <PackageReference Include="System.Reactive" Version="6.0.2" />
   </ItemGroup>
 
 </Project>
