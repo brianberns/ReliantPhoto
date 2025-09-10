@@ -27,8 +27,8 @@ type ImageMessage =
     /// Pointer wheel position has changed.
     | WheelZoom of int (*sign*) * Point (*pointer position*)
 
-    /// Zoom image to given size. (Full size is 1.0.)
-    | ZoomTo of Zoom * Option<Point> (*pointer position*)
+    /// Zoom image to actual size (1:1).
+    | ZoomToActualSize of Option<Point> (*pointer position*)
 
     /// Zooms image to fit container.
     | ZoomToFit
@@ -251,8 +251,8 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
-    /// Zoom to given size.
-    let private onZoomTo zoom pointerPosOpt = function
+    /// Zoom to actual size.
+    let private onZoomToActualSize pointerPosOpt = function
         | Loaded loaded ->
 
                 // find container center?
@@ -263,8 +263,8 @@ module ImageMessage =
                         (loaded ^. LoadedImage.ContainerSize_) / 2.0
                     Point(size.Width, size.Height))
 
-                // zoom to given size
-            let loaded = zoomTo zoom pointerPos loaded
+                // zoom to actual size
+            let loaded = zoomTo Zoom.actualSize pointerPos loaded
 
             Loaded loaded, Cmd.none
 
@@ -426,9 +426,9 @@ module ImageMessage =
             | WheelZoom (sign, pointerPos) ->
                 onWheelZoom sign pointerPos model
 
-                // zoom to given size
-            | ZoomTo (zoom, pointerPosOpt) ->
-                onZoomTo zoom pointerPosOpt model
+                // zoom to actual size
+            | ZoomToActualSize pointerPosOpt ->
+                onZoomToActualSize pointerPosOpt model
 
                 // zoom to fit container
             | ZoomToFit ->
