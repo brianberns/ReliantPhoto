@@ -37,7 +37,7 @@ module ImageView =
                 [
                     (model ^. ImageModel.TrySituation_)
                         .IsSome
-                        |> Button.isEnabled   // don't allow file deletion before it's been situated
+                        |> Button.isVisible   // don't allow file deletion before it's been situated
                     Button.dock Dock.Right
                 ]
                 (fun _ -> dispatch (MkImageMessage DeleteFile))
