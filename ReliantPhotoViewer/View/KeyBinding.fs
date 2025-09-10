@@ -15,13 +15,14 @@ module KeyBinding =
         ViewBuilder.Create<KeyBinding>(attrs)
 
     let private toCommand action =
+        let canExecuteChanged = Event<EventHandler, EventArgs>()
         {
             new ICommand with
                 member _.CanExecute(_) = true
                 member _.Execute(parameter) = action parameter
                 [<CLIEvent>]
                 member _.CanExecuteChanged =
-                    Event<EventHandler, EventArgs>().Publish
+                    canExecuteChanged.Publish
         }
 
     type KeyBinding with
