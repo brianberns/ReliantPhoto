@@ -31,15 +31,15 @@ module ImageView =
                 (fun _ -> dispatch SwitchToDirectory)
 
                 // delete file
-            match model with
-                | Situation_ _ ->   // don't allow file deletion before it's been situated
-                    Button.createIconImpl
-                        Icon.delete
-                        "Delete file"
-                        true
-                        Dock.Right
-                        (fun _ -> dispatch (MkImageMessage DeleteFile))
-                | _ -> ()
+            let enabled =
+                (model ^. ImageModel.TrySituation_)
+                    .IsSome
+            Button.createIconImpl
+                Icon.delete
+                "Delete file"
+                enabled   // don't allow file deletion before it's been situated
+                Dock.Right
+                (fun _ -> dispatch (MkImageMessage DeleteFile))
 
             match model with
                 | Loaded loaded ->

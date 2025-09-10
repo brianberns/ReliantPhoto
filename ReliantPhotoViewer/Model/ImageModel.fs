@@ -184,6 +184,13 @@ type SituatedFile =
         fun sized situated ->
             { situated with Sized = sized }
 
+    /// File situation prism.
+    static member Situation_ : Prism<_, _> =
+        _.SituationOpt,
+        fun situation situated ->
+            { situated with
+                SituationOpt = Some situation }
+
 module SituatedFile =
 
     /// Creates a situated file with unknown situation.
@@ -412,6 +419,11 @@ type ImageModel =
             model
                 |> situated ^= ImageModel.TrySituated_)
 
+    /// Situation prism.
+    static member TrySituation_ =
+        ImageModel.TrySituated_
+            >?> SituatedFile.Situation_
+
 module ImageModel =
 
     /// Initial model.
@@ -431,8 +443,4 @@ module ImageModelExt =
 
     /// Situation active pattern.
     let (|Situation_|_|) model =
-        option {
-            let! situated =
-                model ^. ImageModel.TrySituated_
-            return! situated.SituationOpt
-        }
+        model ^.ImageModel.TrySituation_
