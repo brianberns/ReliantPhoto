@@ -22,6 +22,7 @@ module KeyBinding =
             [<CLIEvent>]
             member _.CanExecuteChanged = canExecuteChanged.Publish
 
+    /// Creates bindings for the given key-message pairs.
     let createBindings mappings =
         let subject = new Subject<Message>()
         let keyBindings =
@@ -31,9 +32,3 @@ module KeyBinding =
                         Gesture = KeyGesture(key),
                         Command = MessageCommand(subject, msg)))
         keyBindings, subject :> IObservable<Message>
-
-    let toSub name observable : Sub<Message> =
-        [
-            [ name ], (fun dispatch ->
-                Observable.subscribe dispatch observable)
-        ]

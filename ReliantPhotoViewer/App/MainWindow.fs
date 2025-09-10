@@ -127,6 +127,15 @@ module Window =
             [ "DpiScale" ], watchDpiScale window
         ]
 
+    /// Subscribes to the given key binding observable.
+    let subscribeKeyBindings observable : Sub<_> =
+        [
+            [ "KeyBinding" ],
+            fun dispatch ->
+                Observable.subscribe<Message>
+                    dispatch observable
+        ]
+
     /// Creates key bindings.
     let createKeyBindings () =
         KeyBinding.createBindings [
@@ -144,9 +153,9 @@ module Window =
             // DPI scale subscription
         let dpiSub = subscribeDpiScale window
 
-            // Key binding subscription
+            // key binding subscription
         let keyBindingSub =
-            KeyBinding.toSub "KeyBinding" keyBindingObservable
+            subscribeKeyBindings keyBindingObservable
 
             // Elmish subscription
         let dirSub =
