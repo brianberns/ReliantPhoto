@@ -274,7 +274,25 @@ module ImageMessage =
     /// Zoom to fit container.
     let private onZoomToFit = function
         | Loaded loaded ->
+
+                // get default layout
+            let offset, zoomScale =
+                let containerSize =
+                    loaded ^. LoadedImage.ContainerSize_
+                ImageLayout.getImageLayout
+                    containerSize
+                    loaded.BitmapSize
+                    None None
+            let zoom = Zoom.create zoomScale false
+
+                    // update offset/zoom
+            let loaded =
+                loaded
+                    |> offset ^= LoadedImage.Offset_
+                    |> zoom ^= LoadedImage.Zoom_
+
             Loaded loaded, Cmd.none
+
         | _ -> failwith "Invalid state"
 
     /// Starts panning.
