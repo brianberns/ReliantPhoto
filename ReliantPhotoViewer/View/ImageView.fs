@@ -54,7 +54,7 @@ module ImageView =
                         "Zoom to actual size"
                         [ Button.isEnabled (curZoomScale <> 1.0) ]
                         (fun _ ->
-                            ZoomTo (Zoom.actualSize, None)
+                            ZoomToActualSize None
                                 |> MkImageMessage
                                 |> dispatch)
 
@@ -399,7 +399,7 @@ module ImageView =
                 Canvas.onDoubleTapped(fun args ->
                     args.Handled <- true
                     let pointerPos = getPointerPosition args
-                    ZoomTo (Zoom.actualSize, Some pointerPos)
+                    ZoomToActualSize (Some pointerPos)
                         |> MkImageMessage
                         |> dispatch)
         ]

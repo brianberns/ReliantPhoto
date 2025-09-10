@@ -259,12 +259,13 @@ module ImageMessage =
             let pointerPos =
                 pointerPosOpt
                     |> Option.defaultWith (fun () ->
-                    let size =
-                        (loaded ^. LoadedImage.ContainerSize_) / 2.0
-                    Point(size.Width, size.Height))
+                        let size =
+                            (loaded ^. LoadedImage.ContainerSize_) / 2.0
+                        Point(size.Width, size.Height))
 
                 // zoom to actual size
-            let loaded = zoomTo Zoom.actualSize pointerPos loaded
+            let loaded =
+                zoomTo Zoom.actualSize pointerPos loaded
 
             Loaded loaded, Cmd.none
 
