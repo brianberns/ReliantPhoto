@@ -185,7 +185,7 @@ module ImageView =
 
                         match exif.FocalLengthFullFrameOpt with
                             | Some len35 when len35 <> len ->
-                                $"{Decimal.toString len35}"
+                                $"{Decimal.toString len35} mm"
                             | _ -> ()
                     ])
         ]
