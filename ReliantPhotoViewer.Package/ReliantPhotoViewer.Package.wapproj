@@ -153,7 +153,6 @@
     <Content Include="Images\Wide310x150Logo.scale-200.png" />
     <Content Include="Images\Wide310x150Logo.scale-400.png" />
     <Content Include="image_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
-    <None Include="ReliantPhotoViewer.Package_TemporaryKey.pfx" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
