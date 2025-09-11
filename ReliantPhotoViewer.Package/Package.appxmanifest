@@ -7,9 +7,9 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="ReliantPhotoViewer"
-    Publisher="CN=bernsrite.com"
-    Version="1.0.27.0" />
+    Name="BernsriteIndustries.ReliantPhotoViewer"
+    Publisher="CN=10DFF07F-756C-4AB9-AC49-B51B0DA34AD4"
+    Version="1.0.30.0" />
 
   <Properties>
     <DisplayName>Reliant Photo Viewer</DisplayName>
