@@ -372,6 +372,14 @@ module ImageView =
                         |> MkImageMessage
                         |> dispatch)
 
+                // zoom to actual size
+            Canvas.onDoubleTapped(fun args ->
+                args.Handled <- true
+                let pointerPos = getPointerPosition args
+                ZoomToActualSize (Some pointerPos)
+                    |> MkImageMessage
+                    |> dispatch)
+
                 // panning
             if loaded ^. LoadedImage.ZoomScaleLock_ then
                 Canvas.cursor Cursor.hand
@@ -400,15 +408,6 @@ module ImageView =
                         PanEnd
                             |> MkImageMessage
                             |> dispatch)
-
-                // zoom to actual size
-            else
-                Canvas.onDoubleTapped(fun args ->
-                    args.Handled <- true
-                    let pointerPos = getPointerPosition args
-                    ZoomToActualSize (Some pointerPos)
-                        |> MkImageMessage
-                        |> dispatch)
         ]
 
     /// Creates a canvas in which an image can be displayed.
