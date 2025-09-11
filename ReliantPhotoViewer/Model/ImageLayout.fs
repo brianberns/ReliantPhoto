@@ -43,7 +43,7 @@ module ImageLayout =
 
     /// Gets the default zoom scale for the given bitmap in the
     /// given container.
-    let private getDefaultZoomScale
+    let getDefaultZoomScale
         (containerSize : Size) (bitmapSize : Size) =
         let ratio = containerSize / bitmapSize
         min ratio.X ratio.Y |> min 1.0

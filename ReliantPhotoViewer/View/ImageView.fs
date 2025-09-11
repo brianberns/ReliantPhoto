@@ -46,26 +46,35 @@ module ImageView =
                 | Loaded loaded ->
 
                         // zoom to actual size
-                    let curZoomScale = loaded ^. LoadedImage.ZoomScale_
+                    let zoomScale = loaded ^. LoadedImage.ZoomScale_
                     Button.createIconImpl
                         Icon.viewRealSize
                         "Zoom to actual size"
-                        [ Button.isEnabled (curZoomScale <> 1.0) ]
+                        [ Button.isEnabled (zoomScale <> 1.0) ]
                         (fun _ ->
                             ZoomToActualSize None
                                 |> MkImageMessage
                                 |> dispatch)
 
                         // zoom to fit container
-                    Button.createIcon
+                    let defaultZoomScale =   // to-do: move to model?
+                        let containerSize =
+                            loaded ^. LoadedImage.ContainerSize_
+                        ImageLayout.getDefaultZoomScale
+                            containerSize
+                            loaded.BitmapSize
+                    Button.createIconImpl
                         Icon.fitScreen
                         "Zoom to fit screen"
+                        [ Button.isEnabled
+                            (defaultZoomScale < 1.0
+                                && defaultZoomScale <> zoomScale) ]
                         (fun _ -> MkImageMessage ZoomToFit |> dispatch)
 
                         // zoom scale
                     TextBlock.create [
                         TextBlock.verticalAlignment VerticalAlignment.Center
-                        TextBlock.text $"%0.1f{curZoomScale * 100.0}%%"
+                        TextBlock.text $"%0.1f{zoomScale * 100.0}%%"
                         TextBlock.tip "Zoom scale"
                     ]
                         // full screen on
