@@ -45,10 +45,8 @@ module ImageView =
             match model with
                 | Loaded loaded ->
 
-                        // zoom to specific size
-                    let curZoomScale = loaded ^. LoadedImage.ZoomScale_
-
                         // zoom to actual size
+                    let curZoomScale = loaded ^. LoadedImage.ZoomScale_
                     Button.createIconImpl
                         Icon.viewRealSize
                         "Zoom to actual size"
