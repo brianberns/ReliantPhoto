@@ -81,14 +81,6 @@ module Window =
                     defaultTitle
                 | _ -> window.Title
 
-    /// Tries to find a child element by type.
-    let rec private tryFindChild<'t when 't :> Control>
-        (parent : ILogical) =
-        parent.LogicalChildren
-            |> Seq.tryPick (function
-                | :? 't as child -> Some child
-                | child -> tryFindChild child)
-
     /// Saved window state.
     let mutable private savedWindowStateOpt = None
 
@@ -111,12 +103,6 @@ module Window =
                 window.WindowState <- state
 
             | _ -> ()
-
-            // hack: grab focus so key bindings work
-        if isNull (window.FocusManager.GetFocusedElement()) then
-            tryFindChild<Border> window
-                |> Option.iter (fun control ->
-                    control.Focus() |> ignore)
 
     /// Watches for DPI scale changes.
     let watchDpiScale (window : Window) : Subscribe<_> =

@@ -36,7 +36,6 @@
     <EmbeddedResource Include="Assets\keyboard_arrow_left_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\keyboard_arrow_right_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\view_real_size_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
-    <Compile Include="View\KeyBinding.fs" />
     <Compile Include="View\Utility.fs" />
     <Compile Include="View\DirectoryView.fs" />
     <Compile Include="View\ImageView.fs" />

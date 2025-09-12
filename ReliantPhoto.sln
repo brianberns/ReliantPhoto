@@ -16,6 +16,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Avalonia.FuncUI", "..\Avalo
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Avalonia.FuncUI.Elmish", "..\Avalonia.FuncUI\src\Avalonia.FuncUI.Elmish\Avalonia.FuncUI.Elmish.fsproj", "{C68C5E02-B6A9-BBB9-CCD6-AE2CB6F04A51}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Examples.Elmish.HelloWorld", "..\Avalonia.FuncUI\src\Examples\Elmish Examples\Examples.Elmish.HelloWorld\Examples.Elmish.HelloWorld.fsproj", "{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,26 @@ Global
 		{C68C5E02-B6A9-BBB9-CCD6-AE2CB6F04A51}.Release|x64.Build.0 = Release|Any CPU
 		{C68C5E02-B6A9-BBB9-CCD6-AE2CB6F04A51}.Release|x86.ActiveCfg = Release|Any CPU
 		{C68C5E02-B6A9-BBB9-CCD6-AE2CB6F04A51}.Release|x86.Build.0 = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|ARM.Build.0 = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|x64.Build.0 = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Debug|x86.Build.0 = Debug|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|ARM.Build.0 = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|ARM64.Build.0 = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|x64.ActiveCfg = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|x64.Build.0 = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|x86.ActiveCfg = Release|Any CPU
+		{4267C1E3-E48D-B8D6-DD0A-468725BFFDCA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
