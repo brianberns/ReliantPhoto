@@ -60,29 +60,6 @@ module Window =
                     situated.File.Directory
                 | _ -> directory
 
-    /// Saved window state.
-    let mutable private savedWindowStateOpt = None
-
-    /// Sets the window state.
-    let private setWindowState (window : Window) model =
-        match model, savedWindowStateOpt with
-
-            | ImageMode (_, Sized_ sized), None
-                when sized.FullScreen ->
-
-                    // switch to full screen
-                savedWindowStateOpt <- Some window.WindowState
-                window.WindowState <- WindowState.FullScreen
-
-            | ImageMode (_, Sized_ sized), Some state
-                when not sized.FullScreen ->
-
-                    // restore previous state
-                savedWindowStateOpt <- None
-                window.WindowState <- state
-
-            | _ -> ()
-
     /// Watches for DPI scale changes.
     let watchDpiScale (window : Window) : Subscribe<_> =
         fun dispatch ->
@@ -111,7 +88,6 @@ module Window =
 
             // non-DSL effects
         setCurrentDirectory model
-        setWindowState window model
 
             // DPI scale subscription
         let dpiSub = subscribeDpiScale window

@@ -96,6 +96,13 @@ module View =
             Window.title (getWindowTitle model)
             Window.icon icon
 
+                // full screen?
+            match model with
+                | ImageMode (_, Sized_ sized)
+                    when sized.FullScreen ->
+                    Window.windowState WindowState.FullScreen
+                | _ -> ()
+
                 // directory vs. image mode
             Window.child (
                 createModeView model dispatch)
