@@ -55,9 +55,6 @@ module Window =
             Directory = directory.FullName
         }
 
-    /// Default window title.
-    let defaultTitle = "Reliant Photo Viewer"
-
     /// Sets the current directory.
     let private setCurrentDirectory model =
         directory <-
@@ -67,19 +64,6 @@ module Window =
                 | ImageMode (_, Situated_ situated) ->
                     situated.File.Directory
                 | _ -> directory
-
-    /// Sets the window title
-    let private setWindowTitle (window : Window) model =
-        window.Title <-
-            match model with
-                | DirectoryMode (dirModel, _) ->
-                    DirectoryInfo.normalizedPath
-                        dirModel.Directory
-                | ImageMode (_, Situated_ situated) ->
-                    situated.File.Name
-                | ImageMode (_, Empty _) ->
-                    defaultTitle
-                | _ -> window.Title
 
     /// Saved window state.
     let mutable private savedWindowStateOpt = None
@@ -132,7 +116,6 @@ module Window =
 
             // non-DSL effects
         setCurrentDirectory model
-        setWindowTitle window model
         setWindowState window model
 
             // DPI scale subscription
@@ -206,7 +189,6 @@ module Window =
 /// Main window.
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
-        Title = Window.defaultTitle,
         Icon = Window.getIcon (),
         MinWidth = 600.0,
         MinHeight = 400.0)

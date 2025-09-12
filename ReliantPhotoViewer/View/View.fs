@@ -16,6 +16,16 @@ module View =
             | ImageMode (_, imgModel) ->
                 ImageView.view imgModel dispatch
 
+    /// Gets the window title.
+    let private getWindowTitle = function
+        | ImageMode (_, Situated_ situated) ->
+            situated.File.Name
+        | DirectoryMode (dirModel, _)
+        | ImageMode (Some dirModel, _) ->
+            DirectoryInfo.normalizedPath
+                dirModel.Directory
+        | _ -> "Reliant Photo Viewer"
+
     /// Creates key bindings.
     let private createKeyBindings model dispatch =
 
@@ -80,6 +90,9 @@ module View =
                 // directory vs. image mode
             Window.child (
                 createModeView model dispatch)
+
+                // window title
+            Window.title (getWindowTitle model)
 
                 // key bindings
             Window.keyBindings (
