@@ -13,11 +13,6 @@ open Avalonia.LogicalTree
 
 module Window =
 
-    /// Gets the window icon.
-    let getIcon () =
-        Resource.get "ReliantPhoto.png"
-            |> WindowIcon
-
     /// Current directory.
     let mutable directory =
         Environment.SpecialFolder.MyPictures
@@ -189,7 +184,6 @@ module Window =
 /// Main window.
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
-        Icon = Window.getIcon (),
         MinWidth = 600.0,
         MinHeight = 400.0)
     do

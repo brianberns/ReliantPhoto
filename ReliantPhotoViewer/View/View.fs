@@ -7,15 +7,6 @@ open Avalonia.Input
 
 module View =
 
-    /// Creates a mode-specific view.
-    let private createModeView model dispatch =
-        match model with
-            | DirectoryMode (dirModel, _) ->
-                DirectoryView.view dirModel dispatch
-                    :> IView
-            | ImageMode (_, imgModel) ->
-                ImageView.view imgModel dispatch
-
     /// Gets the window title.
     let private getWindowTitle = function
         | ImageMode (_, Situated_ situated) ->
@@ -25,6 +16,20 @@ module View =
             DirectoryInfo.normalizedPath
                 dirModel.Directory
         | _ -> "Reliant Photo Viewer"
+
+    /// Window icon.
+    let private icon =
+        Resource.get "ReliantPhoto.png"
+            |> WindowIcon
+
+    /// Creates a mode-specific view.
+    let private createModeView model dispatch =
+        match model with
+            | DirectoryMode (dirModel, _) ->
+                DirectoryView.view dirModel dispatch
+                    :> IView
+            | ImageMode (_, imgModel) ->
+                ImageView.view imgModel dispatch
 
     /// Creates key bindings.
     let private createKeyBindings model dispatch =
@@ -87,12 +92,13 @@ module View =
 
         Window.create [
 
+                // window properties
+            Window.title (getWindowTitle model)
+            Window.icon icon
+
                 // directory vs. image mode
             Window.child (
                 createModeView model dispatch)
-
-                // window title
-            Window.title (getWindowTitle model)
 
                 // key bindings
             Window.keyBindings (
