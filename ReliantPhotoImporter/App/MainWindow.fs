@@ -10,7 +10,7 @@ module Window =
 
     /// Gets the window icon.
     let getIcon () =
-        Resource.get "ReliantPhoto.png"
+        Resource.get "ReliantPhotoImporter.png"
             |> WindowIcon
 
     /// Creates Elmish program.
