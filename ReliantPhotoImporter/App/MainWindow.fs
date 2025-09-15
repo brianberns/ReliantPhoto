@@ -37,7 +37,8 @@ type MainWindow(args : string[]) as this =
         Title = "Reliant Photo Importer",
         Icon = Window.getIcon (),
         Width = 600.0,
-        Height = 400.0)
+        Height = 400.0,
+        CanResize = false)
     do
         Window.run this ()
 

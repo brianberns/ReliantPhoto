@@ -2,12 +2,10 @@
 
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
-open Avalonia.Styling
 open Avalonia.Themes.Fluent
 
 type App() =
-    inherit Application(
-        RequestedThemeVariant = ThemeVariant.Dark)
+    inherit Application()
 
     override this.Initialize() =
         this.Styles.Add(FluentTheme())
