@@ -196,7 +196,7 @@ module ImageView =
                 // file name
             let file = situated.File
             StatusBar.createSelectableTextBlock
-                file.Name "File name"
+                file.Name file.FullName
                 :> IView
         ]
 
