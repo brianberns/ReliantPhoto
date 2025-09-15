@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <Platforms>AnyCPU;x64</Platforms>
+	<PublishSingleFile>true</PublishSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\ReliantPhoto.png" />
+    <Compile Include="View\Utility.fs" />
+    <Compile Include="App\MainWindow.fs" />
+    <Compile Include="App\Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.5" />
+    <PackageReference Include="Avalonia.FuncUI" Version="1.5.1" />
+    <PackageReference Include="Avalonia.FuncUI.Elmish" Version="1.5.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.5" />
+  </ItemGroup>
+
+</Project>
