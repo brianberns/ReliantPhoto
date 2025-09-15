@@ -18,6 +18,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Avalonia.FuncUI", "external
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Avalonia.FuncUI.Elmish", "external\Avalonia.FuncUI\src\Avalonia.FuncUI.Elmish\Avalonia.FuncUI.Elmish.fsproj", "{6E19B0A7-9EB6-710D-2015-E2A217C892A6}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReliantPhotoImporter", "ReliantPhotoImporter\ReliantPhotoImporter.fsproj", "{44B93B03-8B10-C6EB-CF45-157CC0068566}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +144,26 @@ Global
 		{6E19B0A7-9EB6-710D-2015-E2A217C892A6}.Release|x64.Build.0 = Release|Any CPU
 		{6E19B0A7-9EB6-710D-2015-E2A217C892A6}.Release|x86.ActiveCfg = Release|Any CPU
 		{6E19B0A7-9EB6-710D-2015-E2A217C892A6}.Release|x86.Build.0 = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|ARM.Build.0 = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|x64.ActiveCfg = Debug|x64
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|x64.Build.0 = Debug|x64
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Debug|x86.Build.0 = Debug|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|ARM.ActiveCfg = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|ARM.Build.0 = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|ARM64.Build.0 = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|x64.ActiveCfg = Release|x64
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|x64.Build.0 = Release|x64
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|x86.ActiveCfg = Release|Any CPU
+		{44B93B03-8B10-C6EB-CF45-157CC0068566}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
