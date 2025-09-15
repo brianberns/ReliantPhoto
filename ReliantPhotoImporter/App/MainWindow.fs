@@ -1,15 +1,10 @@
 namespace Reliant.Photo
 
-open System
-open System.IO
-
 open Elmish
 
-open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
-open Avalonia.LogicalTree
 
 module Window =
 
@@ -42,7 +37,8 @@ type MainWindow(args : string[]) as this =
         Title = "Reliant Photo Importer",
         Icon = Window.getIcon (),
         Width = 600.0,
-        Height = 400.0)
+        Height = 400.0,
+        CanResize = false)
     do
         Window.run this ()
 

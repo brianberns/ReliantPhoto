@@ -2,12 +2,10 @@
 
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
-open Avalonia.Styling
 open Avalonia.Themes.Fluent
 
 type App() =
-    inherit Application(
-        RequestedThemeVariant = ThemeVariant.Dark)
+    inherit Application()
 
     override this.Initialize() =
         this.Styles.Add(FluentTheme())
@@ -19,17 +17,6 @@ type App() =
             | _ -> ()
 
 module Program =
-
-    /// Maximum display string length.
-    let private maxStringLength = 2000
-
-    /// Shortens the given string, if necessary.
-    let private shorten (str : string) =
-        let ellipsis = "…"
-        if str.Length > maxStringLength then
-            str.Substring(0, maxStringLength - ellipsis.Length)
-                + ellipsis
-        else str
 
     [<EntryPoint>]
     let main args =
