@@ -59,9 +59,6 @@ module Icon =
     /// Delete.
     let delete = create "delete"
 
-    /// File open.
-    let fileOpen = create "folder_open"   // using a folder icon is conventional
-
     /// Fit screen.
     let fitScreen = create "fit_screen"
 
@@ -70,6 +67,9 @@ module Icon =
 
     /// Full screen.
     let fullScreen = create "fullscreen"
+
+    /// Image.
+    let image = create "image"
 
     /// Folder eye.
     let viewFolder = create "dashboard_2"
