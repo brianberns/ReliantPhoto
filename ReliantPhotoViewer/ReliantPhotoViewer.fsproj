@@ -33,6 +33,7 @@
     <EmbeddedResource Include="Assets\fit_screen_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\fullscreen_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
+    <EmbeddedResource Include="Assets\image_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\keyboard_arrow_left_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\keyboard_arrow_right_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\view_real_size_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
@@ -44,6 +45,8 @@
     <Compile Include="App\MainWindow.fs" />
     <Compile Include="App\Program.fs" />
   </ItemGroup>
+
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Aether" Version="8.3.1" />
