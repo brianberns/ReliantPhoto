@@ -71,12 +71,26 @@ module ImageView =
                                 && defaultZoomScale <> zoomScale) ]
                         (fun _ -> MkImageMessage ZoomToFit |> dispatch)
 
+                        // adjust zoom scale
+                    Slider.create [
+                        Slider.minimum defaultZoomScale
+                        Slider.maximum ImageLayout.zoomScaleCeiling
+                        Slider.value zoomScale
+                        Slider.tip "Adjust zoom scale"
+                        Slider.width 150.0
+                        Slider.margin (5.0, 0.0)
+                        Slider.onValueChanged (
+                            ZoomTo >> MkImageMessage >> dispatch)
+                    ]
+
                         // zoom scale
                     TextBlock.create [
                         TextBlock.verticalAlignment VerticalAlignment.Center
                         TextBlock.text $"%0.1f{zoomScale * 100.0}%%"
                         TextBlock.tip "Zoom scale"
+                        TextBlock.margin (5.0, 0.0)
                     ]
+
                         // full screen on
                     Button.createIcon
                         Icon.fullScreen
