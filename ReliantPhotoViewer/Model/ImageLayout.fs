@@ -48,6 +48,9 @@ module ImageLayout =
         let ratio = containerSize / bitmapSize
         min ratio.X ratio.Y |> min 1.0
 
+    /// Max zoom scale.
+    let zoomScaleCeiling = 8.0
+
     /// Gets an acceptable zoom scale for the given bitmap in the
     /// given container.
     let private getZoomScale
@@ -56,7 +59,6 @@ module ImageLayout =
             // get zoom scale limits
         let zoomScaleFloor =
             getDefaultZoomScale containerSize bitmapSize
-        let zoomScaleCeiling = 8.0
 
             // enforce limits
         match proposedZoomScaleOpt with

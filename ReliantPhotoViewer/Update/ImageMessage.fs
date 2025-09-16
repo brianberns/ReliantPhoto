@@ -30,8 +30,11 @@ type ImageMessage =
     /// Zoom image to actual size (1:1).
     | ZoomToActualSize of Option<Point> (*pointer position*)
 
-    /// Zooms image to fit container.
+    /// Zoom image to fit container.
     | ZoomToFit
+
+    /// Zoom image to specific scale.
+    | ZoomTo of float
 
     /// Pointer pan has started.
     | PanStart of Point
@@ -251,6 +254,12 @@ module ImageMessage =
 
         | _ -> failwith "Invalid state"
 
+    /// Gets the center point of the container.
+    let private getContainerCenter loaded =
+        let size =
+            (loaded ^. LoadedImage.ContainerSize_) / 2.0
+        Point(size.Width, size.Height)
+
     /// Zoom to actual size.
     let private onZoomToActualSize pointerPosOpt = function
         | Loaded loaded ->
@@ -259,9 +268,7 @@ module ImageMessage =
             let pointerPos =
                 pointerPosOpt
                     |> Option.defaultWith (fun () ->
-                        let size =
-                            (loaded ^. LoadedImage.ContainerSize_) / 2.0
-                        Point(size.Width, size.Height))
+                        getContainerCenter loaded)
 
                 // zoom to actual size
             let loaded =
@@ -290,6 +297,30 @@ module ImageMessage =
                 loaded
                     |> offset ^= LoadedImage.Offset_
                     |> zoom ^= LoadedImage.Zoom_
+
+            Loaded loaded, Cmd.none
+
+        | _ -> failwith "Invalid state"
+
+    /// Zoom to specific scale.
+    let private onZoomTo zoomScale = function
+        | Loaded loaded ->
+            let loaded =
+
+                    // get container center
+                let pointerPos = getContainerCenter loaded
+
+                    // zoom scale lock?
+                let zoomScaleLock =
+                    let defaultZoomScale =
+                        ImageLayout.getDefaultZoomScale 
+                            (loaded ^. LoadedImage.ContainerSize_)
+                            loaded.BitmapSize
+                    zoomScale > defaultZoomScale
+
+                    // zoom to given scale
+                let zoom = Zoom.create zoomScale zoomScaleLock
+                zoomTo zoom pointerPos loaded
 
             Loaded loaded, Cmd.none
 
@@ -452,6 +483,10 @@ module ImageMessage =
                 // zoom to fit container
             | ZoomToFit ->
                 onZoomToFit model
+
+                // zoom to specific scale
+            | ZoomTo zoomScale ->
+                onZoomTo zoomScale model
 
                 // start pan
             | PanStart pointerPos ->
