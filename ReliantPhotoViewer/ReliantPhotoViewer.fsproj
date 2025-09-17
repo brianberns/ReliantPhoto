@@ -57,7 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ImageSharp\src\ImageSharp\ImageSharp.csproj" />
+    <ProjectReference Include="..\external\ImageSharp\src\ImageSharp\ImageSharp.csproj" />
   </ItemGroup>
 
 </Project>
