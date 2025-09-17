@@ -47,8 +47,6 @@
     <Compile Include="App\Program.fs" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
     <PackageReference Include="Aether" Version="8.3.1" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.5" />
@@ -56,7 +54,10 @@
     <PackageReference Include="Avalonia.FuncUI.Elmish" Version="1.5.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.5" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ImageSharp\src\ImageSharp\ImageSharp.csproj" />
   </ItemGroup>
 
 </Project>
