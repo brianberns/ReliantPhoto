@@ -73,14 +73,14 @@ module ImageView =
 
                         // adjust zoom scale
                     Slider.create [
-                        Slider.minimum defaultZoomScale
-                        Slider.maximum ImageLayout.zoomScaleCeiling
-                        Slider.value zoomScale
+                        Slider.minimum (log defaultZoomScale)
+                        Slider.maximum (log ImageLayout.zoomScaleCeiling)
+                        Slider.value (log zoomScale)
                         Slider.tip "Adjust zoom scale"
                         Slider.width 150.0
                         Slider.margin (5.0, 0.0)
                         Slider.onValueChanged (
-                            ZoomTo >> MkImageMessage >> dispatch)
+                            exp >> ZoomTo >> MkImageMessage >> dispatch)
                     ]
 
                         // zoom scale
