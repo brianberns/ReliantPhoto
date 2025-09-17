@@ -1,4 +1,0 @@
-[submodule "external/ImageSharp"]
-	path = external/ImageSharp
-	url = https://github.com/brianberns/ImageSharp.git
-	branch = v3.1.11-Bernsrite
