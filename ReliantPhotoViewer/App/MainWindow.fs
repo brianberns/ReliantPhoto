@@ -13,11 +13,6 @@ open Avalonia.LogicalTree
 
 module Window =
 
-    /// Gets the window icon.
-    let getIcon () =
-        Resource.get "ReliantPhoto.png"
-            |> WindowIcon
-
     /// Current directory.
     let mutable directory =
         Environment.SpecialFolder.MyPictures
@@ -55,9 +50,6 @@ module Window =
             Directory = directory.FullName
         }
 
-    /// Default window title.
-    let defaultTitle = "Reliant Photo Viewer"
-
     /// Sets the current directory.
     let private setCurrentDirectory model =
         directory <-
@@ -67,56 +59,6 @@ module Window =
                 | ImageMode (_, Situated_ situated) ->
                     situated.File.Directory
                 | _ -> directory
-
-    /// Sets the window title
-    let private setWindowTitle (window : Window) model =
-        window.Title <-
-            match model with
-                | DirectoryMode (dirModel, _) ->
-                    DirectoryInfo.normalizedPath
-                        dirModel.Directory
-                | ImageMode (_, Situated_ situated) ->
-                    situated.File.Name
-                | ImageMode (_, Empty _) ->
-                    defaultTitle
-                | _ -> window.Title
-
-    /// Tries to find a child element by type.
-    let rec private tryFindChild<'t when 't :> Control>
-        (parent : ILogical) =
-        parent.LogicalChildren
-            |> Seq.tryPick (function
-                | :? 't as child -> Some child
-                | child -> tryFindChild child)
-
-    /// Saved window state.
-    let mutable private savedWindowStateOpt = None
-
-    /// Sets the window state.
-    let private setWindowState (window : Window) model =
-        match model, savedWindowStateOpt with
-
-            | ImageMode (_, Sized_ sized), None
-                when sized.FullScreen ->
-
-                    // switch to full screen
-                savedWindowStateOpt <- Some window.WindowState
-                window.WindowState <- WindowState.FullScreen
-
-            | ImageMode (_, Sized_ sized), Some state
-                when not sized.FullScreen ->
-
-                    // restore previous state
-                savedWindowStateOpt <- None
-                window.WindowState <- state
-
-            | _ -> ()
-
-            // hack: grab focus so key bindings work
-        if isNull (window.FocusManager.GetFocusedElement()) then
-            tryFindChild<Border> window
-                |> Option.iter (fun control ->
-                    control.Focus() |> ignore)
 
     /// Watches for DPI scale changes.
     let watchDpiScale (window : Window) : Subscribe<_> =
@@ -146,8 +88,6 @@ module Window =
 
             // non-DSL effects
         setCurrentDirectory model
-        setWindowTitle window model
-        setWindowState window model
 
             // DPI scale subscription
         let dpiSub = subscribeDpiScale window
@@ -220,8 +160,6 @@ module Window =
 /// Main window.
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
-        Title = Window.defaultTitle,
-        Icon = Window.getIcon (),
         MinWidth = 600.0,
         MinHeight = 400.0)
     do

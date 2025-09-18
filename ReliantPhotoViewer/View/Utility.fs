@@ -102,6 +102,7 @@ module Button =
             Button.verticalContentAlignment VerticalAlignment.Center
             Button.cornerRadius 4.0
             Button.background Brushes.Transparent
+            Button.focusable false
             yield! attrs
             Button.onClick onClick
         ]
@@ -141,6 +142,7 @@ module StatusBar =
             SelectableTextBlock.text text
             SelectableTextBlock.background Brush.darkGray
             SelectableTextBlock.padding 5.0
+            SelectableTextBlock.focusable false
             if not (String.IsNullOrWhiteSpace(tooltip)) then
                 SelectableTextBlock.tip tooltip
         ]

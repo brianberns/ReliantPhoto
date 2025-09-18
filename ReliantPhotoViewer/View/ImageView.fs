@@ -210,7 +210,7 @@ module ImageView =
                 // file name
             let file = situated.File
             StatusBar.createSelectableTextBlock
-                file.Name "File name"
+                file.Name file.FullName
                 :> IView
         ]
 
@@ -493,8 +493,8 @@ module ImageView =
             ]
         ]
 
-    /// Creates a panel that can work with images.
-    let private createWorkPanel (model : ImageModel) dispatch =
+    /// Creates a view of the given model.
+    let view (model : ImageModel) dispatch =
         DockPanel.create [
 
                 // loading?
@@ -517,76 +517,3 @@ module ImageView =
                 createBrowseDisplayPanel model dispatch
             ]
         ]
-
-    /// Creates key bindings.
-    let private createKeyBindings situation dispatch =
-
-        let createBindings keys message =
-            [
-                for key in keys do
-                    KeyBinding.create [
-                        KeyBinding.key key
-                        KeyBinding.execute (fun _ ->
-                            message
-                                |> MkImageMessage
-                                |> dispatch)
-                    ]
-            ]
-
-        let createResultBindings keys = function
-            | Some ((file, result) : FileImageResult) ->
-                result
-                    |> ImageMessage.ofResult file
-                    |> createBindings keys
-            | None -> []
-
-        Border.keyBindings [
-
-                // previous image
-            yield! createResultBindings
-                [ Key.Left; Key.PageUp ]
-                situation.PreviousResultOpt
-
-                // next image
-            yield! createResultBindings
-                [ Key.Right; Key.PageDown ]
-                situation.NextResultOpt
-
-                // delete file
-            yield! createBindings
-                [ Key.Delete ]
-                DeleteFile
-
-                // full-screen on
-            yield! createBindings
-                [ Key.F11 ]
-                (FullScreen true)
-
-                // full-screen off
-            yield! createBindings
-                [ Key.Escape ]
-                (FullScreen false)
-        ]
-
-    /// Creates an invisible border that handles key bindings.
-    // This hack is needed because there is no way to set key
-    // bindings on the top-level window in the FuncUI DSL.
-    let private createKeyBindingBorder model dispatch child =
-        Border.create [
-
-            Border.focusable true
-            Border.focusAdorner null
-            Border.background Brushes.Transparent
-
-            match model with
-                | Situation_ situation ->
-                    createKeyBindings situation dispatch
-                | _ -> ()
-
-            Border.child (child : IView)
-        ]
-
-    /// Creates a view of the given model.
-    let view model dispatch =
-        createWorkPanel model dispatch
-            |> createKeyBindingBorder model dispatch

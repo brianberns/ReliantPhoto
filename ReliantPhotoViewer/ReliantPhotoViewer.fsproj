@@ -37,7 +37,6 @@
     <EmbeddedResource Include="Assets\keyboard_arrow_left_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\keyboard_arrow_right_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <EmbeddedResource Include="Assets\view_real_size_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
-    <Compile Include="View\KeyBinding.fs" />
     <Compile Include="View\Utility.fs" />
     <Compile Include="View\DirectoryView.fs" />
     <Compile Include="View\ImageView.fs" />
@@ -50,13 +49,13 @@
   <ItemGroup>
     <PackageReference Include="Aether" Version="8.3.1" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.5" />
-    <PackageReference Include="Avalonia.FuncUI" Version="1.5.1" />
-    <PackageReference Include="Avalonia.FuncUI.Elmish" Version="1.5.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.5" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\external\Avalonia.FuncUI\src\Avalonia.FuncUI.Elmish\Avalonia.FuncUI.Elmish.fsproj" />
+    <ProjectReference Include="..\external\Avalonia.FuncUI\src\Avalonia.FuncUI\Avalonia.FuncUI.fsproj" />
     <ProjectReference Include="..\external\ImageSharp\src\ImageSharp\ImageSharp.csproj" />
   </ItemGroup>
 
