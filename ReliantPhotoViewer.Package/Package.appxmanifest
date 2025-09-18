@@ -9,7 +9,7 @@
   <Identity
     Name="BernsriteIndustries.ReliantPhotoViewer"
     Publisher="CN=10DFF07F-756C-4AB9-AC49-B51B0DA34AD4"
-    Version="1.0.31.0" />
+    Version="1.0.32.0" />
 
   <Properties>
     <DisplayName>Reliant Photo Viewer</DisplayName>
@@ -46,6 +46,9 @@
             <uap:SupportedFileTypes>
               <uap:FileType ContentType="image/jpeg">.jpeg</uap:FileType>
               <uap:FileType ContentType="image/jpeg">.jpg</uap:FileType>
+              <uap:FileType ContentType="image/tiff">.tif</uap:FileType>
+              <uap:FileType ContentType="image/tiff">.tiff</uap:FileType>
+              <uap:FileType ContentType="image/png">.png</uap:FileType>
             </uap:SupportedFileTypes>
             <uap:DisplayName>JPEG Image</uap:DisplayName>
             <uap:Logo>image_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png</uap:Logo>
