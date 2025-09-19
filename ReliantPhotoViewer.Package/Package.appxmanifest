@@ -49,6 +49,7 @@
               <uap:FileType ContentType="image/tiff">.tif</uap:FileType>
               <uap:FileType ContentType="image/tiff">.tiff</uap:FileType>
               <uap:FileType ContentType="image/png">.png</uap:FileType>
+              <uap:FileType ContentType="image/gif">.gif</uap:FileType>
             </uap:SupportedFileTypes>
             <uap:DisplayName>JPEG Image</uap:DisplayName>
             <uap:Logo>image_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png</uap:Logo>
