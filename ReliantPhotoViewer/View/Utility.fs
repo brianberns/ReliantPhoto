@@ -2,7 +2,6 @@
 
 open System
 open System.IO
-open System.Reflection
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
@@ -12,15 +11,6 @@ open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Media.Imaging
 open Avalonia.Platform.Storage
-
-module Resource =
-
-    /// Gets a resource by name.
-    let get name =
-        Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(
-                $"ReliantPhotoViewer.Assets.{name : string}")
 
 module Brush =
 
@@ -41,13 +31,18 @@ module Cursor =
     /// Hand cursor.
     let hand = new Cursor(StandardCursorType.Hand)
 
+module Asset =
+
+    /// Asset path.
+    let path = "ReliantPhotoViewer.Assets"
+
 module Icon =
 
     /// Creates an icon.
-    let private create name =
+    let private create (name : string) =
         let stream =
             $"{name}_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
-                |> Resource.get
+                |> Resource.get Asset.path
         new Bitmap(stream)
 
     /// Arrow left.

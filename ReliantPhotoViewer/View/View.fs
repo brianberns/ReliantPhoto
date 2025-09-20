@@ -19,7 +19,8 @@ module View =
 
     /// Window icon.
     let private icon =
-        Resource.get "ReliantPhoto.png"
+        "ReliantPhoto.png"
+            |> Resource.get Asset.path
             |> WindowIcon
 
     /// Creates a mode-specific view.

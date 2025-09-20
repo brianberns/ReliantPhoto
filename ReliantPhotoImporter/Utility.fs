@@ -1,21 +1,15 @@
 ﻿namespace Reliant.Photo
 
-open System.Reflection
-
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Media.Imaging
 
-module Resource =
+module Asset =
 
-    /// Gets a resource by name.
-    let get name =
-        Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(
-                $"ReliantPhotoImporter.Assets.{name : string}")
+    /// Asset path.
+    let path = "ReliantPhotoImporter.Assets"
 
 module Icon =
 
@@ -23,7 +17,7 @@ module Icon =
     let private create name =
         let stream =
             $"{name}_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"
-                |> Resource.get
+                |> Resource.get Asset.path
         new Bitmap(stream)
 
     /// Folder open.
