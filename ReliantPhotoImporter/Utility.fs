@@ -45,13 +45,11 @@ module Button =
             )
             Button.height buttonSize
             Button.minWidth buttonSize
-            Button.margin (5.0, 0.0)
             Button.horizontalAlignment HorizontalAlignment.Stretch
             Button.verticalAlignment VerticalAlignment.Center
             Button.horizontalContentAlignment HorizontalAlignment.Center
             Button.verticalContentAlignment VerticalAlignment.Center
             Button.cornerRadius 4.0
-            Button.background Brushes.Transparent
             Button.focusable false
             Button.onClick onClick
         ]
