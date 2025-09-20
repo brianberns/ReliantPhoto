@@ -14,17 +14,16 @@ module Window =
             |> WindowIcon
 
     /// Creates Elmish program.
-    let private makeProgram dpiScale =
+    let private makeProgram =
 
         let init = fun () -> ()
         let update = fun () () -> ()
-        let view () dispatch = Avalonia.FuncUI.DSL.StackPanel.create []
 
-        Program.mkSimple init update view
+        Program.mkSimple init update View.view
 
     /// Starts the Elmish MVU loop.
     let run (window : HostWindow) arg =
-        makeProgram window.RenderScaling
+        makeProgram
             |> Program.withHost window
 #if DEBUG
             |> Program.withConsoleTrace
