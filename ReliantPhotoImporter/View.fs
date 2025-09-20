@@ -71,6 +71,7 @@ module View =
                 (onSelectDirectory dispatchDir)
         ]
 
+    /// Creates import name components.
     let private createNameParts row model dispatch =
         [
                 // label
@@ -95,6 +96,28 @@ module View =
             ]
         ]
 
+    let private createExampleParts row =
+        [
+                // label
+            TextBlock.create [
+                TextBlock.text "Example:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.row row
+                TextBlock.column 0
+            ] :> IView
+
+                // example
+            TextBlock.create [
+                TextBlock.text "Himalayas/Himalayas 001.jpg"
+                TextBlock.width 200
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.padding 10
+                TextBlock.margin 10
+                TextBlock.row row
+                TextBlock.column 1
+            ]
+        ]
+
     /// Creates a view of the given model.
     let view model dispatch =
         Window.create [
@@ -103,7 +126,7 @@ module View =
                 Grid.create [
                     Grid.margin 10
                     Grid.columnDefinitions "Auto, Auto, Auto"
-                    Grid.rowDefinitions "Auto, Auto, Auto"
+                    Grid.rowDefinitions "Auto, Auto, Auto, Auto"
                     Grid.children [
 
                         yield! createDirectoryViewParts
@@ -119,6 +142,7 @@ module View =
                             (SetDestination >> dispatch)
 
                         yield! createNameParts 2 model dispatch
+                        yield! createExampleParts 3
                     ]
                 ]
             )
