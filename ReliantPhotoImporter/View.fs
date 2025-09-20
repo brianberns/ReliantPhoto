@@ -24,12 +24,14 @@ module View =
                     .StorageProvider
                     .OpenFolderPickerAsync(options)
                     |> Async.AwaitTask
-            if folders.Count > 0 then
-                folders[0].TryGetLocalPath()
-                    |> Option.ofObj
-                    |> Option.iter (
-                        DirectoryInfo
-                            >> dispatchDir)
+            option {
+                let! folder = Seq.tryHead folders
+                let! path =
+                    folder.TryGetLocalPath()
+                        |> Option.ofObj
+                DirectoryInfo path
+                    |> dispatchDir
+            } |> ignore
         } |> Async.StartImmediate
 
     /// Creates a directory view's components.

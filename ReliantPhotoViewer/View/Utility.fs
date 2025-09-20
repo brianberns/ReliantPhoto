@@ -162,13 +162,15 @@ module FileSystemView =
                     .StorageProvider
                     .OpenFolderPickerAsync(options)
                     |> Async.AwaitTask
-            if folders.Count > 0 then
-                folders[0].TryGetLocalPath()
-                    |> Option.ofObj
-                    |> Option.iter (
-                        DirectoryInfo
-                            >> LoadDirectory
-                            >> dispatch)
+            option {
+                let! folder = Seq.tryHead folders
+                let! path =
+                    folder.TryGetLocalPath()
+                        |> Option.ofObj
+                DirectoryInfo path
+                    |> LoadDirectory
+                    |> dispatch
+            } |> ignore
         } |> Async.StartImmediate
 
     /// Allows user to select an image.
@@ -184,11 +186,13 @@ module FileSystemView =
                     .StorageProvider
                     .OpenFilePickerAsync(options)
                     |> Async.AwaitTask
-            if files.Count > 0 then
-                files[0].TryGetLocalPath()
-                    |> Option.ofObj
-                    |> Option.iter (
-                        FileInfo
-                            >> LoadImage
-                            >> dispatch)
+            option {
+                let! file = Seq.tryHead files
+                let! path =
+                    file.TryGetLocalPath()
+                        |> Option.ofObj
+                FileInfo path
+                    |> LoadImage
+                    |> dispatch
+            } |> ignore
         } |> Async.StartImmediate
