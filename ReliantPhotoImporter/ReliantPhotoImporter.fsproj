@@ -15,11 +15,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets\ReliantPhotoImporter.png" />
-    <Compile Include="View\Utility.fs" />
-    <Compile Include="View\View.fs" />
-    <Compile Include="App\MainWindow.fs" />
-    <Compile Include="App\Program.fs" />
+    <EmbeddedResource Include="ReliantPhotoImporter.png" />
+    <Compile Include="Utility.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="Message.fs" />
+    <Compile Include="View.fs" />
+    <Compile Include="MainWindow.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

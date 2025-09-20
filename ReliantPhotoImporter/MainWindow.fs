@@ -16,10 +16,9 @@ module Window =
     /// Creates Elmish program.
     let private makeProgram =
 
-        let init = fun () -> ()
         let update = fun () () -> ()
 
-        Program.mkSimple init update View.view
+        Program.mkSimple Model.init Message.update View.view
 
     /// Starts the Elmish MVU loop.
     let run (window : HostWindow) arg =

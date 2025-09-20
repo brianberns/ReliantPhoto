@@ -9,4 +9,4 @@ module Resource =
         Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream(
-                $"ReliantPhotoImporter.Assets.{name : string}")
+                $"ReliantPhotoImporter.{name : string}")
