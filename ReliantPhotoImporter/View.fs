@@ -32,20 +32,11 @@ module View =
                     |> dispatchDir
         } |> Async.StartImmediate
 
-    /// Creates a border style.
-    let private createBorderStyle () : IStyle =
-        let style = Style(_.OfType<Border>())
-        style.Setters.Add(
-            Setter(
-                Border.BorderBrushProperty,
-                DynamicResourceExtension(
-                    "SystemControlBackgroundBaseLowBrush")))
-        style
-
     /// Creates a directory view's components.
     let private createDirectoryViewParts
         row label dirOpt dispatchDir =
         [
+                // label
             TextBlock.create [
                 TextBlock.text label
                 TextBlock.verticalAlignment VerticalAlignment.Center
@@ -53,26 +44,24 @@ module View =
                 TextBlock.column 0
             ] :> IView
 
-            Border.create [
-                Border.styles [ createBorderStyle () ]
-                Border.width 200
-                Border.borderThickness 2
-                Border.padding 10
-                Border.margin 10
-                Border.row row
-                Border.column 1
-                Border.child (
-                    TextBlock.create [
-                        match dirOpt with
-                            | Some (dir : DirectoryInfo) ->
-                                TextBlock.text dir.Name
-                                TextBlock.tip dir.FullName
-                            | None -> ()
-                        TextBlock.verticalAlignment VerticalAlignment.Center
-                    ]
-                )
+                // directory name
+            TextBox.create [
+                match dirOpt with
+                    | Some (dir : DirectoryInfo) ->
+                        TextBox.text dir.Name
+                        TextBox.tip dir.FullName
+                    | None -> ()
+                TextBox.isReadOnly true
+                TextBox.focusable false
+                TextBox.width 200
+                TextBox.verticalAlignment VerticalAlignment.Center
+                TextBox.padding 10
+                TextBox.margin 10
+                TextBox.row row
+                TextBox.column 1
             ]
 
+                // directory selection
             Button.createIcon
                 Icon.folderOpen
                 [
@@ -82,14 +71,39 @@ module View =
                 (onSelectDirectory dispatchDir)
         ]
 
+    let private createNameParts row model dispatch =
+        [
+                // label
+            TextBlock.create [
+                TextBlock.text "Name:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.row row
+                TextBlock.column 0
+            ] :> IView
+
+                // name
+            TextBox.create [
+                match model.NameOpt with
+                    | Some name -> TextBox.text name
+                    | None -> ()
+                TextBox.width 200
+                TextBox.verticalAlignment VerticalAlignment.Center
+                TextBox.padding 10
+                TextBox.margin 10
+                TextBox.row row
+                TextBox.column 1
+            ]
+        ]
+
+    /// Creates a view of the given model.
     let view model dispatch =
         Window.create [
             Window.sizeToContent SizeToContent.WidthAndHeight
             Window.child (
                 Grid.create [
                     Grid.margin 10
-                    Grid.columnDefinitions "Auto,Auto,Auto"
-                    Grid.rowDefinitions "Auto,Auto"
+                    Grid.columnDefinitions "Auto, Auto, Auto"
+                    Grid.rowDefinitions "Auto, Auto, Auto"
                     Grid.children [
 
                         yield! createDirectoryViewParts
@@ -103,6 +117,8 @@ module View =
                             "Import images to:"
                             (Some model.Destination)
                             (SetDestination >> dispatch)
+
+                        yield! createNameParts 2 model dispatch
                     ]
                 ]
             )

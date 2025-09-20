@@ -50,7 +50,6 @@ module Button =
             Button.horizontalContentAlignment HorizontalAlignment.Center
             Button.verticalContentAlignment VerticalAlignment.Center
             Button.cornerRadius 4.0
-            Button.focusable false
             yield! attrs
             Button.onClick onClick
         ]

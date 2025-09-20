@@ -7,6 +7,7 @@ type Model =
     {
         SourceOpt : Option<DirectoryInfo>
         Destination : DirectoryInfo
+        NameOpt : Option<string>
     }
 
 module Model =
@@ -20,4 +21,5 @@ module Model =
         {
             SourceOpt = None
             Destination = myPicturesDir
+            NameOpt = None
         }
