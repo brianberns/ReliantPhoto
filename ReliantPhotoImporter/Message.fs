@@ -4,6 +4,7 @@ open System.IO
 
 type Message =
     | SetSource of DirectoryInfo
+    | SetDestination of DirectoryInfo
 
 module Message =
 
@@ -12,3 +13,6 @@ module Message =
             | SetSource dir ->
                 { model with
                     Source = dir }
+            | SetDestination dir ->
+                { model with
+                    Destination = dir }

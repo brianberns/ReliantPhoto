@@ -6,6 +6,7 @@ open System.IO
 type Model =
     {
         Source : DirectoryInfo
+        Destination : DirectoryInfo
     }
 
 module Model =
@@ -18,4 +19,5 @@ module Model =
     let init () =
         {
             Source = defaultDirectory
+            Destination = defaultDirectory
         }
