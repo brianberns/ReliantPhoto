@@ -95,10 +95,12 @@ module View =
                 TextBox.margin 10
                 TextBox.row row
                 TextBox.column 1
+                TextBox.onTextChanged (
+                    SetName >> dispatch)
             ]
         ]
 
-    let private createExampleParts row =
+    let private createExampleParts row model =
         [
                 // label
             TextBlock.create [
@@ -109,8 +111,11 @@ module View =
             ] :> IView
 
                 // example
+            let name =
+                model.NameOpt
+                    |> Option.defaultValue "Himalayas"
             TextBlock.create [
-                TextBlock.text "Himalayas/Himalayas 001.jpg"
+                TextBlock.text $"{name}/{name} 001.jpg"
                 TextBlock.width 200
                 TextBlock.verticalAlignment VerticalAlignment.Center
                 TextBlock.padding 10
@@ -144,7 +149,7 @@ module View =
                             (SetDestination >> dispatch)
 
                         yield! createNameParts 2 model dispatch
-                        yield! createExampleParts 3
+                        yield! createExampleParts 3 model
                     ]
                 ]
             )
