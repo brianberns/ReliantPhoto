@@ -37,17 +37,20 @@ module View =
                     StackPanel.children [
                         StackPanel.create [
                             StackPanel.orientation Orientation.Horizontal
+                            StackPanel.margin 10.0
+                            StackPanel.spacing 10.0
                             StackPanel.children [
                                 TextBlock.create [
                                     TextBlock.text "Import images from:"
+                                    TextBlock.verticalAlignment VerticalAlignment.Center
                                 ]
                                 TextBlock.create [
                                     TextBlock.text model.Source.FullName
+                                    TextBlock.verticalAlignment VerticalAlignment.Center
                                 ]
-                                Button.create [
-                                    Button.content "Browse"
-                                    Button.onClick (onSelectDirectory dispatch)
-                                ]
+                                Button.createIcon
+                                    Icon.folderOpen
+                                    (onSelectDirectory dispatch)
                             ]
                         ]
                     ]

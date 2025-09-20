@@ -15,7 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="ReliantPhotoImporter.png" />
+    <EmbeddedResource Include="Assets\ReliantPhotoImporter.png" />
+    <EmbeddedResource Include="Assets\folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <Compile Include="Utility.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Message.fs" />
