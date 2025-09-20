@@ -7,9 +7,7 @@ open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Interactivity
 open Avalonia.Layout
-open Avalonia.Markup.Xaml.MarkupExtensions
 open Avalonia.Platform.Storage
-open Avalonia.Styling
 
 module View =
 
@@ -127,10 +125,17 @@ module View =
         ]
 
     /// Creates import parts.
-    let private createImportParts row =
+    let private createImportParts row model dispatch =
+
+        let enabled =
+            model.SourceOpt.IsSome
+                && model.Destination.Exists
+                && model.NameOpt.IsSome
+
         [
             Button.create [
                 Button.content "Import"
+                Button.isEnabled enabled
                 Button.width 200
                 Button.horizontalContentAlignment
                     HorizontalAlignment.Center
@@ -169,7 +174,7 @@ module View =
 
                         yield! createNameParts 2 model dispatch
                         yield! createExampleParts 3 model
-                        yield! createImportParts 4
+                        yield! createImportParts 4 model dispatch
                     ]
                 ]
             )
