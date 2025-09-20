@@ -35,7 +35,7 @@ module Button =
     let buttonSize = 42
 
     /// Creates an icon button.
-    let createIcon icon onClick =
+    let createIcon icon attrs onClick =
         Button.create [
             Button.content (
                 Image.create [
@@ -51,5 +51,6 @@ module Button =
             Button.verticalContentAlignment VerticalAlignment.Center
             Button.cornerRadius 4.0
             Button.focusable false
+            yield! attrs
             Button.onClick onClick
         ]
