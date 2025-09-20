@@ -32,7 +32,7 @@ module View =
                     |> dispatchDir
         } |> Async.StartImmediate
 
-    /// Border style.
+    /// Creates a border style.
     let private createBorderStyle () : IStyle =
         let style = Style(_.OfType<Border>())
         style.Setters.Add(
@@ -44,7 +44,7 @@ module View =
 
     /// Creates a directory view's components.
     let private createDirectoryViewParts
-        row label (dir : DirectoryInfo) dispatchDir =
+        row label dirOpt dispatchDir =
         [
             TextBlock.create [
                 TextBlock.text label
@@ -63,8 +63,11 @@ module View =
                 Border.column 1
                 Border.child (
                     TextBlock.create [
-                        TextBlock.text dir.Name
-                        TextBlock.tip dir.FullName
+                        match dirOpt with
+                            | Some (dir : DirectoryInfo) ->
+                                TextBlock.text dir.Name
+                                TextBlock.tip dir.FullName
+                            | None -> ()
                         TextBlock.verticalAlignment VerticalAlignment.Center
                     ]
                 )
@@ -92,13 +95,13 @@ module View =
                         yield! createDirectoryViewParts
                             0
                             "Import images from:"
-                            model.Source
+                            model.SourceOpt
                             (SetSource >> dispatch)
 
                         yield! createDirectoryViewParts
                             1
                             "Import images to:"
-                            model.Destination
+                            (Some model.Destination)
                             (SetDestination >> dispatch)
                     ]
                 ]

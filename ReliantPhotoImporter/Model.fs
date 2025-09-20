@@ -5,19 +5,19 @@ open System.IO
 
 type Model =
     {
-        Source : DirectoryInfo
+        SourceOpt : Option<DirectoryInfo>
         Destination : DirectoryInfo
     }
 
 module Model =
 
-    let private defaultDirectory =
+    let private myPicturesDir =
         Environment.SpecialFolder.MyPictures
             |> Environment.GetFolderPath
             |> DirectoryInfo
 
     let init () =
         {
-            Source = defaultDirectory
-            Destination = defaultDirectory
+            SourceOpt = None
+            Destination = myPicturesDir
         }

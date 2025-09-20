@@ -12,7 +12,7 @@ module Message =
         match message with
             | SetSource dir ->
                 { model with
-                    Source = dir }
+                    SourceOpt = Some dir }
             | SetDestination dir ->
                 { model with
                     Destination = dir }
