@@ -100,6 +100,7 @@ module View =
             ]
         ]
 
+    /// Creates example components.
     let private createExampleParts row model =
         [
                 // label
@@ -125,6 +126,22 @@ module View =
             ]
         ]
 
+    /// Creates import parts.
+    let private createImportParts row =
+        [
+            Button.create [
+                Button.content "Import"
+                Button.width 200
+                Button.horizontalContentAlignment
+                    HorizontalAlignment.Center
+                Button.verticalAlignment VerticalAlignment.Center
+                Button.padding 10
+                Button.margin 10
+                Button.row row
+                Button.column 1
+            ] :> IView
+        ]
+
     /// Creates a view of the given model.
     let view model dispatch =
         Window.create [
@@ -133,15 +150,17 @@ module View =
                 Grid.create [
                     Grid.margin 10
                     Grid.columnDefinitions "Auto, Auto, Auto"
-                    Grid.rowDefinitions "Auto, Auto, Auto, Auto"
+                    Grid.rowDefinitions "Auto, Auto, Auto, Auto, Auto"
                     Grid.children [
 
+                            // source
                         yield! createDirectoryViewParts
                             0
                             "Import images from:"
                             model.SourceOpt
                             (SetSource >> dispatch)
 
+                            // destination
                         yield! createDirectoryViewParts
                             1
                             "Import images to:"
@@ -150,6 +169,7 @@ module View =
 
                         yield! createNameParts 2 model dispatch
                         yield! createExampleParts 3 model
+                        yield! createImportParts 4
                     ]
                 ]
             )
