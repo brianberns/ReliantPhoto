@@ -59,6 +59,8 @@ module View =
                 TextBox.margin 10
                 TextBox.row row
                 TextBox.column 1
+                TextBox.onPointerPressed (
+                    onSelectDirectory dispatchDir)
             ]
 
                 // directory selection
