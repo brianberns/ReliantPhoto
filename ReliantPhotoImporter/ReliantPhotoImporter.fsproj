@@ -28,6 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\external\Avalonia.FuncUI\src\Avalonia.FuncUI.Elmish\Avalonia.FuncUI.Elmish.fsproj" />
     <ProjectReference Include="..\external\Avalonia.FuncUI\src\Avalonia.FuncUI\Avalonia.FuncUI.fsproj" />
+    <ProjectReference Include="..\ReliantPhotoShared\ReliantPhotoShared.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
