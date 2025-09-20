@@ -25,9 +25,11 @@ module View =
                     .OpenFolderPickerAsync(options)
                     |> Async.AwaitTask
             if folders.Count > 0 then
-                folders[0].Path.LocalPath
-                    |> DirectoryInfo
-                    |> dispatchDir
+                folders[0].TryGetLocalPath()
+                    |> Option.ofObj
+                    |> Option.iter (
+                        DirectoryInfo
+                            >> dispatchDir)
         } |> Async.StartImmediate
 
     /// Creates a directory view's components.
