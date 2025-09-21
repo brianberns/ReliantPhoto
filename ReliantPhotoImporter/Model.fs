@@ -60,29 +60,36 @@ module Model =
             None
 
     let private importImpl
-        (source : DirectoryInfo)
-        (dest : DirectoryInfo)
+        (sourceDir : DirectoryInfo)
+        (destDir : DirectoryInfo)
         (name : string) =
+
+            // group files to import
         let groups =
-            source.EnumerateFiles("*", SearchOption.AllDirectories)
+            sourceDir.EnumerateFiles(
+                "*", SearchOption.AllDirectories)
                 |> Seq.where (tryIdentify >> Option.isSome)
-                |> Seq.groupBy (fun file ->
-                    file.Name |> Path.GetFileNameWithoutExtension)
+                |> Seq.groupBy (
+                    _.Name
+                        >> Path.GetFileNameWithoutExtension)
                 |> Seq.sortBy fst
                 |> Seq.map snd
                 |> Seq.indexed
+
+            // create destination sub-directory
+        let destDir =
+            destDir.CreateSubdirectory(name)
+
+            // copy files to destination
         for (iGroup, files) in groups do
             let groupName = $"{name} %03d{iGroup + 1}"
             for file in files do
                 let destFileName =
                     Path.Combine(
-                        dest.FullName,
+                        destDir.FullName,
                         $"{groupName}{file.Extension.ToLower()}")
-                (*
                 file.CopyTo(destFileName)
                     |> ignore
-                *)
-                printfn "%s" destFileName
 
     /// Imports pictures using the given model.
     let import model =
