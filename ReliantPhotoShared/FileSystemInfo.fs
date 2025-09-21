@@ -8,8 +8,8 @@ open Avalonia.Platform.Storage
 
 module DirectoryInfo =
 
-    /// Allows user to select a directory.
-    let onSelect dispatchDir args =
+    /// Allows user to pick a directory.
+    let onPick dispatchDir args =
         let topLevel =
             (args : RoutedEventArgs).Source
                 :?> Control
@@ -33,8 +33,8 @@ module DirectoryInfo =
 
 module FileInfo =
 
-    /// Allows user to select a file.
-    let onSelect dispatchDir args =
+    /// Allows user to pick a file.
+    let onPick dispatchDir args =
         let topLevel =
             (args : RoutedEventArgs).Source
                 :?> Control

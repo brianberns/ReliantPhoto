@@ -17,7 +17,7 @@ module DirectoryView =
             Button.createIcon
                 Icon.folderOpen
                 "Open folder"
-                (DirectoryInfo.onSelect (
+                (DirectoryInfo.onPick (
                     LoadDirectory >> dispatch))
         ]
 

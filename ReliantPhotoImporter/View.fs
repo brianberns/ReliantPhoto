@@ -37,7 +37,7 @@ module View =
                 TextBox.row row
                 TextBox.column 1
                 TextBox.onPointerPressed (
-                    DirectoryInfo.onSelect dispatchDir)
+                    DirectoryInfo.onPick dispatchDir)
             ]
 
                 // directory selection
@@ -47,7 +47,7 @@ module View =
                     Button.row row
                     Button.column 2
                 ]
-                (DirectoryInfo.onSelect dispatchDir)
+                (DirectoryInfo.onPick dispatchDir)
         ]
 
     /// Creates import name components.
