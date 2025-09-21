@@ -42,8 +42,8 @@ module Button =
                 ]
             )
             Button.height buttonSize
-            Button.minWidth buttonSize
-            Button.horizontalAlignment HorizontalAlignment.Stretch
+            Button.width buttonSize
+            Button.horizontalAlignment HorizontalAlignment.Left
             Button.verticalAlignment VerticalAlignment.Center
             Button.horizontalContentAlignment HorizontalAlignment.Center
             Button.verticalContentAlignment VerticalAlignment.Center
@@ -76,6 +76,7 @@ module View =
                 TextBox.isReadOnly true
                 TextBox.focusable false
                 TextBox.width 200
+                TextBox.horizontalAlignment HorizontalAlignment.Left
                 TextBox.verticalAlignment VerticalAlignment.Center
                 TextBox.padding 10
                 TextBox.margin 10
@@ -110,6 +111,7 @@ module View =
             TextBox.create [
                 TextBox.text model.Name
                 TextBox.width 200
+                TextBox.horizontalAlignment HorizontalAlignment.Left
                 TextBox.verticalAlignment VerticalAlignment.Center
                 TextBox.padding 10
                 TextBox.margin 10
@@ -138,12 +140,12 @@ module View =
                 else model.Name
             TextBlock.create [
                 TextBlock.text $"{name}/{name} 001.jpg"
-                TextBlock.width 200
                 TextBlock.verticalAlignment VerticalAlignment.Center
                 TextBlock.padding 10
                 TextBlock.margin 10
                 TextBlock.row row
                 TextBlock.column 1
+                TextBlock.columnSpan 2
             ]
         ]
 
@@ -173,7 +175,7 @@ module View =
             Window.child (
                 Grid.create [
                     Grid.margin 10
-                    Grid.columnDefinitions "Auto, Auto, Auto"
+                    Grid.columnDefinitions "Auto, Auto, *"
                     Grid.rowDefinitions "Auto, Auto, Auto, Auto, Auto"
                     Grid.children [
 
