@@ -32,6 +32,13 @@ module Model =
                 DateTime.Today.ToString("dd-MMM-yyyy")
         }
 
+    /// Gets the normalized name of the given model.
+    let getNormalName model =
+        let name = model.Name.Trim()
+        if String.IsNullOrWhiteSpace name then
+            "Image"
+        else name
+
     /// Given model is ready to import?
     let isComplete model =
 

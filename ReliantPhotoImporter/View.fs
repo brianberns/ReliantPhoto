@@ -134,10 +134,7 @@ module View =
             ] :> IView
 
                 // example
-            let name =
-                if String.IsNullOrWhiteSpace model.Name then
-                    "Himalayas"
-                else model.Name
+            let name = Model.getNormalName model
             TextBlock.create [
                 TextBlock.text $"{name}/{name} 001.jpg"
                 TextBlock.verticalAlignment VerticalAlignment.Center
