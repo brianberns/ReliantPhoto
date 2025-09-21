@@ -3,6 +3,8 @@
 open System
 open System.IO
 
+open SixLabors.ImageSharp
+
 type Model =
     {
         /// Source directory, if any chosen.
@@ -51,9 +53,20 @@ module Model =
         validSource
             && model.Destination.Exists
 
+    let private importImpl
+        (source : DirectoryInfo)
+        (dest : DirectoryInfo)
+        (name : string) =
+        for file in source.EnumerateFiles() do
+            let imageInfo = Image.Identify file.FullName
+            ()
+
     /// Imports pictures using the given model.
     let import model =
         match model.SourceOpt with
             | Some source ->
-                ()
+                importImpl
+                    source
+                    model.Destination
+                    (getNormalName model)
             | _ -> failwith "Invalid state"

@@ -19,7 +19,14 @@ module Window =
 
         let update = fun () () -> ()
 
-        Program.mkSimple Model.init Message.update View.view
+        Program.mkSimple
+            Model.init
+            Message.update
+            View.view
+            |> Program.withErrorHandler (fun (msg, exn) ->
+                printfn $"{msg}"
+                printfn $"{exn.Message}"
+                printfn $"{exn.StackTrace}")
 
     /// Starts the Elmish MVU loop.
     let run (window : HostWindow) arg =
