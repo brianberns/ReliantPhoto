@@ -7,20 +7,33 @@ type Message =
     | SetSource of DirectoryInfo
     | SetDestination of DirectoryInfo
     | SetName of string
+    | StartImport
 
 module Message =
+
+    let private onSetSource dir model =
+        { model with
+            SourceOpt = Some dir }
+
+    let private onSetDestination dir model =
+        { model with
+            Destination = dir }
+
+    let private onSetName name model =
+        let nameOpt =
+            if String.IsNullOrWhiteSpace name then
+                None
+            else Some name
+        { model with
+            NameOpt = nameOpt }
 
     let update message model =
         match message with
             | SetSource dir ->
-                { model with
-                    SourceOpt = Some dir }
+                onSetSource dir model
             | SetDestination dir ->
-                { model with
-                    Destination = dir }
+                onSetDestination dir model
             | SetName name ->
-                let nameOpt =
-                    if String.IsNullOrWhiteSpace name then None
-                    else Some name
-                { model with
-                    NameOpt = nameOpt }
+                onSetName name model
+            | StartImport ->
+                model

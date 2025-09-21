@@ -167,6 +167,8 @@ module View =
                 Button.margin 10
                 Button.row row
                 Button.column 1
+                Button.onClick (fun _ ->
+                    dispatch StartImport)
             ] :> IView
         ]
 
