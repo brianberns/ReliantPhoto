@@ -11,29 +11,14 @@ type Message =
 
 module Message =
 
-    let private onSetSource dir model =
-        { model with
-            SourceOpt = Some dir }
-
-    let private onSetDestination dir model =
-        { model with
-            Destination = dir }
-
-    let private onSetName name model =
-        let nameOpt =
-            if String.IsNullOrWhiteSpace name then
-                None
-            else Some name
-        { model with
-            NameOpt = nameOpt }
-
     let update message model =
         match message with
             | SetSource dir ->
-                onSetSource dir model
+                { model with SourceOpt = Some dir }
             | SetDestination dir ->
-                onSetDestination dir model
+                { model with Destination = dir }
             | SetName name ->
-                onSetName name model
+                { model with Name = name }
             | StartImport ->
+                Model.import model
                 model

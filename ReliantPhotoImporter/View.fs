@@ -1,5 +1,6 @@
 ﻿namespace Reliant.Photo
 
+open System
 open System.IO
 
 open Avalonia.Controls
@@ -95,7 +96,7 @@ module View =
         ]
 
     /// Creates import name components.
-    let private createNameParts row model dispatch =
+    let private createNameParts row (model : Model) dispatch =
         [
                 // label
             TextBlock.create [
@@ -107,9 +108,7 @@ module View =
 
                 // name
             TextBox.create [
-                match model.NameOpt with
-                    | Some name -> TextBox.text name
-                    | None -> ()
+                TextBox.text model.Name
                 TextBox.width 200
                 TextBox.verticalAlignment VerticalAlignment.Center
                 TextBox.padding 10
@@ -122,7 +121,7 @@ module View =
         ]
 
     /// Creates example components.
-    let private createExampleParts row model =
+    let private createExampleParts row (model : Model) =
         [
                 // label
             TextBlock.create [
@@ -134,8 +133,9 @@ module View =
 
                 // example
             let name =
-                model.NameOpt
-                    |> Option.defaultValue "Himalayas"
+                if String.IsNullOrWhiteSpace model.Name then
+                    "Himalayas"
+                else model.Name
             TextBlock.create [
                 TextBlock.text $"{name}/{name} 001.jpg"
                 TextBlock.width 200
@@ -149,16 +149,10 @@ module View =
 
     /// Creates import parts.
     let private createImportParts row model dispatch =
-
-        let enabled =
-            model.SourceOpt.IsSome
-                && model.Destination.Exists
-                && model.NameOpt.IsSome
-
         [
             Button.create [
                 Button.content "Import"
-                Button.isEnabled enabled
+                Button.isEnabled (Model.isComplete model)
                 Button.width 200
                 Button.horizontalContentAlignment
                     HorizontalAlignment.Center
