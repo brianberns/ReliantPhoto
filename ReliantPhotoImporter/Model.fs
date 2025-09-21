@@ -53,13 +53,36 @@ module Model =
         validSource
             && model.Destination.Exists
 
+    let private tryIdentify (file : FileInfo) =
+        try
+            Some (Image.Identify file.FullName)
+        with :? UnknownImageFormatException ->
+            None
+
     let private importImpl
         (source : DirectoryInfo)
         (dest : DirectoryInfo)
         (name : string) =
-        for file in source.EnumerateFiles() do
-            let imageInfo = Image.Identify file.FullName
-            ()
+        let groups =
+            source.EnumerateFiles("*", SearchOption.AllDirectories)
+                |> Seq.where (tryIdentify >> Option.isSome)
+                |> Seq.groupBy (fun file ->
+                    file.Name |> Path.GetFileNameWithoutExtension)
+                |> Seq.sortBy fst
+                |> Seq.map snd
+                |> Seq.indexed
+        for (iGroup, files) in groups do
+            let groupName = $"{name} %03d{iGroup + 1}"
+            for file in files do
+                let destFileName =
+                    Path.Combine(
+                        dest.FullName,
+                        $"{groupName}{file.Extension.ToLower()}")
+                (*
+                file.CopyTo(destFileName)
+                    |> ignore
+                *)
+                printfn "%s" destFileName
 
     /// Imports pictures using the given model.
     let import model =
