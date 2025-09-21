@@ -1,16 +1,18 @@
 ﻿namespace Reliant.Photo
 
 open System
-open System.IO
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.Input
-open Avalonia.Interactivity
 open Avalonia.Layout
 open Avalonia.Media
 open Avalonia.Media.Imaging
-open Avalonia.Platform.Storage
+
+module Asset =
+
+    /// Asset path.
+    let path = "ReliantPhotoViewer.Assets"
 
 module Brush =
 
@@ -30,11 +32,6 @@ module Cursor =
 
     /// Hand cursor.
     let hand = new Cursor(StandardCursorType.Hand)
-
-module Asset =
-
-    /// Asset path.
-    let path = "ReliantPhotoViewer.Assets"
 
 module Icon =
 
@@ -141,53 +138,3 @@ module StatusBar =
             if not (String.IsNullOrWhiteSpace(tooltip)) then
                 SelectableTextBlock.tip tooltip
         ]
-
-module FileSystemView =
-
-    /// Allows user to select a directory.
-    let onSelectDirectory dispatch args =
-        let topLevel =
-            (args : RoutedEventArgs).Source
-                :?> Control
-                |> TopLevel.GetTopLevel
-        async {
-            let! folders =
-                let options = FolderPickerOpenOptions()
-                topLevel
-                    .StorageProvider
-                    .OpenFolderPickerAsync(options)
-                    |> Async.AwaitTask
-            option {
-                let! folder = Seq.tryHead folders
-                let! path =
-                    folder.TryGetLocalPath()
-                        |> Option.ofObj
-                DirectoryInfo path
-                    |> LoadDirectory
-                    |> dispatch
-            } |> ignore
-        } |> Async.StartImmediate
-
-    /// Allows user to select an image.
-    let onSelectImage dispatch args =
-        let topLevel =
-            (args : RoutedEventArgs).Source
-                :?> Control
-                |> TopLevel.GetTopLevel
-        async {
-            let! files =
-                let options = FilePickerOpenOptions()
-                topLevel
-                    .StorageProvider
-                    .OpenFilePickerAsync(options)
-                    |> Async.AwaitTask
-            option {
-                let! file = Seq.tryHead files
-                let! path =
-                    file.TryGetLocalPath()
-                        |> Option.ofObj
-                FileInfo path
-                    |> LoadImage
-                    |> dispatch
-            } |> ignore
-        } |> Async.StartImmediate

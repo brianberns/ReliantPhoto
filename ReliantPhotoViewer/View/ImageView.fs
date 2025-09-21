@@ -28,7 +28,7 @@ module ImageView =
             Button.createIcon
                 Icon.image
                 "Open image file"
-                (FileSystemView.onSelectImage dispatch)
+                (FileInfo.onSelect (LoadImage >> dispatch))
 
                 // delete file
             Button.createIconImpl

@@ -5,34 +5,9 @@ open System.IO
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
-open Avalonia.Interactivity
 open Avalonia.Layout
-open Avalonia.Platform.Storage
 
 module View =
-
-    /// Allows user to select a directory.
-    let private onSelectDirectory dispatchDir args =
-        let topLevel =
-            (args : RoutedEventArgs).Source
-                :?> Control
-                |> TopLevel.GetTopLevel
-        async {
-            let! folders =
-                let options = FolderPickerOpenOptions()
-                topLevel
-                    .StorageProvider
-                    .OpenFolderPickerAsync(options)
-                    |> Async.AwaitTask
-            option {
-                let! folder = Seq.tryHead folders
-                let! path =
-                    folder.TryGetLocalPath()
-                        |> Option.ofObj
-                DirectoryInfo path
-                    |> dispatchDir
-            } |> ignore
-        } |> Async.StartImmediate
 
     /// Creates a directory view's components.
     let private createDirectoryViewParts
@@ -62,7 +37,7 @@ module View =
                 TextBox.row row
                 TextBox.column 1
                 TextBox.onPointerPressed (
-                    onSelectDirectory dispatchDir)
+                    DirectoryInfo.onSelect dispatchDir)
             ]
 
                 // directory selection
@@ -72,7 +47,7 @@ module View =
                     Button.row row
                     Button.column 2
                 ]
-                (onSelectDirectory dispatchDir)
+                (DirectoryInfo.onSelect dispatchDir)
         ]
 
     /// Creates import name components.

@@ -8,6 +8,11 @@
   <ItemGroup>
     <Compile Include="Prelude.fs" />
     <Compile Include="Resource.fs" />
+    <Compile Include="FileSystemInfo.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.5" />
   </ItemGroup>
 
 </Project>
