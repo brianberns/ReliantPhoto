@@ -19,8 +19,8 @@ module Window =
 
         let update = fun () () -> ()
 
-        Program.mkSimple
-            Model.init
+        Program.mkProgram
+            Message.init
             Message.update
             View.view
             |> Program.withErrorHandler (fun (msg, exn) ->

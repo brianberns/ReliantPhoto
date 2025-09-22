@@ -3,8 +3,6 @@
 open System
 open System.IO
 
-open SixLabors.ImageSharp
-
 type Model =
     {
         /// Source directory, if any chosen.
@@ -15,6 +13,9 @@ type Model =
 
         /// Import name, if any.
         Name : string
+
+        /// Import underway?
+        IsImporting : bool
     }
 
 module Model =
@@ -32,6 +33,7 @@ module Model =
             Destination = myPicturesDir
             Name =
                 DateTime.Today.ToString("dd-MMM-yyyy")
+            IsImporting = false
         }
 
     /// Gets the normalized name of the given model.
@@ -52,51 +54,3 @@ module Model =
 
         validSource
             && model.Destination.Exists
-
-    let private tryIdentify (file : FileInfo) =
-        try
-            Some (Image.Identify file.FullName)
-        with :? UnknownImageFormatException ->
-            None
-
-    let private importImpl
-        (sourceDir : DirectoryInfo)
-        (destDir : DirectoryInfo)
-        (name : string) =
-
-            // group files to import
-        let groups =
-            sourceDir.EnumerateFiles(
-                "*", SearchOption.AllDirectories)
-                |> Seq.where (tryIdentify >> Option.isSome)
-                |> Seq.groupBy (
-                    _.Name
-                        >> Path.GetFileNameWithoutExtension)
-                |> Seq.sortBy fst
-                |> Seq.map snd
-                |> Seq.indexed
-
-            // create destination sub-directory
-        let destDir =
-            destDir.CreateSubdirectory(name)
-
-            // copy files to destination
-        for (iGroup, files) in groups do
-            let groupName = $"{name} %03d{iGroup + 1}"
-            for file in files do
-                let destFileName =
-                    Path.Combine(
-                        destDir.FullName,
-                        $"{groupName}{file.Extension.ToLower()}")
-                file.CopyTo(destFileName)
-                    |> ignore
-
-    /// Imports pictures using the given model.
-    let import model =
-        match model.SourceOpt with
-            | Some source ->
-                importImpl
-                    source
-                    model.Destination
-                    (getNormalName model)
-            | _ -> failwith "Invalid state"
