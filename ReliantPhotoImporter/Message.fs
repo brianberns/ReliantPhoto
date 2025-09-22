@@ -9,7 +9,8 @@ type Message =
     | SetDestination of DirectoryInfo
     | SetName of string
     | StartImport
-    | ImportImages of FileInfo[]
+    // | ImportImages of FileInfo[]
+    // | ImportImage of (FileInfo (*source*) * FileInfo (*destination*))
 
 module Message =
 
@@ -24,75 +25,77 @@ module Message =
             None
 
     (*
-    let private importImpl
+    let private startImport
         (sourceDir : DirectoryInfo)
         (destDir : DirectoryInfo)
         (name : string) =
-
-            // group files to import
-        let groups =
-            sourceDir.EnumerateFiles(
-                "*", SearchOption.AllDirectories)
-                |> Seq.where (tryIdentify >> Option.isSome)
-                |> Seq.groupBy (
-                    _.Name
-                        >> Path.GetFileNameWithoutExtension)
-                |> Seq.sortBy fst
-                |> Seq.map snd
-                |> Seq.indexed
 
             // create destination sub-directory
         let destDir =
             destDir.CreateSubdirectory(name)
 
+            // group files to import
+        let groups =
+            sourceDir.GetFiles(
+                "*", SearchOption.AllDirectories)
+                |> Array.where (tryIdentify >> Option.isSome)
+                |> Array.groupBy (
+                    _.Name
+                        >> Path.GetFileNameWithoutExtension)
+                |> Array.sortBy fst
+                |> Array.map snd
+
+        { model with
+            ImportStatus =
+                InProgress {
+                    FileGroups = groups
+                    NumGroupsImported = 0
+                } }
+        *)
+
+        (*
             // copy files to destination
-        for (iGroup, files) in groups do
-            let groupName = $"{name} %03d{iGroup + 1}"
-            for file in files do
-                let destFileName =
-                    Path.Combine(
-                        destDir.FullName,
-                        $"{groupName}{file.Extension.ToLower()}")
-                file.CopyTo(destFileName)
-                    |> ignore
-
-    /// Imports pictures using the given model.
-    let private onStartImport model =
-        match model.SourceOpt with
-            | Some source ->
-                importImpl
-                    source
-                    model.Destination
-                    (Model.getNormalName model)
-            | _ -> failwith "Invalid state"
-    *)
-
-    let private getImageFiles (dir : DirectoryInfo) =
-        async {
-            return
-                dir.EnumerateFiles(
-                    "*", SearchOption.AllDirectories)
-                    |> Seq.where (tryIdentify >> Option.isSome)
-                    |> Seq.toArray
+        seq {
+            for (iGroup, sourceFiles) in groups do
+                let groupName = $"{name} %03d{iGroup + 1}"
+                for sourceFile in sourceFiles do
+                    let destFile =
+                        Path.Combine(
+                            destDir.FullName,
+                            $"{groupName}{sourceFile.Extension.ToLower()}")
+                            |> FileInfo
+                    ImportImage (sourceFile, destFile)
         }
 
+    let private startImportAsync sourceDir destDir name =
+        async {
+            return startImport sourceDir destDir name
+        }
+
+    /// Starts importing images using the given model.
     let private onStartImport model =
-        match model.SourceOpt, model.IsImporting with
-            | Some source, false ->
+        match model.SourceOpt, model.ImportStatus with
+            | Some source, NotStarted ->
                 let model =
-                    { model with IsImporting = true }
+                    { model with
+                        ImportStatus = Initializing }
                 let cmd =
                     Cmd.OfAsync.perform
-                        getImageFiles
-                        source
+                        (fun () ->
+                            startImportAsync
+                                source
+                                model.Destination
+                                model.Name)
+                        ()
                         ImportImages
                 model, cmd
             | _ -> failwith "Invalid state"
+        *)
 
     let update message model =
         match message with
             | SetSource dir ->
-                { model with SourceOpt = Some dir },
+                { model with Source = dir },
                 Cmd.none
             | SetDestination dir ->
                 { model with Destination = dir },
@@ -101,7 +104,6 @@ module Message =
                 { model with Name = name },
                 Cmd.none
             | StartImport ->
-                onStartImport model
-            | ImportImages files ->
                 model,
                 Cmd.none
+

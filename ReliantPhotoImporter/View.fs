@@ -56,7 +56,7 @@ module View =
 
     /// Creates a directory view's components.
     let private createDirectoryViewParts
-        row label dirOpt dispatchDir =
+        row label (dir : DirectoryInfo) dispatchDir =
         [
                 // label
             TextBlock.create [
@@ -68,11 +68,8 @@ module View =
 
                 // directory name
             TextBox.create [
-                match dirOpt with
-                    | Some (dir : DirectoryInfo) ->
-                        TextBox.text dir.Name
-                        TextBox.tip dir.FullName
-                    | None -> ()
+                TextBox.text dir.Name
+                TextBox.tip dir.FullName
                 TextBox.isReadOnly true
                 TextBox.focusable false
                 TextBox.width 200
@@ -134,7 +131,10 @@ module View =
             ] :> IView
 
                 // example
-            let name = Model.getNormalName model
+            let name =
+                if String.IsNullOrWhiteSpace model.Name then
+                    "Image"
+                else model.Name.Trim()
             TextBlock.create [
                 TextBlock.text $"{name}/{name} 001.jpg"
                 TextBlock.verticalAlignment VerticalAlignment.Center
@@ -151,7 +151,6 @@ module View =
         [
             Button.create [
                 Button.content "Import"
-                Button.isEnabled (Model.isComplete model)
                 Button.width 200
                 Button.horizontalContentAlignment
                     HorizontalAlignment.Center
@@ -180,14 +179,14 @@ module View =
                         yield! createDirectoryViewParts
                             0
                             "Import images from:"
-                            model.SourceOpt
+                            model.Source
                             (SetSource >> dispatch)
 
                             // destination
                         yield! createDirectoryViewParts
                             1
                             "Import images to:"
-                            (Some model.Destination)
+                            model.Destination
                             (SetDestination >> dispatch)
 
                         yield! createNameParts 2 model dispatch
