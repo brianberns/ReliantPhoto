@@ -17,7 +17,7 @@ type ImportStatus =
 type Model =
     {
         /// Source drive.
-        Source : DirectoryInfo
+        Source : DriveInfo
 
         /// Destination directory.
         Destination : DirectoryInfo
@@ -42,7 +42,7 @@ module Model =
     /// Initial model.
     let init () =
         {
-            Source = (Array.last drives).RootDirectory
+            Source = Array.last drives
             Destination = myPicturesDir
             Name =
                 DateTime.Today.ToString("dd-MMM-yyyy")

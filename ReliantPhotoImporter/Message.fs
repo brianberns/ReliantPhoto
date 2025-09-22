@@ -5,7 +5,7 @@ open System.IO
 open SixLabors.ImageSharp
 
 type Message =
-    | SetSource of DirectoryInfo
+    | SetSource of DriveInfo
     | SetDestination of DirectoryInfo
     | SetName of string
     | StartImport
@@ -94,8 +94,8 @@ module Message =
 
     let update message model =
         match message with
-            | SetSource dir ->
-                { model with Source = dir },
+            | SetSource drive ->
+                { model with Source = drive },
                 Cmd.none
             | SetDestination dir ->
                 { model with Destination = dir },

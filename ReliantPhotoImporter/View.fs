@@ -54,33 +54,56 @@ module Button =
 
 module View =
 
-    /// Creates a directory view's components.
-    let private createDirectoryViewParts
-        row label (dir : DirectoryInfo) dispatchDir =
+    /// Creates source components.
+    let private createSourceParts row model dispatch =
         [
                 // label
             TextBlock.create [
-                TextBlock.text label
+                TextBlock.text "Import images from:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.row row
+                TextBlock.column 0
+            ] :> IView
+
+                // drive
+            ComboBox.create [
+                ComboBox.dataItems Model.drives
+                ComboBox.selectedItem model.Source
+                ComboBox.width 200
+                ComboBox.horizontalAlignment HorizontalAlignment.Left
+                ComboBox.verticalAlignment VerticalAlignment.Center
+                ComboBox.padding 10
+                ComboBox.margin 10
+                ComboBox.row row
+                ComboBox.column 1
+            ]
+        ]
+
+    /// Creates destination components.
+    let private createDestinationParts row model dispatch =
+        [
+                // label
+            TextBlock.create [
+                TextBlock.text "Import images to:"
                 TextBlock.verticalAlignment VerticalAlignment.Center
                 TextBlock.row row
                 TextBlock.column 0
             ] :> IView
 
                 // directory name
-            TextBox.create [
-                TextBox.text dir.Name
-                TextBox.tip dir.FullName
-                TextBox.isReadOnly true
-                TextBox.focusable false
-                TextBox.width 200
-                TextBox.horizontalAlignment HorizontalAlignment.Left
-                TextBox.verticalAlignment VerticalAlignment.Center
-                TextBox.padding 10
-                TextBox.margin 10
-                TextBox.row row
-                TextBox.column 1
-                TextBox.onPointerPressed (
-                    DirectoryInfo.onPick dispatchDir)
+            Button.create [
+                Button.content model.Destination.Name
+                Button.tip model.Destination.FullName
+                Button.focusable false
+                Button.width 200
+                Button.horizontalAlignment HorizontalAlignment.Left
+                Button.verticalAlignment VerticalAlignment.Center
+                Button.padding 10
+                Button.margin 10
+                Button.row row
+                Button.column 1
+                Button.onClick (
+                    DirectoryInfo.onPick (SetDestination >> dispatch))
             ]
 
                 // directory selection
@@ -90,7 +113,7 @@ module View =
                     Button.row row
                     Button.column 2
                 ]
-                (DirectoryInfo.onPick dispatchDir)
+                (DirectoryInfo.onPick (SetDestination >> dispatch))
         ]
 
     /// Creates import name components.
@@ -174,21 +197,8 @@ module View =
                     Grid.columnDefinitions "Auto, Auto, *"
                     Grid.rowDefinitions "Auto, Auto, Auto, Auto, Auto"
                     Grid.children [
-
-                            // source
-                        yield! createDirectoryViewParts
-                            0
-                            "Import images from:"
-                            model.Source
-                            (SetSource >> dispatch)
-
-                            // destination
-                        yield! createDirectoryViewParts
-                            1
-                            "Import images to:"
-                            model.Destination
-                            (SetDestination >> dispatch)
-
+                        yield! createSourceParts 0 model dispatch
+                        yield! createDestinationParts 1 model dispatch
                         yield! createNameParts 2 model dispatch
                         yield! createExampleParts 3 model
                         yield! createImportParts 4 model dispatch
