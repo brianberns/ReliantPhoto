@@ -31,6 +31,7 @@ type Model =
 
 module Model =
 
+    /// Available drives.
     let drives =
         DriveInfo.GetDrives()
             |> Array.where _.IsReady
@@ -44,7 +45,7 @@ module Model =
     /// Initial model.
     let init () =
         {
-            Source = Array.last drives
+            Source = Array.last drives   // guess: last drive is most likely source
             Destination = myPicturesDir
             Name =
                 DateTime.Today.ToString("dd-MMM-yyyy")

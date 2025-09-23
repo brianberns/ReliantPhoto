@@ -73,7 +73,8 @@ module View =
                 // directory name
             Button.create [
                 Button.content shortName
-                Button.tip fullName
+                if fullName <> shortName then
+                    Button.tip fullName
                 Button.focusable false
                 Button.width 200
                 Button.horizontalAlignment HorizontalAlignment.Left
