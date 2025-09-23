@@ -5,21 +5,19 @@ open System.IO
 
 type ImportStatus =
     | NotStarted
-    (*
-    | Initializing
     | InProgress of
         {|
-            Files : FileInfo[]
-            NumFilesImported : int
+            Destination : DirectoryInfo
+            FileGroups : FileInfo[][]
+            NumGroupsImported : int
         |}
-    *)
 
 type Model =
     {
         /// Source drive.
         Source : DriveInfo
 
-        /// Destination directory.
+        /// Destination parent directory.
         Destination : DirectoryInfo
 
         /// Import name.

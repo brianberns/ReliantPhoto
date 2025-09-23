@@ -24,19 +24,16 @@ module Message =
         with :? UnknownImageFormatException ->
             None
 
-    (*
-    let private startImport
-        (sourceDir : DirectoryInfo)
-        (destDir : DirectoryInfo)
-        (name : string) =
+    let private onStartImport model =
 
             // create destination sub-directory
         let destDir =
-            destDir.CreateSubdirectory(name)
+            model.Destination.CreateSubdirectory(
+                model.Name.Trim())
 
             // group files to import
         let groups =
-            sourceDir.GetFiles(
+            model.Source.RootDirectory.GetFiles(
                 "*", SearchOption.AllDirectories)
                 |> Array.where (tryIdentify >> Option.isSome)
                 |> Array.groupBy (
@@ -47,11 +44,12 @@ module Message =
 
         { model with
             ImportStatus =
-                InProgress {
+                InProgress {|
+                    Destination = destDir
                     FileGroups = groups
                     NumGroupsImported = 0
-                } }
-        *)
+                |} },
+        Cmd.none
 
         (*
             // copy files to destination
@@ -66,30 +64,6 @@ module Message =
                             |> FileInfo
                     ImportImage (sourceFile, destFile)
         }
-
-    let private startImportAsync sourceDir destDir name =
-        async {
-            return startImport sourceDir destDir name
-        }
-
-    /// Starts importing images using the given model.
-    let private onStartImport model =
-        match model.SourceOpt, model.ImportStatus with
-            | Some source, NotStarted ->
-                let model =
-                    { model with
-                        ImportStatus = Initializing }
-                let cmd =
-                    Cmd.OfAsync.perform
-                        (fun () ->
-                            startImportAsync
-                                source
-                                model.Destination
-                                model.Name)
-                        ()
-                        ImportImages
-                model, cmd
-            | _ -> failwith "Invalid state"
         *)
 
     let update message model =
@@ -104,6 +78,4 @@ module Message =
                 { model with Name = name },
                 Cmd.none
             | StartImport ->
-                model,
-                Cmd.none
-
+                onStartImport model

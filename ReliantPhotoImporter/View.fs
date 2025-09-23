@@ -70,7 +70,7 @@ module View =
                 TextBlock.column 0
             ] :> IView
 
-                // directory name
+                // drive name
             Button.create [
                 Button.content shortName
                 if fullName <> shortName then
@@ -145,6 +145,8 @@ module View =
         [
             Button.create [
                 Button.content "Import"
+                Button.isEnabled (
+                    model.ImportStatus = NotStarted)
                 Button.width 200
                 Button.horizontalContentAlignment
                     HorizontalAlignment.Center
