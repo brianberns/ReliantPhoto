@@ -65,12 +65,15 @@ module Message =
         }
 
     let private onStartImport model =
-        { model with
-            ImportStatus = Starting },
-        Cmd.OfAsync.perform
-            startImport
-            model
-            ImportStarted
+        match model.ImportStatus with
+            | NotStarted ->
+                { model with
+                    ImportStatus = Starting },
+                Cmd.OfAsync.perform
+                    startImport
+                    model
+                    ImportStarted
+            | _ -> failwith "Invalid state"
 
     let private onImportStarted import model =
         match model.ImportStatus with
@@ -80,28 +83,47 @@ module Message =
                 Cmd.ofMsg ContinueImport
             | _ -> failwith "Invalid state"
 
+    let private continueImport import =
+        async {
+            let iGroup = import.NumGroupsImported
+            assert(iGroup <= import.FileGroups.Length)
+            if iGroup < import.FileGroups.Length then
+                let groupName =
+                    $"{import.Destination.Name} %03d{iGroup}"
+                for sourceFile in import.FileGroups[iGroup] do
+                    let destFile =
+                        Path.Combine(
+                            import.Destination.FullName,
+                            $"{groupName}{sourceFile.Extension.ToLower()}")
+                            |> FileInfo
+                    sourceFile.CopyTo(destFile.FullName)
+                        |> ignore
+            return {
+                import with
+                    NumGroupsImported = iGroup + 1 }
+        }
+
     let private onContinueImport model =
+
+        let ofSuccess import =
+            if import.NumGroupsImported
+                < import.FileGroups.Length then
+                ContinueImport
+            else
+                FinishImport
+
+        let ofError (ex : exn) =
+            printfn "%A" ex   // to-do: proper error handling
+            FinishImport
+
         match model.ImportStatus with
             | InProgress import ->
-                let iGroup = import.NumGroupsImported
-                if iGroup < import.FileGroups.Length then
-                    let groupName = $"{model.Name} %03d{iGroup}"
-                    for sourceFile in import.FileGroups[iGroup] do
-                        let destFile =
-                            Path.Combine(
-                                import.Destination.FullName,
-                                $"{groupName}{sourceFile.Extension.ToLower()}")
-                                |> FileInfo
-                        sourceFile.CopyTo(destFile.FullName)
-                            |> ignore
-                    { model with
-                        ImportStatus =
-                            InProgress {
-                                import with
-                                    NumGroupsImported = iGroup + 1 } },
-                    Cmd.ofMsg ContinueImport
-                else
-                    model, Cmd.ofMsg FinishImport
+                model,
+                Cmd.OfAsync.either
+                    continueImport
+                    import
+                    ofSuccess
+                    ofError
             | _ -> failwith "Invalid state"
 
     let onFinishImport model =
