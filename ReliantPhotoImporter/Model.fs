@@ -5,6 +5,7 @@ open System.IO
 
 type ImportStatus =
     | NotStarted
+    | Starting
     | InProgress of
         {|
             Destination : DirectoryInfo

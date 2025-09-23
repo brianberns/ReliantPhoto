@@ -9,7 +9,7 @@ type Message =
     | SetDestination of DirectoryInfo
     | SetName of string
     | StartImport
-    // | ImportImages of FileInfo[]
+    | ContinueImport of ImportStatus
     // | ImportImage of (FileInfo (*source*) * FileInfo (*destination*))
 
 module Message =
@@ -24,32 +24,38 @@ module Message =
         with :? UnknownImageFormatException ->
             None
 
+    let private startImport model =
+        async {
+                // create destination sub-directory
+            let destDir =
+                model.Destination.CreateSubdirectory(
+                    model.Name.Trim())
+
+                // group files to import
+            let groups =
+                model.Source.RootDirectory.GetFiles(
+                    "*", SearchOption.AllDirectories)
+                    |> Array.where (tryIdentify >> Option.isSome)
+                    |> Array.groupBy (
+                        _.Name
+                            >> Path.GetFileNameWithoutExtension)
+                    |> Array.sortBy fst
+                    |> Array.map snd
+
+            return InProgress {|
+                Destination = destDir
+                FileGroups = groups
+                NumGroupsImported = 0
+            |}
+        }
+
     let private onStartImport model =
-
-            // create destination sub-directory
-        let destDir =
-            model.Destination.CreateSubdirectory(
-                model.Name.Trim())
-
-            // group files to import
-        let groups =
-            model.Source.RootDirectory.GetFiles(
-                "*", SearchOption.AllDirectories)
-                |> Array.where (tryIdentify >> Option.isSome)
-                |> Array.groupBy (
-                    _.Name
-                        >> Path.GetFileNameWithoutExtension)
-                |> Array.sortBy fst
-                |> Array.map snd
-
         { model with
-            ImportStatus =
-                InProgress {|
-                    Destination = destDir
-                    FileGroups = groups
-                    NumGroupsImported = 0
-                |} },
-        Cmd.none
+            ImportStatus = Starting },
+        Cmd.OfAsync.perform
+            startImport
+            model
+            ContinueImport
 
         (*
             // copy files to destination
