@@ -31,7 +31,9 @@ type Model =
 
 module Model =
 
-    let drives = DriveInfo.GetDrives()
+    let drives =
+        DriveInfo.GetDrives()
+            |> Array.where _.IsReady
 
     /// User's pictures folder.
     let private myPicturesDir =

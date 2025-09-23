@@ -1,9 +1,12 @@
 ﻿namespace Reliant.Photo
 
+#nowarn 57
+
 open System
 open System.IO
 
 open Avalonia.Controls
+open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Layout
@@ -55,7 +58,8 @@ module Button =
 module View =
 
     /// Creates source components.
-    let private createSourceParts row model dispatch =
+    let private createSourceParts
+        row (model : Model) dispatch =
         [
                 // label
             TextBlock.create [
@@ -68,6 +72,14 @@ module View =
                 // drive
             ComboBox.create [
                 ComboBox.dataItems Model.drives
+                ComboBox.itemTemplate (
+                    DataTemplateView.create<_, _>(fun (drive : DriveInfo) ->
+                        TextBlock.create [
+                            TextBlock.text (
+                                $"{drive.VolumeLabel} ({drive.Name.TrimEnd('\\')})")
+                        ]
+                    )
+                )
                 ComboBox.selectedItem model.Source
                 ComboBox.width 200
                 ComboBox.horizontalAlignment HorizontalAlignment.Left
@@ -81,6 +93,15 @@ module View =
 
     /// Creates destination components.
     let private createDestinationParts row model dispatch =
+
+        let fullName =
+            model.Destination.FullName
+        let shortName =
+            let maxLen = 26
+            if fullName.Length > maxLen then
+                $"...{fullName[^maxLen..]}"
+            else fullName
+
         [
                 // label
             TextBlock.create [
@@ -92,8 +113,8 @@ module View =
 
                 // directory name
             Button.create [
-                Button.content model.Destination.Name
-                Button.tip model.Destination.FullName
+                Button.content shortName
+                Button.tip fullName
                 Button.focusable false
                 Button.width 200
                 Button.horizontalAlignment HorizontalAlignment.Left
@@ -105,15 +126,6 @@ module View =
                 Button.onClick (
                     DirectoryInfo.onPick (SetDestination >> dispatch))
             ]
-
-                // directory selection
-            Button.createIcon
-                Icon.folderOpen
-                [
-                    Button.row row
-                    Button.column 2
-                ]
-                (DirectoryInfo.onPick (SetDestination >> dispatch))
         ]
 
     /// Creates import name components.
@@ -165,7 +177,6 @@ module View =
                 TextBlock.margin 10
                 TextBlock.row row
                 TextBlock.column 1
-                TextBlock.columnSpan 2
             ]
         ]
 
@@ -194,7 +205,7 @@ module View =
             Window.child (
                 Grid.create [
                     Grid.margin 10
-                    Grid.columnDefinitions "Auto, Auto, *"
+                    Grid.columnDefinitions "Auto, Auto"
                     Grid.rowDefinitions "Auto, Auto, Auto, Auto, Auto"
                     Grid.children [
                         yield! createSourceParts 0 model dispatch

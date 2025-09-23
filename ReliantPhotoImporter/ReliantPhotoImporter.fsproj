@@ -7,6 +7,7 @@
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <TargetFramework>net9.0</TargetFramework>
     <PublishReadyToRun>true</PublishReadyToRun>
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
