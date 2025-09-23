@@ -83,26 +83,26 @@ module Message =
     let private onContinueImport model =
         match model.ImportStatus with
             | InProgress import ->
-                if import.NumGroupsImported >= import.FileGroups.Length then
-                    model, Cmd.ofMsg FinishImport
+                let iGroup = import.NumGroupsImported
+                if iGroup < import.FileGroups.Length then
+                    let groupName = $"{model.Name} %03d{iGroup}"
+                    for sourceFile in import.FileGroups[iGroup] do
+                        let destFile =
+                            Path.Combine(
+                                import.Destination.FullName,
+                                $"{groupName}{sourceFile.Extension.ToLower()}")
+                                |> FileInfo
+                        sourceFile.CopyTo(destFile.FullName)
+                            |> ignore
+                    { model with
+                        ImportStatus =
+                            InProgress {
+                                import with
+                                    NumGroupsImported = iGroup + 1 } },
+                    Cmd.ofMsg ContinueImport
                 else
-                    model, Cmd.ofMsg ContinueImport
+                    model, Cmd.ofMsg FinishImport
             | _ -> failwith "Invalid state"
-
-        (*
-            // copy files to destination
-        seq {
-            for (iGroup, sourceFiles) in groups do
-                let groupName = $"{name} %03d{iGroup + 1}"
-                for sourceFile in sourceFiles do
-                    let destFile =
-                        Path.Combine(
-                            destDir.FullName,
-                            $"{groupName}{sourceFile.Extension.ToLower()}")
-                            |> FileInfo
-                    ImportImage (sourceFile, destFile)
-        }
-        *)
 
     let onFinishImport model =
         match model.ImportStatus with
