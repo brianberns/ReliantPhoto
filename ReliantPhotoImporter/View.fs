@@ -160,6 +160,21 @@ module View =
             ] :> IView
         ]
 
+    /// Creates progress parts.
+    let private createProgressParts row import =
+        [
+            ProgressBar.create [
+                ProgressBar.minimum 0.0
+                ProgressBar.maximum import.FileGroups.Length
+                ProgressBar.value import.NumGroupsImported
+                ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} groups imported"
+                ProgressBar.margin 10
+                ProgressBar.row row
+                ProgressBar.column 0
+                ProgressBar.columnSpan 2
+            ] :> IView
+        ]
+
     /// Creates a view of the given model.
     let view model dispatch =
         Window.create [
@@ -168,13 +183,17 @@ module View =
                 Grid.create [
                     Grid.margin 10
                     Grid.columnDefinitions "Auto, Auto"
-                    Grid.rowDefinitions "Auto, Auto, Auto, Auto, Auto"
+                    Grid.rowDefinitions "Auto, Auto, Auto, Auto, Auto, Auto"
                     Grid.children [
                         yield! createSourceParts 0 model dispatch
                         yield! createDestinationParts 1 model dispatch
                         yield! createNameParts 2 model dispatch
                         yield! createExampleParts 3 model
                         yield! createImportParts 4 model dispatch
+                        match model.ImportStatus with
+                            | InProgress import ->
+                                yield! createProgressParts 5 import
+                            | _ -> ()
                     ]
                 ]
             )

@@ -22,7 +22,7 @@ type Message =
     | ImportStarted of Import
 
     /// Continue import.
-    | ContinueImport
+    | ContinueImport of Import
 
     /// Finish import
     | FinishImport
@@ -78,9 +78,8 @@ module Message =
     let private onImportStarted import model =
         match model.ImportStatus with
             | Starting ->
-                { model with
-                    ImportStatus = InProgress import },
-                Cmd.ofMsg ContinueImport
+                model,
+                Cmd.ofMsg (ContinueImport import)
             | _ -> failwith "Invalid state"
 
     let private continueImport import =
@@ -103,12 +102,12 @@ module Message =
                     NumGroupsImported = iGroup + 1 }
         }
 
-    let private onContinueImport model =
+    let private onContinueImport import model =
 
         let ofSuccess import =
             if import.NumGroupsImported
                 < import.FileGroups.Length then
-                ContinueImport
+                ContinueImport import
             else
                 FinishImport
 
@@ -116,15 +115,13 @@ module Message =
             printfn "%A" ex   // to-do: proper error handling
             FinishImport
 
-        match model.ImportStatus with
-            | InProgress import ->
-                model,
-                Cmd.OfAsync.either
-                    continueImport
-                    import
-                    ofSuccess
-                    ofError
-            | _ -> failwith "Invalid state"
+        { model with
+            ImportStatus = InProgress import },
+        Cmd.OfAsync.either
+            continueImport
+            import
+            ofSuccess
+            ofError
 
     let onFinishImport model =
         match model.ImportStatus with
@@ -149,7 +146,7 @@ module Message =
                 onStartImport model
             | ImportStarted import ->
                 onImportStarted import model
-            | ContinueImport ->
-                onContinueImport model
+            | ContinueImport import ->
+                onContinueImport import model
             | FinishImport ->
                 onFinishImport model
