@@ -3,22 +3,29 @@
 open System
 open System.IO
 
+type Import =
+    {
+        /// Child destination directory.
+        Destination : DirectoryInfo
+
+        /// Image file groups.
+        FileGroups : FileInfo[][]
+
+        NumGroupsImported : int
+    }
+
 type ImportStatus =
     | NotStarted
     | Starting
-    | InProgress of
-        {|
-            Destination : DirectoryInfo
-            FileGroups : FileInfo[][]
-            NumGroupsImported : int
-        |}
+    | InProgress of Import
+    | Finished
 
 type Model =
     {
         /// Source drive.
         Source : DriveInfo
 
-        /// Destination parent directory.
+        /// Parent destination directory.
         Destination : DirectoryInfo
 
         /// Import name.
