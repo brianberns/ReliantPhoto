@@ -61,10 +61,24 @@ module Model =
             |> DirectoryInfo
 
     /// Initial model.
-    let init () =
+    let init (sourceOpt, destOpt) =
+
+            // validate arguments
+        let source =
+            match sourceOpt with
+                | Some source
+                    when Array.contains source drives ->
+                        source
+                | _ -> Array.last drives   // guess: first drive is most likely source
+        let dest =
+            match destOpt with
+                | Some (dest : DirectoryInfo)
+                    when dest.Exists -> dest
+                | _ -> myPicturesDir
+
         {
-            Source = Array.last drives   // guess: last drive is most likely source
-            Destination = myPicturesDir
+            Source = source
+            Destination = dest
             Name =
                 DateTime.Today.ToString("dd-MMM-yyyy")
             ImportStatus = NotStarted

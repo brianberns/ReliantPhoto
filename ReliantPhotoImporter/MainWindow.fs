@@ -1,5 +1,7 @@
 namespace Reliant.Photo
 
+open System.IO
+
 open Elmish
 
 open Avalonia
@@ -7,13 +9,24 @@ open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
 
-module Window =
+[<AutoOpen>]
+module FileSystemExt =
 
-    /// Loads user settings, if possible.
-    let loadSettings (window : Window) =
-        Settings.tryLoad ()
-            |> Option.iter (fun settings ->
-                window.Position <- PixelPoint(settings.Left, settings.Top))
+    type DriveInfo with
+
+        /// Tries to parse a drive.
+        static member TryParse(name) =
+            try Some (DriveInfo(name))
+            with _ -> None
+
+    type DirectoryInfo with
+
+        /// Tries to parse a directory.
+        static member TryParse(path) =
+            try Some (DirectoryInfo(path))
+            with _ -> None
+
+module Window =
 
     /// Saves user settings.
     let saveSettings (window : Window) =
@@ -24,24 +37,22 @@ module Window =
             Destination = ""
         }
 
-    /// Creates Elmish program.
-    let private makeProgram =
+    /// Starts the Elmish MVU loop.
+    let run (window : HostWindow) arg =
         Program.mkProgram
             Message.init
             Message.update
             View.view
+
+            |> Program.withHost window
+#if DEBUG
+            |> Program.withConsoleTrace
+#endif
             |> Program.withErrorHandler (fun (msg, exn) ->
                 printfn $"{msg}"
                 printfn $"{exn.Message}"
                 printfn $"{exn.StackTrace}")
 
-    /// Starts the Elmish MVU loop.
-    let run (window : HostWindow) arg =
-        makeProgram
-            |> Program.withHost window
-#if DEBUG
-            |> Program.withConsoleTrace
-#endif
             |> Program.runWithAvaloniaSyncDispatch arg
 
 /// Main window.
@@ -51,10 +62,25 @@ type MainWindow(args : string[]) as this =
         CanResize = false)
     do
             // load settings at startup
-        Window.loadSettings this
+        let settingsOpt = Settings.tryLoad()
+
+            // ... window position
+        settingsOpt
+            |> Option.iter (fun settings ->
+                this.Position <- PixelPoint(settings.Left, settings.Top))
+
+            // ... source drive
+        let sourceOpt =
+            settingsOpt
+                |> Option.bind (_.Source >> DriveInfo.TryParse)
+
+            // ... destination directory
+        let destOpt =
+            settingsOpt
+                |> Option.bind (_.Destination >> DirectoryInfo.TryParse)
 
             // save settings at exit
         this.Closing.Add(fun _ ->
             Window.saveSettings this)
 
-        Window.run this ()
+        Window.run this (sourceOpt, destOpt)

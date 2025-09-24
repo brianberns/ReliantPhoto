@@ -28,8 +28,8 @@ type Message =
 module Message =
 
     /// Creates initial model and command.
-    let init () =
-        Model.init (),
+    let init arg =
+        Model.init arg,
         Cmd.none
 
     /// Tries to identify if the given file is an image.
