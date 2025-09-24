@@ -160,7 +160,7 @@ module View =
             Button.create [
                 Button.content "Import"
                 Button.isEnabled (
-                    model.ImportStatus = NotStarted)
+                    not model.ImportStatus.IsImporting)
                 Button.width widgetWidth
                 Button.horizontalContentAlignment
                     HorizontalAlignment.Center
@@ -192,19 +192,25 @@ module View =
     /// Creates error parts.
     let private createErrorParts row error =
         [
+                // label
             TextBlock.create [
-                TextBlock.text error
-                TextBlock.foreground "Red"
-                TextBlock.maxWidth (widgetWidth + 120.0)   // force wrapping (to-do: make Avalonia calculate this width automatically)
-                TextBlock.textWrapping TextWrapping.Wrap
-                TextBlock.textAlignment TextAlignment.Center
+                TextBlock.text "Error:"
                 TextBlock.verticalAlignment VerticalAlignment.Center
-                TextBlock.padding 10
-                TextBlock.margin 10
                 TextBlock.row row
                 TextBlock.column 0
-                TextBlock.columnSpan 2
             ] :> IView
+
+                // error
+            SelectableTextBlock.create [
+                SelectableTextBlock.text error
+                SelectableTextBlock.width widgetWidth
+                SelectableTextBlock.textWrapping TextWrapping.Wrap
+                SelectableTextBlock.verticalAlignment VerticalAlignment.Center
+                SelectableTextBlock.padding 10
+                SelectableTextBlock.margin 10
+                SelectableTextBlock.row row
+                SelectableTextBlock.column 1
+            ]
         ]
 
     /// Creates a view of the given model.

@@ -71,17 +71,20 @@ module Message =
             }
         }
 
+    /// Handles an error.
+    let private handleError (ex : exn) =
+        HandleError ex.Message
+
     /// Starts an import.
     let private onStartImport model =
-        match model.ImportStatus with
-            | NotStarted ->
-                { model with
-                    ImportStatus = Starting },
-                Cmd.OfAsync.perform
-                    startImport
-                    model
-                    ContinueImport
-            | _ -> failwith "Invalid state"
+        assert(not model.ImportStatus.IsImporting)
+        { model with
+            ImportStatus = Starting },
+        Cmd.OfAsync.either
+            startImport
+            model
+            ContinueImport
+            handleError
 
     /// Continues an import.
     let private continueImport import =
@@ -114,32 +117,27 @@ module Message =
     /// Continues an import.
     let private onContinueImport import model =
 
-        let ofSuccess import =
+        let handleSuccess import =
             if import.NumGroupsImported
                 < import.FileGroups.Length then
                 ContinueImport import
             else
                 FinishImport
 
-        let ofError (ex : exn) =
-            HandleError ex.Message
-
         { model with
             ImportStatus = InProgress import },
         Cmd.OfAsync.either
             continueImport
             import
-            ofSuccess
-            ofError
+            handleSuccess
+            handleError
 
     /// Finishes an import.
     let onFinishImport model =
-        match model.ImportStatus with
-            | InProgress _ ->
-                { model with
-                    ImportStatus = Finished },
-                Cmd.none
-            | _ -> failwith "Invalid state"
+        assert(model.ImportStatus.IsImporting)
+        { model with
+            ImportStatus = Finished },
+        Cmd.none
 
     /// Handles an error.
     let onHandleError error model =

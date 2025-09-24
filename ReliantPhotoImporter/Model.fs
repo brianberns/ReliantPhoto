@@ -34,6 +34,11 @@ type ImportStatus =
     /// Import stopped with an error.
     | Error of string
 
+    /// Import underway?
+    member status.IsImporting =
+        status.IsStarting
+            || status.IsInProgress
+
 /// Application model.
 type Model =
     {
