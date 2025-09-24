@@ -8,6 +8,7 @@ open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Layout
+open Avalonia.Media
 
 module Asset =
 
@@ -23,7 +24,7 @@ module View =
             |> WindowIcon
 
     /// Widget width.
-    let private widgetWidth = 300
+    let private widgetWidth = 300.0
 
     /// Creates source components.
     let private createSourceParts
@@ -177,14 +178,32 @@ module View =
     let private createProgressParts row import =
         [
             ProgressBar.create [
-                ProgressBar.minimum 0.0
+                ProgressBar.minimum 0
                 ProgressBar.maximum import.FileGroups.Length
                 ProgressBar.value import.NumGroupsImported
-                ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} groups imported"
+                ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
                 ProgressBar.margin 10
                 ProgressBar.row row
                 ProgressBar.column 0
                 ProgressBar.columnSpan 2
+            ] :> IView
+        ]
+
+    /// Creates error parts.
+    let private createErrorParts row error =
+        [
+            TextBlock.create [
+                TextBlock.text error
+                TextBlock.foreground "Red"
+                TextBlock.maxWidth (widgetWidth + 120.0)   // force wrapping (to-do: make Avalonia calculate this width automatically)
+                TextBlock.textWrapping TextWrapping.Wrap
+                TextBlock.textAlignment TextAlignment.Center
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.padding 10
+                TextBlock.margin 10
+                TextBlock.row row
+                TextBlock.column 0
+                TextBlock.columnSpan 2
             ] :> IView
         ]
 
@@ -207,6 +226,8 @@ module View =
                         match model.ImportStatus with
                             | InProgress import ->
                                 yield! createProgressParts 5 import
+                            | Error error ->
+                                yield! createErrorParts 5 error
                             | _ -> ()
                     ]
                 ]

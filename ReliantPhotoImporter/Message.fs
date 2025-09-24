@@ -22,8 +22,11 @@ type Message =
     /// Continue import.
     | ContinueImport of Import
 
-    /// Finish import
+    /// Finish import.
     | FinishImport
+
+    /// Handle error.
+    | HandleError of string
 
     /// Application shutdown.
     | Shutdown
@@ -119,8 +122,7 @@ module Message =
                 FinishImport
 
         let ofError (ex : exn) =
-            printfn "%A" ex   // to-do: proper error handling
-            FinishImport
+            HandleError ex.Message
 
         { model with
             ImportStatus = InProgress import },
@@ -138,6 +140,12 @@ module Message =
                     ImportStatus = Finished },
                 Cmd.none
             | _ -> failwith "Invalid state"
+
+    /// Handles an error.
+    let onHandleError error model =
+        { model with
+            ImportStatus = Error error },
+        Cmd.none
 
     /// Updates the model based on the given message.
     let update message model =
@@ -157,5 +165,7 @@ module Message =
                 onContinueImport import model
             | FinishImport ->
                 onFinishImport model
+            | HandleError error ->
+                onHandleError error model
             | Shutdown ->
                 model, Cmd.none

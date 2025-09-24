@@ -28,8 +28,11 @@ type ImportStatus =
     /// Import in progress.
     | InProgress of Import
 
-    /// Import finished. 
+    /// Import finished successfully. 
     | Finished
+
+    /// Import stopped with an error.
+    | Error of string
 
 /// Application model.
 type Model =
