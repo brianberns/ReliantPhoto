@@ -16,9 +16,6 @@ module Window =
 
     /// Creates Elmish program.
     let private makeProgram =
-
-        let update = fun () () -> ()
-
         Program.mkProgram
             Message.init
             Message.update

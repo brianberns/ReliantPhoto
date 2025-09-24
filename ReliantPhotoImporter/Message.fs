@@ -4,6 +4,7 @@ open Elmish
 open System.IO
 open SixLabors.ImageSharp
 
+/// Application message.
 type Message =
 
     /// Set source drive.
