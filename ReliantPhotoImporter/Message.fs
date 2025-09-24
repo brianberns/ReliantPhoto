@@ -38,12 +38,14 @@ module Message =
         Model.init arg,
         Cmd.none
 
-    /// Tries to identify if the given file is an image.
-    let private tryIdentify (file : FileInfo) =
+    /// Determines if the given file is an image.
+    let private isImage (file : FileInfo) =
         try
-            Some (Image.Identify file.FullName)
+            Image.Identify file.FullName
+                |> ignore
+            true
         with :? UnknownImageFormatException ->
-            None
+            false
 
     /// Starts an import.
     let private startImport model =
@@ -57,10 +59,11 @@ module Message =
             let groups =
                 model.Source.RootDirectory.GetFiles(
                     "*", SearchOption.AllDirectories)
-                    |> Array.where (tryIdentify >> Option.isSome)
                     |> Array.groupBy (
                         _.Name
                             >> Path.GetFileNameWithoutExtension)
+                    |> Array.where (
+                        snd >> Array.exists isImage)
                     |> Array.sortBy fst
                     |> Array.map snd
 
