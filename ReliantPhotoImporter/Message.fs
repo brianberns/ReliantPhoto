@@ -26,16 +26,19 @@ type Message =
 
 module Message =
 
+    /// Creates initial model and command.
     let init () =
         Model.init (),
         Cmd.none
 
+    /// Tries to identify if the given file is an image.
     let private tryIdentify (file : FileInfo) =
         try
             Some (Image.Identify file.FullName)
         with :? UnknownImageFormatException ->
             None
 
+    /// Starts an import.
     let private startImport model =
         async {
                 // create destination sub-directory
@@ -61,6 +64,7 @@ module Message =
             }
         }
 
+    /// Starts an import.
     let private onStartImport model =
         match model.ImportStatus with
             | NotStarted ->
@@ -72,20 +76,18 @@ module Message =
                     ContinueImport
             | _ -> failwith "Invalid state"
 
-    let private onImportStarted import model =
-        match model.ImportStatus with
-            | Starting ->
-                model,
-                Cmd.ofMsg (ContinueImport import)
-            | _ -> failwith "Invalid state"
-
+    /// Continues an import.
     let private continueImport import =
         async {
             let iGroup = import.NumGroupsImported
             assert(iGroup <= import.FileGroups.Length)
+
+                // groups remain to be imported?
             if iGroup < import.FileGroups.Length then
                 let groupName =
                     $"{import.Destination.Name} %03d{iGroup}"
+
+                    // import each file in the group
                 for sourceFile in import.FileGroups[iGroup] do
                     let destFile =
                         Path.Combine(
@@ -94,11 +96,14 @@ module Message =
                             |> FileInfo
                     sourceFile.CopyTo(destFile.FullName)
                         |> ignore
-            return {
-                import with
-                    NumGroupsImported = iGroup + 1 }
+                return {
+                    import with
+                        NumGroupsImported = iGroup + 1 }
+
+            else return import
         }
 
+    /// Continues an import.
     let private onContinueImport import model =
 
         let ofSuccess import =
@@ -120,6 +125,7 @@ module Message =
             ofSuccess
             ofError
 
+    /// Finishes an import.
     let onFinishImport model =
         match model.ImportStatus with
             | InProgress _ ->
@@ -128,6 +134,7 @@ module Message =
                 Cmd.none
             | _ -> failwith "Invalid state"
 
+    /// Updates the model based on the given message.
     let update message model =
         match message with
             | SetSource drive ->
