@@ -25,6 +25,9 @@ type Message =
     /// Finish import
     | FinishImport
 
+    /// Application shutdown.
+    | Shutdown
+
 module Message =
 
     /// Creates initial model and command.
@@ -154,3 +157,5 @@ module Message =
                 onContinueImport import model
             | FinishImport ->
                 onFinishImport model
+            | Shutdown ->
+                model, Cmd.none

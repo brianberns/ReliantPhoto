@@ -1,5 +1,6 @@
 namespace Reliant.Photo
 
+open System
 open System.IO
 
 open Elmish
@@ -29,13 +30,33 @@ module FileSystemExt =
 module Window =
 
     /// Saves user settings.
-    let saveSettings (window : Window) =
+    let saveSettings (window : Window) (model : Model) =
         Settings.save {
             Left = window.Position.X
             Top = window.Position.Y
-            Source = ""
-            Destination = ""
+            Source = string model.Source
+            Destination = string model.Destination
         }
+
+    /// Watches for app shutdown.
+    let watchShutdown (window : Window) : Subscribe<_> =
+        fun dispatch ->
+
+                // watch for window close event
+            window.Closing.Add(fun _ ->
+                dispatch Shutdown)
+
+                // cleanup
+            {
+                new IDisposable with
+                    member _.Dispose() = ()
+            }
+
+    /// Subscribes to app shutdown.
+    let subscribeShutdown window (model : Model) : Sub<_> =
+        [
+            [ "Shutdown" ], watchShutdown window
+        ]
 
     /// Starts the Elmish MVU loop.
     let run (window : HostWindow) arg =
@@ -48,6 +69,12 @@ module Window =
 #if DEBUG
             |> Program.withConsoleTrace
 #endif
+            |> Program.withSubscription (
+                subscribeShutdown window)
+
+            |> Program.withTermination _.IsShutdown (
+                saveSettings window)
+
             |> Program.withErrorHandler (fun (msg, exn) ->
                 printfn $"{msg}"
                 printfn $"{exn.Message}"
@@ -67,20 +94,19 @@ type MainWindow(args : string[]) as this =
             // ... window position
         settingsOpt
             |> Option.iter (fun settings ->
-                this.Position <- PixelPoint(settings.Left, settings.Top))
+                this.Position <-
+                    PixelPoint(settings.Left, settings.Top))
 
             // ... source drive
         let sourceOpt =
             settingsOpt
-                |> Option.bind (_.Source >> DriveInfo.TryParse)
+                |> Option.bind (
+                    _.Source >> DriveInfo.TryParse)
 
             // ... destination directory
         let destOpt =
             settingsOpt
-                |> Option.bind (_.Destination >> DirectoryInfo.TryParse)
-
-            // save settings at exit
-        this.Closing.Add(fun _ ->
-            Window.saveSettings this)
+                |> Option.bind (
+                    _.Destination >> DirectoryInfo.TryParse)
 
         Window.run this (sourceOpt, destOpt)
