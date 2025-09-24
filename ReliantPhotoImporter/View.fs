@@ -16,6 +16,9 @@ module Asset =
 
 module View =
 
+    /// Widget width.
+    let private widgetWidth = 300
+
     /// Creates source components.
     let private createSourceParts
         row (model : Model) dispatch =
@@ -40,7 +43,7 @@ module View =
                     )
                 )
                 ComboBox.selectedItem model.Source
-                ComboBox.width 200
+                ComboBox.width widgetWidth
                 ComboBox.horizontalAlignment HorizontalAlignment.Left
                 ComboBox.verticalAlignment VerticalAlignment.Center
                 ComboBox.padding 10
@@ -56,7 +59,7 @@ module View =
         let fullName =
             model.Destination.FullName
         let shortName =
-            let maxLen = 26
+            let maxLen = 40
             if fullName.Length > maxLen then
                 $"...{fullName[^maxLen..]}"
             else fullName
@@ -76,7 +79,7 @@ module View =
                 if fullName <> shortName then
                     Button.tip fullName
                 Button.focusable false
-                Button.width 200
+                Button.width widgetWidth
                 Button.horizontalAlignment HorizontalAlignment.Left
                 Button.verticalAlignment VerticalAlignment.Center
                 Button.padding 10
@@ -102,7 +105,7 @@ module View =
                 // name
             TextBox.create [
                 TextBox.text model.Name
-                TextBox.width 200
+                TextBox.width widgetWidth
                 TextBox.horizontalAlignment HorizontalAlignment.Left
                 TextBox.verticalAlignment VerticalAlignment.Center
                 TextBox.padding 10
@@ -147,7 +150,7 @@ module View =
                 Button.content "Import"
                 Button.isEnabled (
                     model.ImportStatus = NotStarted)
-                Button.width 200
+                Button.width widgetWidth
                 Button.horizontalContentAlignment
                     HorizontalAlignment.Center
                 Button.verticalAlignment VerticalAlignment.Center
