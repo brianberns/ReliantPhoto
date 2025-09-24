@@ -18,9 +18,6 @@ type Message =
     /// Start the import.
     | StartImport
 
-    /// Import started.
-    | ImportStarted of Import
-
     /// Continue import.
     | ContinueImport of Import
 
@@ -72,7 +69,7 @@ module Message =
                 Cmd.OfAsync.perform
                     startImport
                     model
-                    ImportStarted
+                    ContinueImport
             | _ -> failwith "Invalid state"
 
     let private onImportStarted import model =
@@ -144,8 +141,6 @@ module Message =
                 Cmd.none
             | StartImport ->
                 onStartImport model
-            | ImportStarted import ->
-                onImportStarted import model
             | ContinueImport import ->
                 onContinueImport import model
             | FinishImport ->
