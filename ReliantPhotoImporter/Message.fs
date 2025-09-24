@@ -1,7 +1,10 @@
 ﻿namespace Reliant.Photo
 
-open Elmish
+open System
 open System.IO
+
+open Elmish
+
 open SixLabors.ImageSharp
 
 /// Application message.
@@ -51,9 +54,22 @@ module Message =
     let private startImport model =
         async {
                 // create destination sub-directory
+            let importName = model.Name.Trim()
             let destDir =
-                model.Destination.CreateSubdirectory(
-                    model.Name.Trim())
+                model.Destination
+                    .CreateSubdirectory(importName)
+
+                // determine next available offset
+            let offset =
+                destDir.GetFiles($"{importName}*")
+                    |> Seq.map (fun file ->
+                        let fileName =
+                            Path.GetFileNameWithoutExtension(file.Name)
+                        fileName[importName.Length ..].Trim())
+                    |> Seq.choose (
+                        Int32.TryParse >> Dictionary.toOption)
+                    |> Seq.tryMax
+                    |> Option.defaultValue 0
 
                 // group files to import
             let groups =
@@ -69,6 +85,7 @@ module Message =
 
             return {
                 Destination = destDir
+                Offset = offset
                 FileGroups = groups
                 NumGroupsImported = 0
             }
@@ -98,7 +115,8 @@ module Message =
                 // groups remain to be imported?
             if iGroup < import.FileGroups.Length then
                 let groupName =
-                    $"{import.Destination.Name} %03d{iGroup}"
+                    let index = iGroup + import.Offset + 1
+                    $"{import.Destination.Name} %03d{index}"
 
                     // import each file in the group
                 for sourceFile in import.FileGroups[iGroup] do

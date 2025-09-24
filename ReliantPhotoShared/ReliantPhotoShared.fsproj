@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Prelude.fs" />
+    <Compile Include="Option.fs" />
+    <Compile Include="Seq.fs" />
     <Compile Include="Resource.fs" />
     <Compile Include="FileSystemInfo.fs" />
   </ItemGroup>

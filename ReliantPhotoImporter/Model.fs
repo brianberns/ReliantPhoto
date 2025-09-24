@@ -9,6 +9,9 @@ type Import =
         /// Child destination directory.
         Destination : DirectoryInfo
 
+        /// Offset in destination directory.
+        Offset : int
+
         /// Image file groups.
         FileGroups : FileInfo[][]
 
