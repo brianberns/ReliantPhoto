@@ -17,10 +17,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\ReliantPhotoImporter.png" />
-    <EmbeddedResource Include="Assets\folder_open_48dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png" />
     <Compile Include="Model.fs" />
     <Compile Include="Message.fs" />
     <Compile Include="View.fs" />
+    <Compile Include="Settings.fs" />
     <Compile Include="MainWindow.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

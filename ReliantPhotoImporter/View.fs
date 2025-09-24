@@ -16,6 +16,12 @@ module Asset =
 
 module View =
 
+    /// Window icon.
+    let private icon =
+        "ReliantPhotoImporter.png"
+            |> Resource.get Asset.path
+            |> WindowIcon
+
     /// Widget width.
     let private widgetWidth = 300
 
@@ -182,6 +188,7 @@ module View =
     let view model dispatch =
         Window.create [
             Window.sizeToContent SizeToContent.WidthAndHeight
+            Window.icon icon
             Window.child (
                 Grid.create [
                     Grid.margin 10

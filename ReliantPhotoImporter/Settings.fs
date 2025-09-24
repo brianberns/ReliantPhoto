@@ -13,17 +13,11 @@ type Settings =
         /// Y-coordinate of window.
         Top : int
 
-        /// Width of window.
-        Width : double
+        /// Source drive.
+        Source : string
 
-        /// Height of window.
-        Height : double
-
-        /// Window is maximized?
-        Maximized : bool
-
-        /// Current directory.
-        Directory : string
+        /// Destination directory.
+        Destination : string
     }
 
 module Settings =
@@ -33,7 +27,7 @@ module Settings =
         Path.Combine(
             Environment.GetFolderPath(
                 Environment.SpecialFolder.ApplicationData),
-            "ReliantPhotoViewer",
+            "ReliantPhotoImporter",
             "Settings.json")
             |> FileInfo
 

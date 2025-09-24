@@ -2,17 +2,27 @@ namespace Reliant.Photo
 
 open Elmish
 
+open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Hosts
 
 module Window =
 
-    /// Gets the window icon.
-    let getIcon () =
-        "ReliantPhotoImporter.png"
-            |> Resource.get Asset.path
-            |> WindowIcon
+    /// Loads user settings, if possible.
+    let loadSettings (window : Window) =
+        Settings.tryLoad ()
+            |> Option.iter (fun settings ->
+                window.Position <- PixelPoint(settings.Left, settings.Top))
+
+    /// Saves user settings.
+    let saveSettings (window : Window) =
+        Settings.save {
+            Left = window.Position.X
+            Top = window.Position.Y
+            Source = ""
+            Destination = ""
+        }
 
     /// Creates Elmish program.
     let private makeProgram =
@@ -38,7 +48,6 @@ module Window =
 type MainWindow(args : string[]) as this =
     inherit HostWindow(
         Title = "Reliant Photo Importer",
-        Icon = Window.getIcon (),
         CanResize = false)
     do
         Window.run this ()
