@@ -65,11 +65,13 @@ module Model =
 
             // validate arguments
         let source =
-            match sourceOpt with
-                | Some source
-                    when Array.contains source drives ->
-                        source
-                | _ -> Array.last drives   // guess: first drive is most likely source
+            sourceOpt
+                |> Option.bind (fun source ->
+                    Array.tryFind
+                        (DriveInfo.same source)
+                        drives)
+                |> Option.defaultValue (
+                    Array.last drives)   // guess: first drive is most likely source
         let dest =
             match destOpt with
                 | Some (dest : DirectoryInfo)

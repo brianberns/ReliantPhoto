@@ -56,6 +56,10 @@ module View =
                 ComboBox.margin 10
                 ComboBox.row row
                 ComboBox.column 1
+                ComboBox.onSelectedItemChanged (function
+                    | :? DriveInfo as drive ->
+                        SetSource drive |> dispatch
+                    | _ -> ())
             ]
         ]
 

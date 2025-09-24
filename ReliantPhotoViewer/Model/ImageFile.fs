@@ -2,42 +2,11 @@
 
 open System
 open System.IO
-open System.Runtime.InteropServices
 open System.Threading
 
 open Avalonia.Media.Imaging
 
-module FileSystemInfo =
-
-    /// Path string comparison.
-    let comparison =
-        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
-                StringComparison.OrdinalIgnoreCase
-        else StringComparison.Ordinal
-
-module DirectoryInfo =
-
-    /// Normalizes the given directory's path.
-    let normalizedPath (dir : DirectoryInfo) =
-        dir.FullName
-            |> Path.TrimEndingDirectorySeparator
-
-    /// Directory equality.
-    let same dirA dirB =
-        String.Equals(
-            normalizedPath dirA,
-            normalizedPath dirB,
-            FileSystemInfo.comparison)
-
 module FileInfo =
-
-    /// File equality.
-    let same (fileA : FileInfo) (fileB : FileInfo) =
-        String.Equals(
-            fileA.FullName,
-            fileB.FullName,
-            FileSystemInfo.comparison)
 
     /// Waits for the given file to be readable.
     let waitForFileRead
