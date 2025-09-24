@@ -201,15 +201,21 @@ module View =
             ] :> IView
 
                 // error
-            SelectableTextBlock.create [
-                SelectableTextBlock.text error
-                SelectableTextBlock.width widgetWidth
-                SelectableTextBlock.textWrapping TextWrapping.Wrap
-                SelectableTextBlock.verticalAlignment VerticalAlignment.Center
-                SelectableTextBlock.padding 10
-                SelectableTextBlock.margin 10
-                SelectableTextBlock.row row
-                SelectableTextBlock.column 1
+            Border.create [
+                Border.borderBrush Brushes.Red
+                Border.borderThickness 2
+                Border.width widgetWidth
+                Border.verticalAlignment VerticalAlignment.Center
+                Border.padding 10
+                Border.margin 10
+                Border.row row
+                Border.column 1
+                Border.child (
+                    SelectableTextBlock.create [
+                        SelectableTextBlock.text error
+                        SelectableTextBlock.textWrapping TextWrapping.Wrap
+                    ]
+                )
             ]
         ]
 
