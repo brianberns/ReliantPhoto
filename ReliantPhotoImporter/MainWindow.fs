@@ -50,5 +50,11 @@ type MainWindow(args : string[]) as this =
         Title = "Reliant Photo Importer",
         CanResize = false)
     do
-        Window.run this ()
+            // load settings at startup
+        Window.loadSettings this
 
+            // save settings at exit
+        this.Closing.Add(fun _ ->
+            Window.saveSettings this)
+
+        Window.run this ()
