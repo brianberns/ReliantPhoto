@@ -3,6 +3,7 @@
 open System
 open System.IO
 
+/// An import in progress.
 type Import =
     {
         /// Child destination directory.
@@ -11,15 +12,26 @@ type Import =
         /// Image file groups.
         FileGroups : FileInfo[][]
 
+        /// Number of groups imported so far.
         NumGroupsImported : int
     }
 
+/// Import status.
 type ImportStatus =
+
+    /// Not started yet.
     | NotStarted
+
+    /// Import started but not yet processing files.
     | Starting
+
+    /// Import in progress.
     | InProgress of Import
+
+    /// Import finished. 
     | Finished
 
+/// Application model.
 type Model =
     {
         /// Source drive.

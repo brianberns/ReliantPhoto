@@ -96,6 +96,7 @@ module Message =
                             |> FileInfo
                     sourceFile.CopyTo(destFile.FullName)
                         |> ignore
+
                 return {
                     import with
                         NumGroupsImported = iGroup + 1 }
