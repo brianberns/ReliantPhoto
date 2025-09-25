@@ -53,7 +53,7 @@ module Window =
             }
 
     /// Subscribes to app shutdown.
-    let subscribeShutdown window (model : Model) : Sub<_> =
+    let subscribeShutdown window (_model : Model) : Sub<_> =
         [
             [ "Shutdown" ], watchShutdown window
         ]
