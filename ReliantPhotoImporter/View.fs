@@ -26,7 +26,7 @@ module View =
     /// Widget width.
     let private widgetWidth = 300.0
 
-    /// Creates source components.
+    /// Creates source parts.
     let private createSourceParts
         row (model : Model) dispatch =
         [
@@ -64,7 +64,7 @@ module View =
             ]
         ]
 
-    /// Creates destination components.
+    /// Creates destination parts.
     let private createDestinationParts row model dispatch =
 
         let fullName =
@@ -102,7 +102,7 @@ module View =
             ]
         ]
 
-    /// Creates import name components.
+    /// Creates import name parts.
     let private createNameParts row (model : Model) dispatch =
         [
                 // label
@@ -128,7 +128,7 @@ module View =
             ]
         ]
 
-    /// Creates example components.
+    /// Creates example parts.
     let private createExampleParts row (model : Model) =
         [
                 // label
