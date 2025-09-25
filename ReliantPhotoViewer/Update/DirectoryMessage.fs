@@ -119,7 +119,6 @@ module DirectoryMessage =
         [
             if model.IsLoading then
                 [ key; "load" ], loadDirectory model
-
             [ key; "watch" ], watch model
         ]
 
