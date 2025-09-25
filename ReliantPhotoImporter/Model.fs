@@ -32,7 +32,7 @@ type ImportStatus =
     | InProgress of Import
 
     /// Import finished successfully. 
-    | Finished
+    | Finished of int
 
     /// Import stopped with an error.
     | Error of string

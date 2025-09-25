@@ -174,19 +174,95 @@ module View =
             ] :> IView
         ]
 
+    /// Creates not-started parts.
+    let private createNotStartedParts row =
+        [
+                // label
+            TextBlock.create [
+                TextBlock.text "Status:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.row row
+                TextBlock.column 0
+            ] :> IView
+
+                // status
+            TextBlock.create [
+                TextBlock.text "Import not yet started"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.padding 10
+                TextBlock.margin 10
+                TextBlock.row row
+                TextBlock.column 1
+            ]
+        ]
+
+    /// Creates starting parts.
+    let private createStartingParts row =
+        [
+                // label
+            TextBlock.create [
+                TextBlock.text "Status:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.row row
+                TextBlock.column 0
+            ] :> IView
+
+                // status
+            TextBlock.create [
+                TextBlock.text "Searching for files..."
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.padding 10
+                TextBlock.margin 10
+                TextBlock.row row
+                TextBlock.column 1
+            ]
+        ]
+
     /// Creates progress parts.
     let private createProgressParts row import =
         [
+                // label
+            TextBlock.create [
+                TextBlock.text "Status:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.margin (0, 10)   // in lieu of progress bar padding
+                TextBlock.padding (0, 10)
+                TextBlock.row row
+                TextBlock.column 0
+            ] :> IView
+
+                // progress
             ProgressBar.create [
                 ProgressBar.minimum 0
                 ProgressBar.maximum import.FileGroups.Length
                 ProgressBar.value import.NumGroupsImported
                 ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
-                ProgressBar.margin 10
+                ProgressBar.margin 10   // padding doesn't work here?
                 ProgressBar.row row
-                ProgressBar.column 0
-                ProgressBar.columnSpan 2
+                ProgressBar.column 1
+            ]
+        ]
+
+    /// Creates finished parts.
+    let private createFinishedParts row numImages =
+        [
+                // label
+            TextBlock.create [
+                TextBlock.text "Status:"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.row row
+                TextBlock.column 0
             ] :> IView
+
+                // status
+            TextBlock.create [
+                TextBlock.text $"{numImages} images imported"
+                TextBlock.verticalAlignment VerticalAlignment.Center
+                TextBlock.padding 10
+                TextBlock.margin 10
+                TextBlock.row row
+                TextBlock.column 1
+            ]
         ]
 
     /// Creates error parts.
@@ -219,6 +295,19 @@ module View =
             ]
         ]
 
+    let createStatusParts row status =
+        match status with
+            | NotStarted ->
+                createNotStartedParts row
+            | Starting ->
+                createStartingParts row
+            | InProgress import ->
+                createProgressParts row import
+            | Finished numImages ->
+                createFinishedParts row numImages
+            | Error error ->
+                createErrorParts row error
+
     /// Creates a view of the given model.
     let view model dispatch =
         Window.create [
@@ -235,12 +324,7 @@ module View =
                         yield! createNameParts 2 model dispatch
                         yield! createExampleParts 3 model
                         yield! createImportParts 4 model dispatch
-                        match model.ImportStatus with
-                            | InProgress import ->
-                                yield! createProgressParts 5 import
-                            | Error error ->
-                                yield! createErrorParts 5 error
-                            | _ -> ()
+                        yield! createStatusParts 5 model.ImportStatus
                     ]
                 ]
             )

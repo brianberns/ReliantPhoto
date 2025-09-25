@@ -155,10 +155,13 @@ module Message =
 
     /// Finishes an import.
     let onFinishImport model =
-        assert(model.ImportStatus.IsImporting)
-        { model with
-            ImportStatus = Finished },
-        Cmd.none
+        match model.ImportStatus with
+            | InProgress import ->
+                { model with
+                    ImportStatus =
+                        Finished import.FileGroups.Length },
+                Cmd.none
+            | _ -> failwith "Invalid state"
 
     /// Handles an error.
     let onHandleError error model =
