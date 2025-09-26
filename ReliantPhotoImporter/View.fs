@@ -170,7 +170,7 @@ module View =
                 Button.row row
                 Button.column 1
                 Button.onClick (fun _ ->
-                    dispatch StartImport)
+                    dispatch GatherFiles)
             ] :> IView
         ]
 
@@ -196,8 +196,8 @@ module View =
             ]
         ]
 
-    /// Creates starting parts.
-    let private createStartingParts row =
+    /// Creates gathering parts.
+    let private createGatheringParts row =
         [
                 // label
             TextBlock.create [
@@ -314,8 +314,8 @@ module View =
         match status with
             | NotStarted ->
                 createNotStartedParts row
-            | Started ->
-                createStartingParts row
+            | GatheringFiles ->
+                createGatheringParts row
             | InProgress import ->
                 createProgressParts row import
             | Finished numImages ->

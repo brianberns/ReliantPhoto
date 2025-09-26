@@ -25,8 +25,8 @@ type ImportStatus =
     /// Not started yet.
     | NotStarted
 
-    /// Import started but not yet processing files.
-    | Started
+    /// Gathering files to import.
+    | GatheringFiles
 
     /// Import in progress.
     | InProgress of Import
@@ -39,7 +39,7 @@ type ImportStatus =
 
     /// Import underway?
     member status.IsImporting =
-        status.IsStarted
+        status.IsGatheringFiles
             || status.IsInProgress
 
 /// Application model.

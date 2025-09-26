@@ -19,11 +19,14 @@ type Message =
     /// Set import name.
     | SetName of string
 
-    /// Start the import.
-    | StartImport
+    /// Start gathering files to import.
+    | GatherFiles
 
-    /// Continue import.
-    | ContinueImport of Import
+    /// Files have been gathered for import.
+    | FilesGathered of Import
+
+    /// Import the next group of files.
+    | ImportGroup
 
     /// Finish import.
     | FinishImport
@@ -50,8 +53,8 @@ module Message =
         with :? UnknownImageFormatException ->
             false
 
-    /// Starts an import.
-    let private startImport model =
+    /// Gathers files to import.
+    let private gatherFiles model =
         async {
                 // create destination sub-directory
             let importName = model.Name.Trim()
@@ -74,7 +77,8 @@ module Message =
                 // group files to import
             let groups =
                 model.Source.RootDirectory.GetFiles(
-                    "*", SearchOption.AllDirectories)
+                    "*",
+                    EnumerationOptions(RecurseSubdirectories = true))   // ignore hidden and system files
                     |> Array.groupBy (
                         _.Name
                             >> Path.GetFileNameWithoutExtension)
@@ -95,27 +99,32 @@ module Message =
     let private handleError (ex : exn) =
         HandleError ex.Message
 
-    /// Starts an import.
-    let private onStartImport model =
+    /// Gathers files to import.
+    let private onGatherFiles model =
         assert(not model.ImportStatus.IsImporting)
         { model with
-            ImportStatus = Started },
+            ImportStatus = GatheringFiles },
         Cmd.OfAsync.either
-            startImport
+            gatherFiles
             model
-            ContinueImport
+            FilesGathered
             handleError
 
-    /// Continues an import.
-    let private continueImport import =
-        async {
+    /// Files have been gathered for import.
+    let private onFilesGathered import model =
+        { model with
+            ImportStatus = InProgress import },
+        Cmd.ofMsg ImportGroup
 
+    /// Imports the next file group.
+    let private importGroup import =
+        async {
                 // get group to import
             let iGroup = import.NumGroupsImported
-            assert(iGroup <= import.FileGroups.Length)
+            assert(iGroup < import.FileGroups.Length)
             let groupName =
-                let index = iGroup + import.Offset + 1
-                $"{import.Destination.Name} %03d{index}"
+                let suffix = iGroup + import.Offset + 1
+                $"{import.Destination.Name} %03d{suffix}"
             let fileGroup = import.FileGroups[iGroup]
 
                 // import each file in the group
@@ -127,32 +136,39 @@ module Message =
                         |> FileInfo
                 sourceFile.CopyTo(destFile.FullName)
                     |> ignore
-
-            return {
-                import with
-                    NumGroupsImported = iGroup + 1 }
         }
 
-    /// Continues an import.
-    let private onContinueImport import model =
-
-        let handleSuccess import =
-            if import.NumGroupsImported
-                < import.FileGroups.Length then
-                ContinueImport import
-            else
-                FinishImport
-
+    /// Imports the next file group.
+    let private onImportGroup model =
         match model.ImportStatus with
-            | Started
-            | InProgress _ ->
-                { model with
-                    ImportStatus = InProgress import },
-                Cmd.OfAsync.either
-                    continueImport
-                    import
-                    handleSuccess
-                    handleError
+            | InProgress import ->
+
+                    // update progress
+                let import' =
+                    { import with
+                        NumGroupsImported =
+                            import.NumGroupsImported + 1 }
+                let model =
+                    { model with
+                        ImportStatus = InProgress import' }
+
+                    // determine next step
+                let nextMessage =
+                    if import'.NumGroupsImported < import'.FileGroups.Length then
+                        ImportGroup
+                    else
+                        FinishImport
+
+                    // import group asynchronously
+                let cmd =
+                    Cmd.OfAsync.either
+                        importGroup
+                        import
+                        (fun () -> nextMessage)
+                        handleError
+
+                model, cmd
+
             | _ -> failwith "Invalid state"
 
     /// Finishes an import.
@@ -183,10 +199,12 @@ module Message =
             | SetName name ->
                 { model with Name = name },
                 Cmd.none
-            | StartImport ->
-                onStartImport model
-            | ContinueImport import ->
-                onContinueImport import model
+            | GatherFiles ->
+                onGatherFiles model
+            | FilesGathered import ->
+                onFilesGathered import model
+            | ImportGroup ->
+                onImportGroup model
             | FinishImport ->
                 onFinishImport model
             | HandleError error ->
