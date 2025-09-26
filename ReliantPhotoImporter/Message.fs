@@ -109,30 +109,28 @@ module Message =
     /// Continues an import.
     let private continueImport import =
         async {
+
+                // get group to import
             let iGroup = import.NumGroupsImported
             assert(iGroup <= import.FileGroups.Length)
+            let groupName =
+                let index = iGroup + import.Offset + 1
+                $"{import.Destination.Name} %03d{index}"
+            let fileGroup = import.FileGroups[iGroup]
 
-                // groups remain to be imported?
-            if iGroup < import.FileGroups.Length then
-                let groupName =
-                    let index = iGroup + import.Offset + 1
-                    $"{import.Destination.Name} %03d{index}"
+                // import each file in the group
+            for sourceFile in fileGroup do
+                let destFile =
+                    Path.Combine(
+                        import.Destination.FullName,
+                        $"{groupName}{sourceFile.Extension.ToLower()}")
+                        |> FileInfo
+                sourceFile.CopyTo(destFile.FullName)
+                    |> ignore
 
-                    // import each file in the group
-                for sourceFile in import.FileGroups[iGroup] do
-                    let destFile =
-                        Path.Combine(
-                            import.Destination.FullName,
-                            $"{groupName}{sourceFile.Extension.ToLower()}")
-                            |> FileInfo
-                    sourceFile.CopyTo(destFile.FullName)
-                        |> ignore
-
-                return {
-                    import with
-                        NumGroupsImported = iGroup + 1 }
-
-            else return import
+            return {
+                import with
+                    NumGroupsImported = iGroup + 1 }
         }
 
     /// Continues an import.
