@@ -144,28 +144,29 @@ module Message =
             | InProgress import ->
 
                     // update progress
-                let import' =
-                    { import with
-                        NumGroupsImported =
-                            import.NumGroupsImported + 1 }
-                let model =
-                    { model with
-                        ImportStatus = InProgress import' }
-
-                    // determine next step
-                let nextMessage =
-                    if import'.NumGroupsImported < import'.FileGroups.Length then
-                        ImportGroup
-                    else
-                        FinishImport
+                let nGroupsImported =
+                    import.NumGroupsImported + 1
 
                     // import group asynchronously
                 let cmd =
+                    let nextMessage =
+                        if nGroupsImported < import.FileGroups.Length then
+                            ImportGroup
+                        else
+                            FinishImport
                     Cmd.OfAsync.either
                         importGroup
                         import
                         (fun () -> nextMessage)
                         handleError
+
+                    // update model
+                let model =
+                    { model with
+                        ImportStatus =
+                            InProgress
+                                { import with
+                                    NumGroupsImported = nGroupsImported } }
 
                 model, cmd
 
@@ -177,7 +178,7 @@ module Message =
             | InProgress import ->
                 { model with
                     ImportStatus =
-                        Finished import.FileGroups.Length },
+                        Finished import.NumGroupsImported },
                 Cmd.none
             | _ -> failwith "Invalid state"
 
