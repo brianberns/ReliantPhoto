@@ -102,13 +102,16 @@ module Message =
     /// Gathers files to import.
     let private onGatherFiles model =
         assert(not model.ImportStatus.IsImporting)
-        { model with
-            ImportStatus = GatheringFiles },
-        Cmd.OfAsync.either
-            gatherFiles
-            model
-            FilesGathered
-            handleError
+        let model =
+            { model with
+                ImportStatus = GatheringFiles }
+        let cmd =
+            Cmd.OfAsync.either
+                gatherFiles
+                model
+                FilesGathered
+                handleError
+        model, cmd
 
     /// Files have been gathered for import.
     let private onFilesGathered import model =
