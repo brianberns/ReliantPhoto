@@ -196,6 +196,27 @@ module View =
             ]
         ]
 
+    let private withCancelButton row view =
+        DockPanel.create [
+            DockPanel.verticalAlignment VerticalAlignment.Center
+            DockPanel.row row
+            DockPanel.column 1
+            DockPanel.children [
+                Button.create [
+                    Button.dock Dock.Right
+                    Button.content "Cancel"
+                    Button.focusable false
+                    Button.padding 10
+                    Button.margin 10
+                    (*
+                    Button.onClick (fun _ ->
+                        import.CancellationTokenSource.Cancel())
+                    *)
+                ]
+                view
+            ]
+        ] :> IView
+
     /// Creates gathering parts.
     let private createGatheringParts row =
         [
@@ -213,9 +234,7 @@ module View =
                 TextBlock.verticalAlignment VerticalAlignment.Center
                 TextBlock.padding 10
                 TextBlock.margin 10
-                TextBlock.row row
-                TextBlock.column 1
-            ]
+            ] |> withCancelButton row
         ]
 
     /// Creates progress parts.
@@ -230,32 +249,13 @@ module View =
             ] :> IView
 
                 // progress
-            DockPanel.create [
-                DockPanel.verticalAlignment VerticalAlignment.Center
-                DockPanel.row row
-                DockPanel.column 1
-                DockPanel.children [
-                    Button.create [
-                        Button.dock Dock.Right
-                        Button.content "Cancel"
-                        Button.focusable false
-                        Button.padding 10
-                        Button.margin 10
-                        (*
-                        Button.onClick (fun _ ->
-                            import.CancellationTokenSource.Cancel())
-                        *)
-                    ]
-                    ProgressBar.create [
-                        ProgressBar.dock Dock.Left
-                        ProgressBar.minimum 0
-                        ProgressBar.maximum import.FileGroups.Length
-                        ProgressBar.value import.NumGroupsImported
-                        ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
-                        ProgressBar.margin 10   // padding doesn't work here?
-                    ]
-                ]
-            ]
+            ProgressBar.create [
+                ProgressBar.minimum 0
+                ProgressBar.maximum import.FileGroups.Length
+                ProgressBar.value import.NumGroupsImported
+                ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
+                ProgressBar.margin 10   // padding doesn't work here?
+            ] |> withCancelButton row
         ]
 
     /// Creates finished parts.
