@@ -99,7 +99,7 @@ module Message =
     let private onStartImport model =
         assert(not model.ImportStatus.IsImporting)
         { model with
-            ImportStatus = Starting },
+            ImportStatus = Started },
         Cmd.OfAsync.either
             startImport
             model
@@ -145,13 +145,17 @@ module Message =
             else
                 FinishImport
 
-        { model with
-            ImportStatus = InProgress import },
-        Cmd.OfAsync.either
-            continueImport
-            import
-            handleSuccess
-            handleError
+        match model.ImportStatus with
+            | Started
+            | InProgress _ ->
+                { model with
+                    ImportStatus = InProgress import },
+                Cmd.OfAsync.either
+                    continueImport
+                    import
+                    handleSuccess
+                    handleError
+            | _ -> failwith "Invalid state"
 
     /// Finishes an import.
     let onFinishImport model =

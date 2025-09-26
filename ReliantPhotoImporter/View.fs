@@ -314,7 +314,7 @@ module View =
         match status with
             | NotStarted ->
                 createNotStartedParts row
-            | Starting ->
+            | Started ->
                 createStartingParts row
             | InProgress import ->
                 createProgressParts row import

@@ -26,20 +26,20 @@ type ImportStatus =
     | NotStarted
 
     /// Import started but not yet processing files.
-    | Starting
+    | Started
 
     /// Import in progress.
     | InProgress of Import
 
     /// Import finished successfully. 
-    | Finished of int
+    | Finished of int (*num images imported*)
 
     /// Import stopped with an error.
-    | Error of string
+    | Error of string (*message*)
 
     /// Import underway?
     member status.IsImporting =
-        status.IsStarting
+        status.IsStarted
             || status.IsInProgress
 
 /// Application model.
