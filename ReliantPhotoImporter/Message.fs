@@ -176,7 +176,7 @@ module Message =
             | _ -> failwith "Invalid state"
 
     /// Finishes an import.
-    let onFinishImport model =
+    let private onFinishImport model =
         match model.ImportStatus with
             | InProgress import ->
                 { model with
@@ -186,7 +186,7 @@ module Message =
             | _ -> failwith "Invalid state"
 
     /// Handles an error.
-    let onHandleError error model =
+    let private onHandleError error model =
         { model with
             ImportStatus = Error error },
         Cmd.none

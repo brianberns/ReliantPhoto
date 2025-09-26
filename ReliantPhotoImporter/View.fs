@@ -196,7 +196,7 @@ module View =
             ]
         ]
 
-    let private withCancelButton row view =
+    let private withCancelButton row dispatch view =
         DockPanel.create [
             DockPanel.verticalAlignment VerticalAlignment.Center
             DockPanel.row row
@@ -208,17 +208,15 @@ module View =
                     Button.focusable false
                     Button.padding 10
                     Button.margin 10
-                    (*
                     Button.onClick (fun _ ->
-                        import.CancellationTokenSource.Cancel())
-                    *)
+                        dispatch FinishImport)
                 ]
                 view
             ]
         ] :> IView
 
     /// Creates gathering parts.
-    let private createGatheringParts row =
+    let private createGatheringParts row dispatch =
         [
                 // label
             TextBlock.create [
@@ -234,11 +232,11 @@ module View =
                 TextBlock.verticalAlignment VerticalAlignment.Center
                 TextBlock.padding 10
                 TextBlock.margin 10
-            ] |> withCancelButton row
+            ] |> withCancelButton row dispatch
         ]
 
     /// Creates progress parts.
-    let private createProgressParts row import =
+    let private createProgressParts row import dispatch =
         [
                 // label
             TextBlock.create [
@@ -255,7 +253,7 @@ module View =
                 ProgressBar.value import.NumGroupsImported
                 ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
                 ProgressBar.margin 10   // padding doesn't work here?
-            ] |> withCancelButton row
+            ] |> withCancelButton row dispatch
         ]
 
     /// Creates finished parts.
@@ -310,14 +308,15 @@ module View =
             ]
         ]
 
-    let createStatusParts row status =
+    /// Creates status parts.
+    let private createStatusParts row status dispatch =
         match status with
             | NotStarted ->
                 createNotStartedParts row
             | GatheringFiles ->
-                createGatheringParts row
+                createGatheringParts row dispatch
             | InProgress import ->
-                createProgressParts row import
+                createProgressParts row import dispatch
             | Finished numImages ->
                 createFinishedParts row numImages
             | Error error ->
@@ -339,7 +338,7 @@ module View =
                         yield! createNameParts 2 model dispatch
                         yield! createExampleParts 3 model
                         yield! createImportParts 4 model dispatch
-                        yield! createStatusParts 5 model.ImportStatus
+                        yield! createStatusParts 5 model.ImportStatus dispatch
                     ]
                 ]
             )
