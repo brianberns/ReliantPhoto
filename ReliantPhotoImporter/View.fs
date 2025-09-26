@@ -225,21 +225,36 @@ module View =
             TextBlock.create [
                 TextBlock.text "Status:"
                 TextBlock.verticalAlignment VerticalAlignment.Center
-                TextBlock.margin (0, 10)   // in lieu of progress bar padding
-                TextBlock.padding (0, 10)
                 TextBlock.row row
                 TextBlock.column 0
             ] :> IView
 
                 // progress
-            ProgressBar.create [
-                ProgressBar.minimum 0
-                ProgressBar.maximum import.FileGroups.Length
-                ProgressBar.value import.NumGroupsImported
-                ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
-                ProgressBar.margin 10   // padding doesn't work here?
-                ProgressBar.row row
-                ProgressBar.column 1
+            DockPanel.create [
+                DockPanel.verticalAlignment VerticalAlignment.Center
+                DockPanel.row row
+                DockPanel.column 1
+                DockPanel.children [
+                    Button.create [
+                        Button.dock Dock.Right
+                        Button.content "Cancel"
+                        Button.focusable false
+                        Button.padding 10
+                        Button.margin 10
+                        (*
+                        Button.onClick (fun _ ->
+                            import.CancellationTokenSource.Cancel())
+                        *)
+                    ]
+                    ProgressBar.create [
+                        ProgressBar.dock Dock.Left
+                        ProgressBar.minimum 0
+                        ProgressBar.maximum import.FileGroups.Length
+                        ProgressBar.value import.NumGroupsImported
+                        ProgressBar.tip $"{import.NumGroupsImported} of {import.FileGroups.Length} images imported"
+                        ProgressBar.margin 10   // padding doesn't work here?
+                    ]
+                ]
             ]
         ]
 
