@@ -177,13 +177,13 @@ module Message =
 
     /// Finishes an import.
     let private onFinishImport model =
-        match model.ImportStatus with
-            | InProgress import ->
-                { model with
-                    ImportStatus =
-                        Finished import.NumGroupsImported },
-                Cmd.none
-            | _ -> failwith "Invalid state"
+        let nGroups =
+            match model.ImportStatus with
+                | InProgress import -> import.NumGroupsImported
+                | _ -> 0
+        { model with
+            ImportStatus = Finished nGroups },
+        Cmd.none
 
     /// Handles an error.
     let private onHandleError error model =

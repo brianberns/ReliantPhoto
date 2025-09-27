@@ -31,7 +31,7 @@ type ImportStatus =
     /// Import in progress.
     | InProgress of Import
 
-    /// Import finished successfully. 
+    /// Import finished.
     | Finished of int (*num images imported*)
 
     /// Import stopped with an error.
