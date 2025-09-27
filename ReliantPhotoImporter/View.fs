@@ -269,7 +269,7 @@ module View =
 
                 // status
             TextBlock.create [
-                TextBlock.text $"{numImages} images imported"
+                TextBlock.text $"{numImages} image(s) imported"
                 TextBlock.verticalAlignment VerticalAlignment.Center
                 TextBlock.padding 10
                 TextBlock.margin 10

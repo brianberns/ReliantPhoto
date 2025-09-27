@@ -115,9 +115,12 @@ module Message =
 
     /// Files have been gathered for import.
     let private onFilesGathered import model =
-        { model with
-            ImportStatus = InProgress import },
-        Cmd.ofMsg ImportGroup
+        match model.ImportStatus with
+            | GatheringFiles ->
+                { model with
+                    ImportStatus = InProgress import },
+                Cmd.ofMsg ImportGroup
+            | _ -> model, Cmd.none   // e.g. import canceled
 
     /// Imports the next file group.
     let private importGroup import =
@@ -173,8 +176,7 @@ module Message =
 
                 model, cmd
 
-                // e.g. import canceled
-            | _ -> model, Cmd.none
+            | _ -> model, Cmd.none   // e.g. import canceled
 
     /// Finishes an import.
     let private onFinishImport model =
