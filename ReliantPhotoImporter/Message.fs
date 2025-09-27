@@ -149,7 +149,7 @@ module Message =
         match model.ImportStatus with
             | InProgress import ->
 
-                    // update progress
+                    // update progress optimistically
                 let nGroupsImported =
                     import.NumGroupsImported + 1
 
