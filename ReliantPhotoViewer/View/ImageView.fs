@@ -77,6 +77,7 @@ module ImageView =
                         Slider.maximum (log ImageLayout.zoomScaleCeiling)
                         Slider.value (log zoomScale)
                         Slider.tip "Adjust zoom scale"
+                        Slider.focusable false
                         Slider.width 150.0
                         Slider.margin (5.0, 0.0)
                         Slider.onValueChanged (
