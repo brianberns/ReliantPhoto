@@ -2,12 +2,15 @@
 
 open System.IO
 
+open Avalonia
 open Avalonia.Controls
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 open Avalonia.Layout
 open Avalonia.Media
+
+open Reliant.Photo.Message
 
 module DirectoryView =
 
@@ -92,6 +95,13 @@ module DirectoryView =
 
                 ScrollViewer.create [
                     ScrollViewer.background Brush.darkGray
+                    ScrollViewer.offset model.ScrollOffset
+                    ScrollViewer.onPropertyChanged(fun args ->
+                        if args.Property = ScrollViewer.OffsetProperty then
+                            args.NewValue :?> Vector
+                                |> ScrollOffsetChanged
+                                |> MkDirectoryMessage
+                                |> dispatch)
                     ScrollViewer.content (
                         WrapPanel.create [
                             WrapPanel.orientation

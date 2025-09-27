@@ -4,6 +4,8 @@ open System
 open System.IO
 open System.Threading
 
+open Avalonia
+
 open Elmish
 
 /// Messages that can change the directory model.
@@ -20,6 +22,9 @@ type DirectoryMessage =
 
     /// Loading of images in the current directory has finished.
     | DirectoryLoaded of SessionId
+
+    /// Scroll offset of the view has changed.
+    | ScrollOffsetChanged of Vector
 
 module DirectoryMessage =
 
@@ -162,6 +167,11 @@ module DirectoryMessage =
             else model   // ignore stale message
         model, Cmd.none
 
+    /// Handles a change in the directory view's scroll offset.
+    let private onScrollOffsetChanged offset model =
+        { model with ScrollOffset = offset },
+        Cmd.none
+
     /// Updates the given model based on the given message.
     let update message (model : DirectoryModel) =
         match message with
@@ -173,3 +183,5 @@ module DirectoryMessage =
                 onImageDeleted sessionId file model
             | DirectoryLoaded sessionId ->
                 onDirectoryLoaded sessionId model
+            | ScrollOffsetChanged offset ->
+                onScrollOffsetChanged offset model

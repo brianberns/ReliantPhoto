@@ -3,6 +3,8 @@
 open System
 open System.IO
 
+open Avalonia
+
 /// Session identifier.
 type SessionId = int64
 
@@ -20,6 +22,9 @@ type DirectoryModel =
 
         /// Directory is in the process of loading?
         IsLoading : bool
+
+        /// Scroll offset of the view.
+        ScrollOffset : Vector
     }
 
 module DirectoryModel =
@@ -31,4 +36,5 @@ module DirectoryModel =
             SessionId = DateTime.Now.Ticks
             FileImageResults = Array.empty
             IsLoading = false
+            ScrollOffset = Vector()
         }
