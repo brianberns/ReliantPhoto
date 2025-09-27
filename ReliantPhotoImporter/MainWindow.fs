@@ -39,23 +39,33 @@ module Window =
         }
 
     /// Watches for app shutdown.
-    let watchShutdown (window : Window) : Subscribe<_> =
+    let watchShutdown
+        (window : Window) (status : ImportStatus) : Subscribe<_> =
         fun dispatch ->
 
                 // watch for window close event
-            window.Closing.Add(fun _ ->
-                dispatch Shutdown)
+            let handler =
+                EventHandler<WindowClosingEventArgs>(fun _ args ->
+                    if status.IsImporting then
+                        args.Cancel <- true
+                        dispatch FinishImport   // to-do: wait for this to finish and then allow the window to close?
+                    else
+                        dispatch Shutdown)
+            window.Closing.AddHandler(handler)
 
                 // cleanup
             {
                 new IDisposable with
-                    member _.Dispose() = ()
+                    member _.Dispose() =
+                        window.Closing.RemoveHandler(handler)
             }
 
     /// Subscribes to app shutdown.
-    let subscribeShutdown window (_model : Model) : Sub<_> =
+    let subscribeShutdown window model : Sub<_> =
+        let status = model.ImportStatus
         [
-            [ "Shutdown" ], watchShutdown window
+            [ "Shutdown"; string status ],
+                watchShutdown window status
         ]
 
     /// Starts the Elmish MVU loop.
