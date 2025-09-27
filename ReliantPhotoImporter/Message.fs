@@ -173,7 +173,8 @@ module Message =
 
                 model, cmd
 
-            | _ -> failwith "Invalid state"
+                // e.g. import canceled
+            | _ -> model, Cmd.none
 
     /// Finishes an import.
     let private onFinishImport model =
