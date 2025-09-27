@@ -138,7 +138,7 @@ module Message =
                 let destFile =
                     Path.Combine(
                         import.Destination.FullName,
-                        $"{groupName}{sourceFile.Extension.ToLower()}")
+                        $"{groupName}{sourceFile.Extension}")
                         |> FileInfo
                 sourceFile.CopyTo(destFile.FullName)
                     |> ignore
