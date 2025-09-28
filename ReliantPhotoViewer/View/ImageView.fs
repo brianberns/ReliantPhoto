@@ -86,7 +86,7 @@ module ImageView =
                         Slider.margin (5.0, 0.0)
                         Slider.verticalAlignment VerticalAlignment.Center
                         Slider.height sliderHeight
-                        Slider.onLoaded (fun args ->   // force slider to fit in toolbar
+                        Slider.onLoaded (fun args ->   // force slider to fit in toolbar (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Slider.xaml)
                             let slider = args.Source :?> Slider
                             slider.Resources["SliderHorizontalThumbHeight"] <- thumbSize
                             slider.Resources["SliderHorizontalThumbWidth"] <- thumbSize
