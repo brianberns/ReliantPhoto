@@ -18,32 +18,44 @@ module ImageView =
     /// Creates a slider that can be used to adjust the zoom scale.
     let private createZoomSlider
         zoomScale defaultZoomScale dispatch =
-        Slider.create [
-            Slider.minimum (log defaultZoomScale)
-            Slider.maximum (log ImageLayout.zoomScaleCeiling)
-            Slider.value (log zoomScale)
-            Slider.tip "Adjust zoom scale"
-            Slider.focusable false
-            Slider.width 150.0
-            Slider.margin (5.0, 0.0)
-            Slider.verticalAlignment VerticalAlignment.Center
+        Component.create("zoomSlider", fun ctx ->
+            let pointerPressed = ctx.useState false
+            Slider.create [
+                Slider.minimum (log defaultZoomScale)
+                Slider.maximum (log ImageLayout.zoomScaleCeiling)
+                Slider.value (log zoomScale)
+                Slider.tip "Adjust zoom scale"
+                Slider.focusable false
+                Slider.width 150.0
+                Slider.margin (5.0, 0.0)
+                Slider.verticalAlignment VerticalAlignment.Center
 
-                // force slider to fit in toolbar (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Slider.xaml)
-            let sliderHeight = Button.buttonSize
-            let thumbSize = 18.0
-            let contentMargin =
-                GridLength ((sliderHeight - thumbSize) / 2.0)
-            Slider.height sliderHeight
-            Slider.onLoaded (fun args ->
-                let slider = args.Source :?> Slider
-                slider.Resources["SliderHorizontalThumbHeight"] <- thumbSize
-                slider.Resources["SliderHorizontalThumbWidth"] <- thumbSize
-                slider.Resources["SliderPreContentMargin"] <- contentMargin
-                slider.Resources["SliderPostContentMargin"] <- contentMargin)
+                    // force slider to fit in toolbar (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Slider.xaml)
+                let sliderHeight = Button.buttonSize
+                let thumbSize = 18.0
+                let contentMargin =
+                    GridLength ((sliderHeight - thumbSize) / 2.0)
+                Slider.height sliderHeight
+                Slider.onLoaded (fun args ->
+                    let slider = args.Source :?> Slider
+                    slider.Resources["SliderHorizontalThumbHeight"] <- thumbSize
+                    slider.Resources["SliderHorizontalThumbWidth"] <- thumbSize
+                    slider.Resources["SliderPreContentMargin"] <- contentMargin
+                    slider.Resources["SliderPostContentMargin"] <- contentMargin)
 
-            Slider.onValueChanged (
-                exp >> ZoomTo >> MkImageMessage >> dispatch)
-        ]
+                    // zoom iff user is dragging the thumb
+                Slider.onPointerPressed(fun _ ->
+                    pointerPressed.Set true)
+                Slider.onPointerReleased(fun _ ->
+                    pointerPressed.Set false)
+                Slider.onValueChanged (fun value ->
+                    if pointerPressed.Current then
+                        exp value
+                            |> ZoomTo
+                            |> MkImageMessage
+                            |> dispatch)
+            ]
+        )
 
     /// Creates a toolbar.
     let private createToolbar model dispatch =
