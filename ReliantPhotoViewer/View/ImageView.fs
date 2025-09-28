@@ -18,7 +18,7 @@ module ImageView =
     /// Creates a slider that can be used to adjust the zoom scale.
     let private createZoomSlider
         zoomScale defaultZoomScale dispatch =
-        Component.create("zoomSlider", fun ctx ->
+        Component.create($"zoomSlider/{defaultZoomScale}", fun ctx ->
             let pointerPressed = ctx.useState false
             Slider.create [
                 Slider.minimum (log defaultZoomScale)
