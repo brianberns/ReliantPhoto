@@ -36,7 +36,7 @@ module ImageView =
                 let contentMargin =
                     GridLength ((sliderHeight - thumbSize) / 2.0)
                 Slider.height sliderHeight
-                Slider.onLoaded (fun args ->
+                Slider.onTemplateApplied (fun args ->
                     let slider = args.Source :?> Slider
                     slider.Resources["SliderHorizontalThumbHeight"] <- thumbSize
                     slider.Resources["SliderHorizontalThumbWidth"] <- thumbSize
