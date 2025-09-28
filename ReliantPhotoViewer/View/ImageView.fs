@@ -72,6 +72,10 @@ module ImageView =
                         (fun _ -> MkImageMessage ZoomToFit |> dispatch)
 
                         // adjust zoom scale
+                    let sliderHeight = Button.buttonSize
+                    let thumbSize = 18.0
+                    let contentMargin =
+                        GridLength ((sliderHeight - thumbSize) / 2.0)
                     Slider.create [
                         Slider.minimum (log defaultZoomScale)
                         Slider.maximum (log ImageLayout.zoomScaleCeiling)
@@ -80,6 +84,14 @@ module ImageView =
                         Slider.focusable false
                         Slider.width 150.0
                         Slider.margin (5.0, 0.0)
+                        Slider.verticalAlignment VerticalAlignment.Center
+                        Slider.height sliderHeight
+                        Slider.onLoaded (fun args ->   // force slider to fit in toolbar
+                            let slider = args.Source :?> Slider
+                            slider.Resources["SliderHorizontalThumbHeight"] <- thumbSize
+                            slider.Resources["SliderHorizontalThumbWidth"] <- thumbSize
+                            slider.Resources["SliderPreContentMargin"] <- contentMargin
+                            slider.Resources["SliderPostContentMargin"] <- contentMargin)
                         Slider.onValueChanged (
                             exp >> ZoomTo >> MkImageMessage >> dispatch)
                     ]

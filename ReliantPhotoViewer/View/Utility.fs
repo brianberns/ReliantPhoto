@@ -72,7 +72,7 @@ module Icon =
 module Button =
 
     /// Button height and width.
-    let buttonSize = 42
+    let buttonSize = 42.0
 
     /// Creates an icon button.
     let createIconImpl
