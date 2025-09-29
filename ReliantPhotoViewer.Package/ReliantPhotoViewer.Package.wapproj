@@ -60,7 +60,7 @@
     <PackageCertificateThumbprint>7DEE64DEAA7E8B4F80678EF79AED5374746B819D</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>168</HoursBetweenUpdateChecks>

@@ -9,7 +9,7 @@
   <Identity
     Name="BernsriteIndustries.ReliantPhotoViewer"
     Publisher="CN=10DFF07F-756C-4AB9-AC49-B51B0DA34AD4"
-    Version="1.1.33.0" />
+    Version="1.1.35.0" />
 
   <Properties>
     <DisplayName>Reliant Photo Viewer</DisplayName>
