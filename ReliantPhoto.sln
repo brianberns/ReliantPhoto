@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11018.127 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReliantPhotoViewer", "ReliantPhotoViewer\ReliantPhotoViewer.fsproj", "{0A40F760-C523-3A06-1FA9-EBFADE4600E6}"
 EndProject
@@ -21,6 +21,8 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReliantPhotoImporter", "ReliantPhotoImporter\ReliantPhotoImporter.fsproj", "{44B93B03-8B10-C6EB-CF45-157CC0068566}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReliantPhotoShared", "ReliantPhotoShared\ReliantPhotoShared.fsproj", "{45525975-AE44-45E3-9D5E-0417A44A01F0}"
+EndProject
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "ReliantPhotoImporter.Package", "ReliantPhotoImporter.Package\ReliantPhotoImporter.Package.wapproj", "{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -186,6 +188,36 @@ Global
 		{45525975-AE44-45E3-9D5E-0417A44A01F0}.Release|x64.Build.0 = Release|Any CPU
 		{45525975-AE44-45E3-9D5E-0417A44A01F0}.Release|x86.ActiveCfg = Release|Any CPU
 		{45525975-AE44-45E3-9D5E-0417A44A01F0}.Release|x86.Build.0 = Release|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|ARM.ActiveCfg = Debug|ARM
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|ARM.Build.0 = Debug|ARM
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|ARM.Deploy.0 = Debug|ARM
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|x64.ActiveCfg = Debug|x64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|x64.Build.0 = Debug|x64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|x64.Deploy.0 = Debug|x64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|x86.ActiveCfg = Debug|x86
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|x86.Build.0 = Debug|x86
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Debug|x86.Deploy.0 = Debug|x86
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|ARM.ActiveCfg = Release|ARM
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|ARM.Build.0 = Release|ARM
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|ARM.Deploy.0 = Release|ARM
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|ARM64.Build.0 = Release|ARM64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|ARM64.Deploy.0 = Release|ARM64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|x64.ActiveCfg = Release|x64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|x64.Build.0 = Release|x64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|x64.Deploy.0 = Release|x64
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|x86.ActiveCfg = Release|x86
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|x86.Build.0 = Release|x86
+		{C765F5FC-FC84-4D4F-8C71-BBAFA0A5CDC2}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
