@@ -79,12 +79,12 @@ module Message =
                 model.Source.RootDirectory.GetFiles(
                     "*",
                     EnumerationOptions(RecurseSubdirectories = true))   // ignore hidden and system files
+                    |> Array.sortBy _.CreationTime
                     |> Array.groupBy (
                         _.Name
                             >> Path.GetFileNameWithoutExtension)
                     |> Array.where (
                         snd >> Array.exists isImage)
-                    |> Array.sortBy fst
                     |> Array.map snd
 
             return {
